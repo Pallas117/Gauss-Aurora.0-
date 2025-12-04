@@ -22,13 +22,8 @@ export const SpaceWeatherVisualization = () => {
     fieldLines: true,
   });
 
-  const {
-    data,
-    magnetopauseCompression,
-    beltIntensity,
-    reconnectionStrength,
-    isStale,
-  } = useSpaceWeather();
+  const { data, visualParams, isStale } = useSpaceWeather();
+  const { magnetopauseCompression, beltIntensity, reconnectionStrength } = visualParams;
 
   const handleToggle = useCallback((layer: keyof LayerVisibility) => {
     setLayers(prev => ({ ...prev, [layer]: !prev[layer] }));

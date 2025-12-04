@@ -1,7 +1,7 @@
-import { SpaceWeatherData } from '@/hooks/useSpaceWeather';
+import { InterpolatedData } from '@/hooks/useSpaceWeather';
 
 interface HUDProps {
-  data: SpaceWeatherData;
+  data: InterpolatedData;
   isStale: boolean;
 }
 

@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -47,15 +51,24 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+        space: {
+          deep: "hsl(var(--space-deep))",
+          nebula: "hsl(var(--space-nebula))",
+        },
+        belt: {
+          inner: "hsl(var(--belt-inner))",
+          outer: "hsl(var(--belt-outer))",
+        },
+        magnetosphere: {
+          DEFAULT: "hsl(var(--magnetosphere))",
+          glow: "hsl(var(--magnetosphere-glow))",
+        },
+        aurora: "hsl(var(--aurora))",
+        solar: "hsl(var(--solar-wind))",
+        data: {
+          green: "hsl(var(--data-green))",
+          yellow: "hsl(var(--data-yellow))",
+          red: "hsl(var(--data-red))",
         },
       },
       borderRadius: {
@@ -65,25 +78,30 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "orbit": {
+          "0%": { transform: "rotateY(0deg)" },
+          "100%": { transform: "rotateY(360deg)" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "orbit": "orbit 60s linear infinite",
+        "float": "float 6s ease-in-out infinite",
+      },
+      backdropBlur: {
+        xs: "2px",
       },
     },
   },

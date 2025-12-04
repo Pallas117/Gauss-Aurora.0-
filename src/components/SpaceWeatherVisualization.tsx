@@ -3,6 +3,7 @@ import { SpaceScene } from './scene/SpaceScene';
 import { HUD } from './ui/HUD';
 import { LayerToggles } from './ui/LayerToggles';
 import { ScreenshotButton } from './ui/ScreenshotButton';
+import { PerformanceMonitor } from './ui/PerformanceMonitor';
 import { useSpaceWeather } from '@/hooks/useSpaceWeather';
 
 interface LayerVisibility {
@@ -55,6 +56,11 @@ export const SpaceWeatherVisualization = () => {
         {/* Top right - HUD */}
         <div className="absolute top-6 right-6 pointer-events-auto">
           <HUD data={data} isStale={isStale} />
+        </div>
+
+        {/* Performance Monitor */}
+        <div className="pointer-events-auto">
+          <PerformanceMonitor visible={true} />
         </div>
 
         {/* Right side - Layer toggles */}

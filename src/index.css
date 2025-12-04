@@ -38,13 +38,23 @@
 
     --radius: 0.5rem;
 
-    /* Custom space theme colors */
+    /* NASA SVS-inspired space theme colors */
     --space-deep: 222 47% 3%;
     --space-nebula: 260 60% 15%;
-    --belt-inner: 35 100% 55%;
-    --belt-outer: 15 100% 45%;
-    --magnetosphere: 187 100% 50%;
-    --magnetosphere-glow: 200 100% 60%;
+    
+    /* Van Allen Belt colors - NASA scientific palette */
+    --belt-low: 150 100% 50%;       /* #00FF88 bright green */
+    --belt-mid: 54 100% 50%;        /* #FFEE00 yellow */
+    --belt-high: 16 100% 50%;       /* #FF4400 orange-red */
+    --belt-inner: 150 100% 50%;
+    --belt-outer: 175 90% 47%;      /* Cyan-green for outer */
+    
+    /* Magnetosphere */
+    --magnetosphere: 200 100% 60%;
+    --magnetosphere-glow: 210 100% 70%;
+    --field-line: 195 100% 60%;     /* #00AAFF cyan-blue */
+    
+    /* Status colors */
     --aurora: 120 80% 50%;
     --solar-wind: 45 100% 60%;
     --data-green: 142 70% 50%;

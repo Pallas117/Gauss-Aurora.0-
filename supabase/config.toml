@@ -1,0 +1,4 @@
+project_id = "lcepqopunyumezfwtjbn"
+
+[functions.spaceweather]
+verify_jwt = false

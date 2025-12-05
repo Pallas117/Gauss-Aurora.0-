@@ -89,6 +89,325 @@ function createMagnetotailGeometry(
   return geometry;
 }
 
+/**
+ * Plasma particles flowing along field lines
+ */
+const FieldLineParticles = ({ fieldLines }: { fieldLines: { points: THREE.Vector3[]; isOpen: boolean }[] }) => {
+  const particlesRef = useRef<THREE.Points>(null);
+  const particleCount = 400;
+  
+  const { geometry, offsets, lineIndices } = useMemo(() => {
+    const positions = new Float32Array(particleCount * 3);
+    const offsets = new Float32Array(particleCount);
+    const lineIndices = new Float32Array(particleCount);
+    const sizes = new Float32Array(particleCount);
+    const colors = new Float32Array(particleCount * 3);
+    
+    for (let i = 0; i < particleCount; i++) {
+      const lineIdx = Math.floor(Math.random() * fieldLines.length);
+      const line = fieldLines[lineIdx];
+      const t = Math.random();
+      const pointIdx = Math.floor(t * (line.points.length - 1));
+      const point = line.points[pointIdx];
+      
+      positions[i * 3] = point.x;
+      positions[i * 3 + 1] = point.y;
+      positions[i * 3 + 2] = point.z;
+      
+      offsets[i] = Math.random();
+      lineIndices[i] = lineIdx;
+      sizes[i] = 0.05 + Math.random() * 0.1;
+      
+      // Color based on line type
+      if (line.isOpen) {
+        colors[i * 3] = 1.0;
+        colors[i * 3 + 1] = 0.4 + Math.random() * 0.3;
+        colors[i * 3 + 2] = 0.2;
+      } else {
+        colors[i * 3] = 0.2;
+        colors[i * 3 + 1] = 0.7 + Math.random() * 0.3;
+        colors[i * 3 + 2] = 1.0;
+      }
+    }
+    
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('aOffset', new THREE.BufferAttribute(offsets, 1));
+    geometry.setAttribute('aLineIndex', new THREE.BufferAttribute(lineIndices, 1));
+    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    
+    return { geometry, offsets, lineIndices };
+  }, [fieldLines]);
+  
+  useFrame((state) => {
+    if (!particlesRef.current) return;
+    
+    const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
+    const time = state.clock.elapsedTime;
+    
+    for (let i = 0; i < particleCount; i++) {
+      const lineIdx = Math.floor(lineIndices[i]);
+      const line = fieldLines[lineIdx];
+      if (!line) continue;
+      
+      // Animate along field line
+      const speed = line.isOpen ? 0.4 : 0.25;
+      let t = (offsets[i] + time * speed) % 1;
+      
+      const pointIdx = Math.floor(t * (line.points.length - 1));
+      const nextIdx = Math.min(pointIdx + 1, line.points.length - 1);
+      const frac = t * (line.points.length - 1) - pointIdx;
+      
+      const p1 = line.points[pointIdx];
+      const p2 = line.points[nextIdx];
+      
+      positions[i * 3] = p1.x + (p2.x - p1.x) * frac;
+      positions[i * 3 + 1] = p1.y + (p2.y - p1.y) * frac;
+      positions[i * 3 + 2] = p1.z + (p2.z - p1.z) * frac;
+    }
+    
+    particlesRef.current.geometry.attributes.position.needsUpdate = true;
+  });
+  
+  return (
+    <points ref={particlesRef} geometry={geometry}>
+      <shaderMaterial
+        uniforms={{
+          uTime: { value: 0 },
+        }}
+        vertexShader={`
+          attribute float size;
+          attribute vec3 color;
+          varying vec3 vColor;
+          
+          void main() {
+            vColor = color;
+            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_PointSize = size * (200.0 / -mvPosition.z);
+            gl_Position = projectionMatrix * mvPosition;
+          }
+        `}
+        fragmentShader={`
+          varying vec3 vColor;
+          
+          void main() {
+            float dist = length(gl_PointCoord - vec2(0.5));
+            if (dist > 0.5) discard;
+            
+            float alpha = 1.0 - smoothstep(0.2, 0.5, dist);
+            gl_FragColor = vec4(vColor, alpha * 0.8);
+          }
+        `}
+        transparent
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </points>
+  );
+};
+
+/**
+ * Particles flowing through magnetotail current sheet
+ */
+const CurrentSheetParticles = () => {
+  const particlesRef = useRef<THREE.Points>(null);
+  const particleCount = 300;
+  
+  const { geometry, offsets, yOffsets } = useMemo(() => {
+    const positions = new Float32Array(particleCount * 3);
+    const offsets = new Float32Array(particleCount);
+    const yOffsets = new Float32Array(particleCount);
+    const sizes = new Float32Array(particleCount);
+    
+    for (let i = 0; i < particleCount; i++) {
+      const t = Math.random();
+      const x = -4 - t * 35;
+      const y = (Math.random() - 0.5) * 1.5;
+      const z = (Math.random() - 0.5) * 6;
+      
+      positions[i * 3] = x;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = z;
+      
+      offsets[i] = Math.random();
+      yOffsets[i] = y;
+      sizes[i] = 0.08 + Math.random() * 0.12;
+    }
+    
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    
+    return { geometry, offsets, yOffsets };
+  }, []);
+  
+  useFrame((state) => {
+    if (!particlesRef.current) return;
+    
+    const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
+    const time = state.clock.elapsedTime;
+    
+    for (let i = 0; i < particleCount; i++) {
+      // Flow toward tail (negative X)
+      let t = (offsets[i] + time * 0.15) % 1;
+      const x = -4 - t * 35;
+      
+      // Slight wavering motion
+      const waver = Math.sin(time * 2 + offsets[i] * 10) * 0.2;
+      
+      positions[i * 3] = x;
+      positions[i * 3 + 1] = yOffsets[i] + waver;
+    }
+    
+    particlesRef.current.geometry.attributes.position.needsUpdate = true;
+  });
+  
+  return (
+    <points ref={particlesRef} geometry={geometry}>
+      <shaderMaterial
+        vertexShader={`
+          attribute float size;
+          varying float vIntensity;
+          
+          void main() {
+            vIntensity = 1.0 - smoothstep(-4.0, -39.0, position.x);
+            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_PointSize = size * (200.0 / -mvPosition.z) * vIntensity;
+            gl_Position = projectionMatrix * mvPosition;
+          }
+        `}
+        fragmentShader={`
+          varying float vIntensity;
+          
+          void main() {
+            float dist = length(gl_PointCoord - vec2(0.5));
+            if (dist > 0.5) discard;
+            
+            float alpha = (1.0 - smoothstep(0.1, 0.5, dist)) * vIntensity;
+            vec3 color = vec3(1.0, 0.6, 0.2);
+            gl_FragColor = vec4(color, alpha * 0.7);
+          }
+        `}
+        transparent
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </points>
+  );
+};
+
+/**
+ * Solar wind particles hitting magnetopause
+ */
+const SolarWindParticles = ({ compression }: { compression: number }) => {
+  const particlesRef = useRef<THREE.Points>(null);
+  const particleCount = 200;
+  
+  const { geometry, offsets, angles } = useMemo(() => {
+    const positions = new Float32Array(particleCount * 3);
+    const offsets = new Float32Array(particleCount);
+    const angles = new Float32Array(particleCount * 2);
+    const sizes = new Float32Array(particleCount);
+    
+    for (let i = 0; i < particleCount; i++) {
+      const theta = (Math.random() - 0.5) * Math.PI * 0.8;
+      const phi = (Math.random() - 0.5) * Math.PI * 0.8;
+      
+      positions[i * 3] = 20;
+      positions[i * 3 + 1] = 0;
+      positions[i * 3 + 2] = 0;
+      
+      offsets[i] = Math.random();
+      angles[i * 2] = theta;
+      angles[i * 2 + 1] = phi;
+      sizes[i] = 0.06 + Math.random() * 0.08;
+    }
+    
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    
+    return { geometry, offsets, angles };
+  }, []);
+  
+  useFrame((state) => {
+    if (!particlesRef.current) return;
+    
+    const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
+    const time = state.clock.elapsedTime;
+    const r0 = 10 * compression;
+    
+    for (let i = 0; i < particleCount; i++) {
+      const speed = 0.3;
+      let t = (offsets[i] + time * speed) % 1;
+      
+      // Start far away, approach magnetopause
+      const startX = 25;
+      const endX = r0 + 1;
+      
+      const theta = angles[i * 2];
+      const phi = angles[i * 2 + 1];
+      
+      if (t < 0.7) {
+        // Approaching
+        const x = startX - t * (startX - endX) / 0.7;
+        const spread = t * 0.5;
+        const y = Math.sin(theta) * spread * 3;
+        const z = Math.sin(phi) * spread * 3;
+        
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
+      } else {
+        // Deflecting around magnetopause
+        const deflectT = (t - 0.7) / 0.3;
+        const deflectAngle = deflectT * Math.PI * 0.5;
+        
+        const r = r0 + 1 + deflectT * 2;
+        const x = r * Math.cos(deflectAngle + theta * 0.3);
+        const y = Math.sin(theta) * (1 + deflectT * 4);
+        const z = Math.sin(phi) * (1 + deflectT * 4);
+        
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
+      }
+    }
+    
+    particlesRef.current.geometry.attributes.position.needsUpdate = true;
+  });
+  
+  return (
+    <points ref={particlesRef} geometry={geometry}>
+      <shaderMaterial
+        vertexShader={`
+          attribute float size;
+          
+          void main() {
+            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_PointSize = size * (200.0 / -mvPosition.z);
+            gl_Position = projectionMatrix * mvPosition;
+          }
+        `}
+        fragmentShader={`
+          void main() {
+            float dist = length(gl_PointCoord - vec2(0.5));
+            if (dist > 0.5) discard;
+            
+            float alpha = 1.0 - smoothstep(0.1, 0.5, dist);
+            vec3 color = vec3(1.0, 0.9, 0.4);
+            gl_FragColor = vec4(color, alpha * 0.6);
+          }
+        `}
+        transparent
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </points>
+  );
+};
+
 export const Magnetosphere = ({ visible, compression, reconnectionStrength }: MagnetosphereProps) => {
   const magnetopauseRef = useRef<THREE.Mesh>(null);
   const fieldLinesRef = useRef<THREE.Group>(null);
@@ -365,6 +684,15 @@ export const Magnetosphere = ({ visible, compression, reconnectionStrength }: Ma
         material={currentSheetMaterial}
         rotation={[Math.PI / 2, 0, 0]}
       />
+
+      {/* Plasma particles along field lines */}
+      <FieldLineParticles fieldLines={fieldLines} />
+      
+      {/* Particles flowing through current sheet */}
+      <CurrentSheetParticles />
+      
+      {/* Solar wind particles hitting magnetopause */}
+      <SolarWindParticles compression={compression} />
 
       {/* Dipole field lines */}
       <group ref={fieldLinesRef}>

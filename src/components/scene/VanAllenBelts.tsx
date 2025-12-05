@@ -5,20 +5,106 @@ import * as THREE from 'three';
 interface VanAllenBeltsProps {
   visible: boolean;
   intensity: number;
+  compression?: number;
 }
 
 /**
- * Van Allen Belts - NASA SVS Style
+ * Creates L-shell geometry following dipole magnetic field equation:
+ * r = L * cos²(λ) where λ is magnetic latitude
  * 
- * Uses parametric torus geometry with gradient shaders
- * for clear scientific visualization and optimal performance.
- * Target: <1ms render time per frame
+ * This creates realistic crescent-shaped radiation belt cross-sections
+ * that bulge at the equator and pinch toward the poles.
  */
-export const VanAllenBelts = ({ visible, intensity }: VanAllenBeltsProps) => {
+function createLShellGeometry(
+  innerL: number,
+  outerL: number,
+  latitudeRange: number,
+  longitudeSegments: number,
+  latitudeSegments: number,
+  compression: number
+): THREE.BufferGeometry {
+  const geometry = new THREE.BufferGeometry();
+  const vertices: number[] = [];
+  const uvs: number[] = [];
+  const indices: number[] = [];
+
+  // Generate vertices following L-shell parametric equations
+  for (let i = 0; i <= latitudeSegments; i++) {
+    // Magnetic latitude from -latitudeRange to +latitudeRange
+    const latFraction = i / latitudeSegments;
+    const lambda = (latFraction - 0.5) * 2 * latitudeRange * (Math.PI / 180);
+    const cosLambda = Math.cos(lambda);
+    const cos2Lambda = cosLambda * cosLambda;
+
+    for (let j = 0; j <= longitudeSegments; j++) {
+      const lonFraction = j / longitudeSegments;
+      const phi = lonFraction * Math.PI * 2;
+
+      // Interpolate between inner and outer L-shells for belt thickness
+      // Use middle of the belt for the main surface
+      const L = (innerL + outerL) / 2;
+      const thickness = (outerL - innerL) / 2;
+
+      // Dipole field: r = L * cos²(λ)
+      let r = L * cos2Lambda;
+
+      // Apply day/night compression asymmetry
+      // Sunward side (positive X) is compressed, nightside is stretched
+      const sunwardFactor = Math.cos(phi);
+      const compressionEffect = 1 - (compression - 1) * 0.15 * sunwardFactor;
+      r *= compressionEffect;
+
+      // Convert to Cartesian coordinates
+      // In dipole coordinates: x = r*cos(λ)*cos(φ), y = r*sin(λ), z = r*cos(λ)*sin(φ)
+      const x = r * cosLambda * Math.cos(phi);
+      const y = r * Math.sin(lambda);
+      const z = r * cosLambda * Math.sin(phi);
+
+      vertices.push(x, y, z);
+      uvs.push(lonFraction, latFraction);
+    }
+  }
+
+  // Generate indices for triangle strip
+  for (let i = 0; i < latitudeSegments; i++) {
+    for (let j = 0; j < longitudeSegments; j++) {
+      const current = i * (longitudeSegments + 1) + j;
+      const next = current + longitudeSegments + 1;
+
+      indices.push(current, next, current + 1);
+      indices.push(current + 1, next, next + 1);
+    }
+  }
+
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+
+  return geometry;
+}
+
+/**
+ * Van Allen Belts - NASA SVS Style with L-Shell Geometry
+ * 
+ * Uses parametric L-shell geometry following magnetic dipole field equations
+ * for scientifically accurate visualization of radiation belt structure.
+ */
+export const VanAllenBelts = ({ visible, intensity, compression = 1 }: VanAllenBeltsProps) => {
   const innerBeltRef = useRef<THREE.Mesh>(null);
   const outerBeltRef = useRef<THREE.Mesh>(null);
 
-  // Inner belt material (proton belt ~1.5-2.5 Earth radii)
+  // Inner belt geometry (proton belt L=1.5 to 2.5)
+  const innerBeltGeometry = useMemo(() => {
+    return createLShellGeometry(1.4, 2.4, 50, 64, 32, compression);
+  }, [compression]);
+
+  // Outer belt geometry (electron belt L=3.5 to 5.5)
+  const outerBeltGeometry = useMemo(() => {
+    return createLShellGeometry(3.2, 5.0, 60, 64, 32, compression);
+  }, [compression]);
+
+  // Inner belt material (proton belt)
   const innerBeltMaterial = useMemo(() => {
     return new THREE.ShaderMaterial({
       uniforms: {
@@ -27,12 +113,14 @@ export const VanAllenBelts = ({ visible, intensity }: VanAllenBeltsProps) => {
       },
       vertexShader: `
         varying vec2 vUv;
+        varying vec3 vPosition;
         varying float vRadialDist;
         
         void main() {
           vUv = uv;
-          // Calculate radial distance from torus tube center
-          vRadialDist = uv.y;
+          vPosition = position;
+          // Distance from Earth center for intensity falloff
+          vRadialDist = length(position);
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `,
@@ -40,6 +128,7 @@ export const VanAllenBelts = ({ visible, intensity }: VanAllenBeltsProps) => {
         uniform float uTime;
         uniform float uIntensity;
         varying vec2 vUv;
+        varying vec3 vPosition;
         varying float vRadialDist;
         
         void main() {
@@ -55,20 +144,25 @@ export const VanAllenBelts = ({ visible, intensity }: VanAllenBeltsProps) => {
             smoothstep(0.0, 0.5, uIntensity)
           );
           
-          // Sharp band falloff from tube center
-          float dist = abs(vRadialDist - 0.5) * 2.0;
-          float band = 1.0 - smoothstep(0.0, 0.8, dist);
-          band = pow(band, 0.7);
+          // Latitude-based intensity (stronger at equator)
+          float latitudeFactor = abs(vUv.y - 0.5) * 2.0;
+          float equatorBand = 1.0 - smoothstep(0.0, 0.8, latitudeFactor);
+          equatorBand = pow(equatorBand, 0.6);
           
-          // Subtle flow animation
+          // Radial falloff within the belt
+          float normalizedR = (vRadialDist - 1.4) / (2.4 - 1.4);
+          float radialBand = sin(normalizedR * 3.14159);
+          radialBand = pow(radialBand, 0.5);
+          
+          // Subtle flow animation along longitude
           float flow = sin(vUv.x * 20.0 - uTime * 2.0) * 0.1 + 0.9;
           
           // Pulsing based on intensity
           float pulse = 0.9 + 0.1 * sin(uTime * 1.5);
           
-          float alpha = band * flow * pulse * (0.6 + uIntensity * 0.4);
+          float alpha = equatorBand * radialBand * flow * pulse * (0.5 + uIntensity * 0.5);
           
-          gl_FragColor = vec4(color * (0.8 + band * 0.4), alpha * 0.75);
+          gl_FragColor = vec4(color * (0.8 + equatorBand * 0.4), alpha * 0.7);
         }
       `,
       transparent: true,
@@ -78,7 +172,7 @@ export const VanAllenBelts = ({ visible, intensity }: VanAllenBeltsProps) => {
     });
   }, []);
 
-  // Outer belt material (electron belt ~3-5 Earth radii)
+  // Outer belt material (electron belt)
   const outerBeltMaterial = useMemo(() => {
     return new THREE.ShaderMaterial({
       uniforms: {
@@ -87,11 +181,13 @@ export const VanAllenBelts = ({ visible, intensity }: VanAllenBeltsProps) => {
       },
       vertexShader: `
         varying vec2 vUv;
+        varying vec3 vPosition;
         varying float vRadialDist;
         
         void main() {
           vUv = uv;
-          vRadialDist = uv.y;
+          vPosition = position;
+          vRadialDist = length(position);
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `,
@@ -99,11 +195,12 @@ export const VanAllenBelts = ({ visible, intensity }: VanAllenBeltsProps) => {
         uniform float uTime;
         uniform float uIntensity;
         varying vec2 vUv;
+        varying vec3 vPosition;
         varying float vRadialDist;
         
         void main() {
-          // Outer belt: more blue-shifted colors
-          vec3 lowColor = vec3(0.0, 0.8, 0.9);     // Cyan-green
+          // Outer belt: more blue-shifted colors for electron population
+          vec3 lowColor = vec3(0.0, 0.8, 0.9);     // Cyan
           vec3 midColor = vec3(0.2, 1.0, 0.6);     // Bright green
           vec3 highColor = vec3(1.0, 0.8, 0.0);    // Golden yellow
           
@@ -113,19 +210,24 @@ export const VanAllenBelts = ({ visible, intensity }: VanAllenBeltsProps) => {
             smoothstep(0.0, 0.5, uIntensity)
           );
           
-          // Sharp band with softer edges for larger belt
-          float dist = abs(vRadialDist - 0.5) * 2.0;
-          float band = 1.0 - smoothstep(0.0, 0.85, dist);
-          band = pow(band, 0.6);
+          // Latitude-based intensity with wider spread for outer belt
+          float latitudeFactor = abs(vUv.y - 0.5) * 2.0;
+          float equatorBand = 1.0 - smoothstep(0.0, 0.85, latitudeFactor);
+          equatorBand = pow(equatorBand, 0.5);
+          
+          // Radial distribution - outer belt is more diffuse
+          float normalizedR = (vRadialDist - 3.2) / (5.0 - 3.2);
+          float radialBand = sin(normalizedR * 3.14159);
+          radialBand = pow(radialBand, 0.4);
           
           // Different flow speed for outer belt
           float flow = sin(vUv.x * 15.0 - uTime * 1.5) * 0.15 + 0.85;
           
           float pulse = 0.85 + 0.15 * sin(uTime * 1.2 + 1.0);
           
-          float alpha = band * flow * pulse * (0.5 + uIntensity * 0.5);
+          float alpha = equatorBand * radialBand * flow * pulse * (0.4 + uIntensity * 0.6);
           
-          gl_FragColor = vec4(color * (0.7 + band * 0.5), alpha * 0.65);
+          gl_FragColor = vec4(color * (0.7 + equatorBand * 0.5), alpha * 0.6);
         }
       `,
       transparent: true,
@@ -153,31 +255,27 @@ export const VanAllenBelts = ({ visible, intensity }: VanAllenBeltsProps) => {
 
   return (
     <group>
-      {/* Inner Belt - Proton belt */}
+      {/* Inner Belt - Proton belt following L-shell geometry */}
       <mesh 
         ref={innerBeltRef} 
+        geometry={innerBeltGeometry}
         material={innerBeltMaterial}
-        rotation={[Math.PI / 2, 0, 0]}
-      >
-        <torusGeometry args={[1.8, 0.35, 24, 64]} />
-      </mesh>
+      />
       
-      {/* Outer Belt - Electron belt */}
+      {/* Outer Belt - Electron belt following L-shell geometry */}
       <mesh 
         ref={outerBeltRef} 
+        geometry={outerBeltGeometry}
         material={outerBeltMaterial}
-        rotation={[Math.PI / 2, 0, 0]}
-      >
-        <torusGeometry args={[3.5, 0.75, 24, 64]} />
-      </mesh>
+      />
       
-      {/* Slot region glow - subtle indicator of the gap */}
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[2.6, 0.15, 12, 48]} />
+      {/* Slot region glow - subtle indicator of the gap between belts */}
+      <mesh>
+        <torusGeometry args={[2.8, 0.12, 16, 64]} />
         <meshBasicMaterial 
-          color="#002244" 
+          color="#001133" 
           transparent 
-          opacity={0.15} 
+          opacity={0.1} 
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />

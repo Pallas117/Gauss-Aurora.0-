@@ -1,10 +1,12 @@
-import { useState, useRef, useCallback } from 'react';
-import { SpaceScene } from './scene/SpaceScene';
+import { useState, useRef, useCallback, lazy, Suspense } from 'react';
 import { HUD } from './ui/HUD';
 import { LayerToggles } from './ui/LayerToggles';
 import { ScreenshotButton } from './ui/ScreenshotButton';
 import { PerformanceMonitor } from './ui/PerformanceMonitor';
 import { useSpaceWeather } from '@/hooks/useSpaceWeather';
+
+// Lazy load the heavy 3D scene to reduce First Input Delay
+const SpaceScene = lazy(() => import('./scene/SpaceScene').then(m => ({ default: m.SpaceScene })));
 
 interface LayerVisibility {
   earth: boolean;
@@ -32,14 +34,20 @@ export const SpaceWeatherVisualization = () => {
 
   return (
     <div className="relative w-full h-full overflow-hidden">
-      {/* 3D Scene */}
-      <SpaceScene
-        layers={layers}
-        magnetopauseCompression={magnetopauseCompression}
-        beltIntensity={beltIntensity}
-        reconnectionStrength={reconnectionStrength}
-        canvasRef={canvasRef}
-      />
+      {/* 3D Scene - Lazy loaded to reduce FID */}
+      <Suspense fallback={
+        <div className="w-full h-full flex items-center justify-center bg-background">
+          <div className="text-muted-foreground text-sm">Loading visualization...</div>
+        </div>
+      }>
+        <SpaceScene
+          layers={layers}
+          magnetopauseCompression={magnetopauseCompression}
+          beltIntensity={beltIntensity}
+          reconnectionStrength={reconnectionStrength}
+          canvasRef={canvasRef}
+        />
+      </Suspense>
 
       {/* UI Overlays */}
       <div className="absolute inset-0 pointer-events-none">

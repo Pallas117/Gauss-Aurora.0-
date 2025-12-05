@@ -79,6 +79,7 @@ const SceneContent = ({
         <VanAllenBelts 
           visible={layers.belts} 
           intensity={0.5 + beltIntensity * 0.5}
+          compression={magnetopauseCompression}
         />
         
         <Magnetosphere

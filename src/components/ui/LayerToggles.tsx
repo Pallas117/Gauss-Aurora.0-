@@ -1,10 +1,11 @@
-import { Globe, Orbit, Waves, GitBranch } from 'lucide-react';
+import { Globe, Orbit, Waves, GitBranch, AlertTriangle } from 'lucide-react';
 
 interface LayerVisibility {
   earth: boolean;
   belts: boolean;
   magnetosphere: boolean;
   fieldLines: boolean;
+  saa: boolean;
 }
 
 interface LayerTogglesProps {
@@ -67,6 +68,13 @@ export const LayerToggles = ({ layers, onToggle }: LayerTogglesProps) => {
           onClick={() => onToggle('fieldLines')}
           icon={<GitBranch size={16} />}
           label="Field Lines"
+        />
+        
+        <ToggleButton
+          active={layers.saa}
+          onClick={() => onToggle('saa')}
+          icon={<AlertTriangle size={16} />}
+          label="SAA Zone"
         />
       </div>
     </div>

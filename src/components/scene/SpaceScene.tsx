@@ -11,6 +11,7 @@ interface LayerVisibility {
   belts: boolean;
   magnetosphere: boolean;
   fieldLines: boolean;
+  saa: boolean;
 }
 
 interface SpaceSceneProps {
@@ -80,6 +81,7 @@ const SceneContent = ({
           visible={layers.belts} 
           intensity={0.5 + beltIntensity * 0.5}
           compression={magnetopauseCompression}
+          showSAA={layers.saa}
         />
         
         <Magnetosphere

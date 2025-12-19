@@ -54,38 +54,38 @@ export const SpaceWeatherVisualization = () => {
       {/* UI Overlays */}
       <div className="absolute inset-0 pointer-events-none">
         {/* Top left - Title */}
-        <div className="absolute top-6 left-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground glow-text">
+        <div className="absolute top-3 left-3 sm:top-4 sm:left-4 md:top-6 md:left-6">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight text-foreground glow-text">
             Space Weather Monitor
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 hidden sm:block">
             Real-time magnetosphere visualization
           </p>
         </div>
 
-        {/* Top right - HUD */}
-        <div className="absolute top-6 right-6 pointer-events-auto">
+        {/* Top right - HUD (compact on mobile) */}
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-6 md:right-6 pointer-events-auto">
           <HUD data={data} isStale={isStale} />
         </div>
 
         {/* Performance Monitor */}
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto hidden sm:block">
           <PerformanceMonitor visible={true} />
         </div>
 
-        {/* Right side - Layer toggles */}
-        <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-auto">
+        {/* Bottom left - Layer toggles (moved for better mobile access) */}
+        <div className="absolute left-3 bottom-14 sm:left-4 sm:bottom-4 md:left-6 md:bottom-6 pointer-events-auto">
           <LayerToggles layers={layers} onToggle={handleToggle} />
         </div>
 
         {/* Bottom right - Screenshot */}
-        <div className="absolute bottom-6 right-6 pointer-events-auto">
+        <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 md:bottom-6 md:right-6 pointer-events-auto">
           <ScreenshotButton canvasRef={canvasRef} />
         </div>
 
-        {/* Bottom left - Attribution */}
-        <div className="absolute bottom-6 left-6">
-          <p className="text-xs text-muted-foreground/50 font-mono">
+        {/* Bottom center - Attribution (mobile) / Bottom left (desktop) */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 sm:left-auto sm:right-1/2 sm:translate-x-1/2 md:left-6 md:right-auto md:translate-x-0 md:bottom-6">
+          <p className="text-[10px] sm:text-xs text-muted-foreground/50 font-mono whitespace-nowrap">
             Data: NOAA SWPC / NASA DSCOVR
           </p>
         </div>

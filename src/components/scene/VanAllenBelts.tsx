@@ -6,7 +6,6 @@ interface VanAllenBeltsProps {
   visible: boolean;
   intensity: number;
   compression?: number;
-  showSAA?: boolean;
 }
 
 /**
@@ -86,153 +85,21 @@ function createLShellGeometry(
 }
 
 /**
- * Van Allen Belts - NASA SVS Style with L-Shell Geometry
- * 
- * Uses parametric L-shell geometry following magnetic dipole field equations
- * for scientifically accurate visualization of radiation belt structure.
+ * Van Allen Belts - Optimized NASA SVS Style with L-Shell Geometry
  */
-/**
- * Creates South Atlantic Anomaly (SAA) geometry
- * The SAA is where the inner belt dips closest to Earth due to the offset dipole
- * Centered around 30°S, 45°W (in geographic coordinates)
- */
-function createSAAGeometry(): THREE.BufferGeometry {
-  const geometry = new THREE.BufferGeometry();
-  const vertices: number[] = [];
-  const uvs: number[] = [];
-  const indices: number[] = [];
-  
-  const segments = 32;
-  const rings = 16;
-  
-  // SAA center in spherical coords (converted from 30°S, 45°W)
-  // In our coordinate system: latitude -30°, longitude -45°
-  const centerLat = -30 * Math.PI / 180;
-  const centerLon = -45 * Math.PI / 180;
-  
-  // SAA extends roughly 60° in longitude and 40° in latitude
-  const lonSpread = 30 * Math.PI / 180;
-  const latSpread = 20 * Math.PI / 180;
-  
-  for (let i = 0; i <= rings; i++) {
-    const ringFraction = i / rings;
-    // Use gaussian-like falloff for the anomaly region
-    const ringAngle = ringFraction * Math.PI * 2;
-    
-    for (let j = 0; j <= segments; j++) {
-      const segFraction = j / segments;
-      const angle = segFraction * Math.PI * 2;
-      
-      // Create elliptical region
-      const offsetLat = Math.sin(angle) * latSpread * (1 - ringFraction * 0.7);
-      const offsetLon = Math.cos(angle) * lonSpread * (1 - ringFraction * 0.7);
-      
-      const lat = centerLat + offsetLat;
-      const lon = centerLon + offsetLon;
-      
-      // The SAA dips down to about L=1.1 at its lowest
-      // Normal inner belt is at L=1.5, so we show the "dip"
-      const dipDepth = 0.4 * (1 - ringFraction) * Math.exp(-ringFraction * 2);
-      const radius = 1.15 + dipDepth * 0.3 + ringFraction * 0.8;
-      
-      const x = radius * Math.cos(lat) * Math.cos(lon);
-      const y = radius * Math.sin(lat);
-      const z = radius * Math.cos(lat) * Math.sin(lon);
-      
-      vertices.push(x, y, z);
-      uvs.push(segFraction, ringFraction);
-    }
-  }
-  
-  // Generate indices
-  for (let i = 0; i < rings; i++) {
-    for (let j = 0; j < segments; j++) {
-      const current = i * (segments + 1) + j;
-      const next = current + segments + 1;
-      
-      indices.push(current, next, current + 1);
-      indices.push(current + 1, next, next + 1);
-    }
-  }
-  
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-  geometry.setIndex(indices);
-  geometry.computeVertexNormals();
-  
-  return geometry;
-}
-
-export const VanAllenBelts = ({ visible, intensity, compression = 1, showSAA = false }: VanAllenBeltsProps) => {
+export const VanAllenBelts = ({ visible, intensity, compression = 1 }: VanAllenBeltsProps) => {
   const innerBeltRef = useRef<THREE.Mesh>(null);
   const outerBeltRef = useRef<THREE.Mesh>(null);
-  const saaRef = useRef<THREE.Mesh>(null);
 
-  // Inner belt geometry (proton belt L=1.5 to 2.5)
+  // Inner belt geometry - reduced segments for performance (32x16 instead of 64x32)
   const innerBeltGeometry = useMemo(() => {
-    return createLShellGeometry(1.4, 2.4, 50, 64, 32, compression);
+    return createLShellGeometry(1.4, 2.4, 50, 32, 16, compression);
   }, [compression]);
 
-  // Outer belt geometry (electron belt L=3.5 to 5.5)
+  // Outer belt geometry - reduced segments for performance
   const outerBeltGeometry = useMemo(() => {
-    return createLShellGeometry(3.2, 5.0, 60, 64, 32, compression);
+    return createLShellGeometry(3.2, 5.0, 60, 32, 16, compression);
   }, [compression]);
-  
-  // SAA geometry
-  const saaGeometry = useMemo(() => createSAAGeometry(), []);
-  
-  // SAA material - warning colors to indicate hazardous zone
-  const saaMaterial = useMemo(() => {
-    return new THREE.ShaderMaterial({
-      uniforms: {
-        uTime: { value: 0 },
-        uIntensity: { value: intensity },
-      },
-      vertexShader: `
-        varying vec2 vUv;
-        varying vec3 vPosition;
-        
-        void main() {
-          vUv = uv;
-          vPosition = position;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform float uTime;
-        uniform float uIntensity;
-        varying vec2 vUv;
-        varying vec3 vPosition;
-        
-        void main() {
-          // Warning colors: orange to red
-          vec3 coreColor = vec3(1.0, 0.2, 0.1);   // Deep red
-          vec3 edgeColor = vec3(1.0, 0.6, 0.0);   // Orange
-          
-          // Radial falloff from center
-          float dist = vUv.y;
-          float falloff = 1.0 - smoothstep(0.0, 1.0, dist);
-          falloff = pow(falloff, 1.5);
-          
-          vec3 color = mix(edgeColor, coreColor, falloff);
-          
-          // Pulsing warning effect
-          float pulse = 0.7 + 0.3 * sin(uTime * 3.0);
-          
-          // Hazard pattern - concentric rings
-          float rings = sin(dist * 15.0 - uTime * 2.0) * 0.2 + 0.8;
-          
-          float alpha = falloff * pulse * rings * (0.6 + uIntensity * 0.4);
-          
-          gl_FragColor = vec4(color * (0.8 + falloff * 0.4), alpha * 0.8);
-        }
-      `,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      side: THREE.DoubleSide,
-    });
-  }, []);
 
   // Inner belt material (proton belt)
   const innerBeltMaterial = useMemo(() => {
@@ -379,10 +246,6 @@ export const VanAllenBelts = ({ visible, intensity, compression = 1, showSAA = f
       outerBeltMaterial.uniforms.uTime.value = time;
       outerBeltMaterial.uniforms.uIntensity.value = clampedIntensity;
     }
-    if (saaMaterial) {
-      saaMaterial.uniforms.uTime.value = time;
-      saaMaterial.uniforms.uIntensity.value = clampedIntensity;
-    }
   });
 
   if (!visible) return null;
@@ -394,6 +257,7 @@ export const VanAllenBelts = ({ visible, intensity, compression = 1, showSAA = f
         ref={innerBeltRef} 
         geometry={innerBeltGeometry}
         material={innerBeltMaterial}
+        frustumCulled
       />
       
       {/* Outer Belt - Electron belt following L-shell geometry */}
@@ -401,11 +265,12 @@ export const VanAllenBelts = ({ visible, intensity, compression = 1, showSAA = f
         ref={outerBeltRef} 
         geometry={outerBeltGeometry}
         material={outerBeltMaterial}
+        frustumCulled
       />
       
-      {/* Slot region glow - subtle indicator of the gap between belts */}
+      {/* Slot region glow - reduced segments */}
       <mesh>
-        <torusGeometry args={[2.8, 0.12, 16, 64]} />
+        <torusGeometry args={[2.8, 0.12, 8, 32]} />
         <meshBasicMaterial 
           color="#001133" 
           transparent 
@@ -414,15 +279,6 @@ export const VanAllenBelts = ({ visible, intensity, compression = 1, showSAA = f
           depthWrite={false}
         />
       </mesh>
-      
-      {/* South Atlantic Anomaly - where inner belt dips closest to Earth */}
-      {showSAA && (
-        <mesh
-          ref={saaRef}
-          geometry={saaGeometry}
-          material={saaMaterial}
-        />
-      )}
     </group>
   );
 };

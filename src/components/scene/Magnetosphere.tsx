@@ -90,11 +90,12 @@ function createMagnetotailGeometry(
 }
 
 /**
- * Plasma particles flowing along field lines
+ * Plasma particles flowing along field lines - optimized
  */
 const FieldLineParticles = ({ fieldLines }: { fieldLines: { points: THREE.Vector3[]; isOpen: boolean }[] }) => {
   const particlesRef = useRef<THREE.Points>(null);
-  const particleCount = 400;
+  const particleCount = 150; // Reduced from 400
+  const frameSkip = useRef(0);
   
   const { geometry, offsets, lineIndices } = useMemo(() => {
     const positions = new Float32Array(particleCount * 3);
@@ -116,16 +117,16 @@ const FieldLineParticles = ({ fieldLines }: { fieldLines: { points: THREE.Vector
       
       offsets[i] = Math.random();
       lineIndices[i] = lineIdx;
-      sizes[i] = 0.05 + Math.random() * 0.1;
+      sizes[i] = 0.06 + Math.random() * 0.1;
       
       // Color based on line type
       if (line.isOpen) {
         colors[i * 3] = 1.0;
-        colors[i * 3 + 1] = 0.4 + Math.random() * 0.3;
+        colors[i * 3 + 1] = 0.5;
         colors[i * 3 + 2] = 0.2;
       } else {
         colors[i * 3] = 0.2;
-        colors[i * 3 + 1] = 0.7 + Math.random() * 0.3;
+        colors[i * 3 + 1] = 0.7;
         colors[i * 3 + 2] = 1.0;
       }
     }
@@ -143,6 +144,10 @@ const FieldLineParticles = ({ fieldLines }: { fieldLines: { points: THREE.Vector
   useFrame((state) => {
     if (!particlesRef.current) return;
     
+    // Skip every other frame for performance
+    frameSkip.current++;
+    if (frameSkip.current % 2 !== 0) return;
+    
     const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
     const time = state.clock.elapsedTime;
     
@@ -151,7 +156,6 @@ const FieldLineParticles = ({ fieldLines }: { fieldLines: { points: THREE.Vector
       const line = fieldLines[lineIdx];
       if (!line) continue;
       
-      // Animate along field line
       const speed = line.isOpen ? 0.4 : 0.25;
       let t = (offsets[i] + time * speed) % 1;
       
@@ -208,11 +212,12 @@ const FieldLineParticles = ({ fieldLines }: { fieldLines: { points: THREE.Vector
 };
 
 /**
- * Particles flowing through magnetotail current sheet
+ * Particles flowing through magnetotail current sheet - optimized
  */
 const CurrentSheetParticles = () => {
   const particlesRef = useRef<THREE.Points>(null);
-  const particleCount = 300;
+  const particleCount = 100; // Reduced from 300
+  const frameSkip = useRef(0);
   
   const { geometry, offsets, yOffsets } = useMemo(() => {
     const positions = new Float32Array(particleCount * 3);
@@ -232,7 +237,7 @@ const CurrentSheetParticles = () => {
       
       offsets[i] = Math.random();
       yOffsets[i] = y;
-      sizes[i] = 0.08 + Math.random() * 0.12;
+      sizes[i] = 0.1 + Math.random() * 0.12;
     }
     
     const geometry = new THREE.BufferGeometry();
@@ -245,15 +250,16 @@ const CurrentSheetParticles = () => {
   useFrame((state) => {
     if (!particlesRef.current) return;
     
+    // Skip frames for performance
+    frameSkip.current++;
+    if (frameSkip.current % 2 !== 0) return;
+    
     const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
     const time = state.clock.elapsedTime;
     
     for (let i = 0; i < particleCount; i++) {
-      // Flow toward tail (negative X)
       let t = (offsets[i] + time * 0.15) % 1;
       const x = -4 - t * 35;
-      
-      // Slight wavering motion
       const waver = Math.sin(time * 2 + offsets[i] * 10) * 0.2;
       
       positions[i * 3] = x;
@@ -298,11 +304,12 @@ const CurrentSheetParticles = () => {
 };
 
 /**
- * Solar wind particles hitting magnetopause
+ * Solar wind particles hitting magnetopause - optimized
  */
 const SolarWindParticles = ({ compression }: { compression: number }) => {
   const particlesRef = useRef<THREE.Points>(null);
-  const particleCount = 200;
+  const particleCount = 80; // Reduced from 200
+  const frameSkip = useRef(0);
   
   const { geometry, offsets, angles } = useMemo(() => {
     const positions = new Float32Array(particleCount * 3);
@@ -321,7 +328,7 @@ const SolarWindParticles = ({ compression }: { compression: number }) => {
       offsets[i] = Math.random();
       angles[i * 2] = theta;
       angles[i * 2 + 1] = phi;
-      sizes[i] = 0.06 + Math.random() * 0.08;
+      sizes[i] = 0.08 + Math.random() * 0.08;
     }
     
     const geometry = new THREE.BufferGeometry();
@@ -334,6 +341,10 @@ const SolarWindParticles = ({ compression }: { compression: number }) => {
   useFrame((state) => {
     if (!particlesRef.current) return;
     
+    // Skip frames for performance
+    frameSkip.current++;
+    if (frameSkip.current % 2 !== 0) return;
+    
     const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
     const time = state.clock.elapsedTime;
     const r0 = 10 * compression;
@@ -342,7 +353,6 @@ const SolarWindParticles = ({ compression }: { compression: number }) => {
       const speed = 0.3;
       let t = (offsets[i] + time * speed) % 1;
       
-      // Start far away, approach magnetopause
       const startX = 25;
       const endX = r0 + 1;
       
@@ -350,7 +360,6 @@ const SolarWindParticles = ({ compression }: { compression: number }) => {
       const phi = angles[i * 2 + 1];
       
       if (t < 0.7) {
-        // Approaching
         const x = startX - t * (startX - endX) / 0.7;
         const spread = t * 0.5;
         const y = Math.sin(theta) * spread * 3;
@@ -360,7 +369,6 @@ const SolarWindParticles = ({ compression }: { compression: number }) => {
         positions[i * 3 + 1] = y;
         positions[i * 3 + 2] = z;
       } else {
-        // Deflecting around magnetopause
         const deflectT = (t - 0.7) / 0.3;
         const deflectAngle = deflectT * Math.PI * 0.5;
         
@@ -412,15 +420,14 @@ export const Magnetosphere = ({ visible, compression, reconnectionStrength }: Ma
   const magnetopauseRef = useRef<THREE.Mesh>(null);
   const fieldLinesRef = useRef<THREE.Group>(null);
 
-  // Create magnetopause geometry using Shue model approximation
+  // Create magnetopause geometry - reduced segments (32x16 instead of 64x32)
   const magnetopauseGeometry = useMemo(() => {
     const geometry = new THREE.BufferGeometry();
-    const segments = 64;
-    const rings = 32;
+    const segments = 32;
+    const rings = 16;
     const vertices: number[] = [];
     const indices: number[] = [];
 
-    // Shue model parameters
     const r0 = 10 * compression;
     const alpha = 0.5;
 
@@ -513,9 +520,9 @@ export const Magnetosphere = ({ visible, compression, reconnectionStrength }: Ma
     });
   }, [compression, reconnectionStrength]);
 
-  // Magnetotail geometry - elongated parabolic sheet
+  // Magnetotail geometry - reduced segments (16x12 instead of 32x24)
   const magnetotailGeometry = useMemo(() => {
-    return createMagnetotailGeometry(35, 4, 32, 24);
+    return createMagnetotailGeometry(35, 4, 16, 12);
   }, []);
 
   const magnetotailMaterial = useMemo(() => {
@@ -562,13 +569,12 @@ export const Magnetosphere = ({ visible, compression, reconnectionStrength }: Ma
     });
   }, []);
 
-  // Current sheet - thin glowing plane in the center of the tail
+  // Current sheet - reduced segments (16x4 instead of 32x8)
   const currentSheetGeometry = useMemo(() => {
-    const geometry = new THREE.PlaneGeometry(35, 8, 32, 8);
-    // Offset vertices to start at x = -4
+    const geometry = new THREE.PlaneGeometry(35, 8, 16, 4);
     const positions = geometry.attributes.position.array as Float32Array;
     for (let i = 0; i < positions.length; i += 3) {
-      positions[i] = positions[i] - 21.5; // Center at -21.5 so it spans -4 to -39
+      positions[i] = positions[i] - 21.5;
     }
     geometry.attributes.position.needsUpdate = true;
     return geometry;
@@ -620,23 +626,23 @@ export const Magnetosphere = ({ visible, compression, reconnectionStrength }: Ma
     });
   }, []);
 
-  // Dipole field lines with open/closed topology
+  // Dipole field lines - reduced count (8 closed, 4 open instead of 12+8)
   const fieldLines = useMemo(() => {
     const lines: { points: THREE.Vector3[]; isOpen: boolean }[] = [];
     
-    // Closed field lines on dayside (12 lines)
-    for (let i = 0; i < 12; i++) {
-      const phi = (i / 12) * Math.PI * 2;
+    // Closed field lines on dayside (8 lines instead of 12)
+    for (let i = 0; i < 8; i++) {
+      const phi = (i / 8) * Math.PI * 2;
       const L = 2.5 + Math.random() * 1.5;
-      const points = generateDipoleFieldLine(L, phi, 40, false, 0);
+      const points = generateDipoleFieldLine(L, phi, 24, false, 0);
       lines.push({ points, isOpen: false });
     }
     
-    // Open field lines connecting to tail (8 lines on nightside)
-    for (let i = 0; i < 8; i++) {
-      const phi = Math.PI + (i / 8 - 0.5) * Math.PI * 0.6; // Nightside only
+    // Open field lines connecting to tail (4 lines instead of 8)
+    for (let i = 0; i < 4; i++) {
+      const phi = Math.PI + (i / 4 - 0.5) * Math.PI * 0.6;
       const L = 4 + Math.random() * 2;
-      const points = generateDipoleFieldLine(L, phi, 40, true, 15);
+      const points = generateDipoleFieldLine(L, phi, 24, true, 15);
       lines.push({ points, isOpen: true });
     }
 

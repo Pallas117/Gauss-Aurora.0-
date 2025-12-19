@@ -13,7 +13,6 @@ interface LayerVisibility {
   belts: boolean;
   magnetosphere: boolean;
   fieldLines: boolean;
-  saa: boolean;
 }
 
 export const SpaceWeatherVisualization = () => {
@@ -24,7 +23,6 @@ export const SpaceWeatherVisualization = () => {
     belts: true,
     magnetosphere: true,
     fieldLines: true,
-    saa: false,
   });
 
   const { data, visualParams, isStale } = useSpaceWeather();

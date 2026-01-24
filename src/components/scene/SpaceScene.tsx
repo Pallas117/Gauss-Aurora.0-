@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { Earth } from './Earth';
 import { VanAllenBelts } from './VanAllenBelts';
 import { Magnetosphere } from './Magnetosphere';
+import { SolarWindForceField } from './SolarWindForceField';
 
 interface LayerVisibility {
   earth: boolean;
@@ -18,6 +19,8 @@ interface SpaceSceneProps {
   magnetopauseCompression: number;
   beltIntensity: number;
   reconnectionStrength: number;
+  solarWindSpeed: number;
+  solarWindDensity: number;
   canvasRef: React.RefObject<HTMLCanvasElement>;
 }
 
@@ -26,6 +29,8 @@ const SceneContent = ({
   magnetopauseCompression,
   beltIntensity,
   reconnectionStrength,
+  solarWindSpeed,
+  solarWindDensity,
 }: Omit<SpaceSceneProps, 'canvasRef'>) => {
   const groupRef = useRef<THREE.Group>(null);
 
@@ -84,6 +89,15 @@ const SceneContent = ({
         
         <Magnetosphere
           visible={layers.magnetosphere || layers.fieldLines}
+          compression={magnetopauseCompression}
+          reconnectionStrength={reconnectionStrength}
+        />
+        
+        {/* Solar Wind Force Field Effect */}
+        <SolarWindForceField
+          visible={layers.magnetosphere}
+          solarWindSpeed={solarWindSpeed}
+          solarWindDensity={solarWindDensity}
           compression={magnetopauseCompression}
           reconnectionStrength={reconnectionStrength}
         />

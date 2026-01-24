@@ -45,6 +45,8 @@ export const SpaceWeatherVisualization = () => {
           magnetopauseCompression={magnetopauseCompression}
           beltIntensity={beltIntensity}
           reconnectionStrength={reconnectionStrength}
+          solarWindSpeed={data.solarWind.speed}
+          solarWindDensity={data.solarWind.density}
           canvasRef={canvasRef}
         />
       </Suspense>

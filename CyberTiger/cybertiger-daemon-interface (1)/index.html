@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberTiger Daemon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Space+Grotesk', sans-serif;
+            background-color: #020205;
+            color: #e2e8f0;
+            margin: 0;
+            overflow: hidden;
+        }
+        .mono {
+            font-family: 'JetBrains+Mono', monospace;
+        }
+        .bg-cyber-neon {
+            background: 
+                radial-gradient(circle at 10% 10%, rgba(0, 243, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 90% 10%, rgba(255, 0, 85, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(250, 255, 0, 0.02) 0%, transparent 70%);
+        }
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(250, 255, 0, 0.05) 50%, rgba(0, 0, 0, 0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 12s linear infinite;
+        }
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: -100px; }
+        }
+        .neon-yellow {
+            color: #faff00;
+            text-shadow: 0 0 10px rgba(250, 255, 0, 0.5), 0 0 20px rgba(250, 255, 0, 0.2);
+        }
+        .neon-blue {
+            color: #00f3ff;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+        .neon-red {
+            color: #ff0055;
+            text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+        }
+        .neon-border-yellow {
+            box-shadow: 0 0 15px rgba(250, 255, 0, 0.1), inset 0 0 5px rgba(250, 255, 0, 0.05);
+            border: 1px solid rgba(250, 255, 0, 0.3);
+        }
+        .neon-border-blue {
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+        }
+        .tiger-mask {
+            mask-image: url('https://upload.wikimedia.org/wikipedia/commons/4/44/Tiger_silhouette.svg');
+            mask-repeat: no-repeat;
+            mask-size: contain;
+            background-color: #faff00;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0c;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #faff00;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "@google/genai": "https://esm.sh/@google/genai@^1.40.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

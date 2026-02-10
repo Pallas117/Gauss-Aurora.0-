@@ -1,10 +1,11 @@
-import { Globe, Orbit, Waves, GitBranch } from 'lucide-react';
+import { Globe, Orbit, Waves, GitBranch, Radio } from 'lucide-react';
 
 interface LayerVisibility {
   earth: boolean;
   belts: boolean;
   magnetosphere: boolean;
   fieldLines: boolean;
+  mhdWaves: boolean;
 }
 
 interface LayerTogglesProps {
@@ -25,15 +26,21 @@ const ToggleButton = ({ active, onClick, icon, label }: ToggleButtonProps) => (
     data-active={active}
     className="toggle-button flex items-center gap-2 w-full"
     aria-pressed={active}
+    aria-label={`${active ? 'Hide' : 'Show'} ${label} layer`}
   >
-    <span className="opacity-80">{icon}</span>
+    <span className="opacity-80" aria-hidden="true">{icon}</span>
     <span>{label}</span>
   </button>
 );
 
 export const LayerToggles = ({ layers, onToggle }: LayerTogglesProps) => {
   return (
-    <div className="hud-panel p-3 min-w-[160px] animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+    <div 
+      className="hud-panel p-3 min-w-[160px] animate-fade-in-up" 
+      style={{ animationDelay: '0.1s' }}
+      role="region"
+      aria-label="Layer visibility controls"
+    >
       <div className="scanline" />
       
       <h3 className="text-xs font-semibold tracking-wider text-muted-foreground mb-3 px-1">
@@ -67,6 +74,13 @@ export const LayerToggles = ({ layers, onToggle }: LayerTogglesProps) => {
           onClick={() => onToggle('fieldLines')}
           icon={<GitBranch size={16} />}
           label="Field Lines"
+        />
+
+        <ToggleButton
+          active={layers.mhdWaves}
+          onClick={() => onToggle('mhdWaves')}
+          icon={<Radio size={16} />}
+          label="MHD Waves"
         />
       </div>
     </div>

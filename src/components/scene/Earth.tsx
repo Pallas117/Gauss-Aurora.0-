@@ -1,3 +1,12 @@
+/**
+ * Earth Component
+ * 3D Earth globe with procedural texture and atmosphere
+ * 
+ * Note: Client-side component - uses WebGL/Three.js
+ */
+
+'use client'; // Mark as client component (for Next.js compatibility, if migrated)
+
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Sphere, useTexture } from '@react-three/drei';

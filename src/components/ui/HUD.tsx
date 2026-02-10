@@ -23,13 +23,13 @@ const DataValue = ({
   };
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1" role="group" aria-label={`${label}: ${typeof value === 'number' ? value.toFixed(1) : value} ${unit}`}>
       <span className="data-label">{label}</span>
       <div className="flex items-baseline gap-1">
-        <span className={`hud-value ${statusColors[status]}`}>
+        <span className={`hud-value ${statusColors[status]}`} aria-label={`Value: ${typeof value === 'number' ? value.toFixed(1) : value}`}>
           {typeof value === 'number' ? value.toFixed(1) : value}
         </span>
-        <span className="text-xs text-muted-foreground">{unit}</span>
+        <span className="text-xs text-muted-foreground" aria-label={`Unit: ${unit}`}>{unit}</span>
       </div>
     </div>
   );
@@ -55,15 +55,21 @@ const getSpeedStatus = (speed: number): 'normal' | 'elevated' | 'high' => {
 
 export const HUD = ({ data, isStale }: HUDProps) => {
   return (
-    <div className="hud-panel p-4 min-w-[200px] animate-fade-in-up">
-      <div className="scanline" />
+    <div 
+      className="hud-panel p-4 min-w-[200px] animate-fade-in-up"
+      role="region"
+      aria-label="Space weather data display"
+    >
+      <div className="scanline" aria-hidden="true" />
       
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm font-semibold tracking-wider text-primary glow-text">
           SPACE WEATHER
         </h2>
         {isStale && (
-          <span className="text-xs text-data-yellow animate-pulse">STALE</span>
+          <span className="text-xs text-data-yellow animate-pulse" aria-label="Data is stale">
+            STALE
+          </span>
         )}
       </div>
 

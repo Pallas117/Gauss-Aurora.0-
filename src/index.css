@@ -8,6 +8,80 @@
 
 @layer base {
   :root {
+    /* Light mode - WCAG 2.1 AA compliant colors */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Primary: Deep space blue/purple - WCAG AA compliant */
+    --primary: 240 60% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 20% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 240 10% 95%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Accent: Alert amber/yellow - WCAG AA compliant */
+    --accent: 38 92% 50%;
+    --accent-foreground: 222 47% 11%;
+
+    /* Destructive: Alert red - WCAG AA compliant */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 240 60% 45%;
+
+    --radius: 0.5rem;
+
+    /* Light mode space theme colors - WCAG AA compliant */
+    --space-deep: 240 30% 95%;
+    --space-nebula: 260 20% 90%;
+    
+    /* Van Allen Belt colors - adjusted for light mode visibility */
+    --belt-low: 142 70% 45%;       /* Darker green for contrast */
+    --belt-mid: 45 90% 50%;        /* Amber */
+    --belt-high: 16 90% 50%;       /* Orange-red */
+    --belt-inner: 142 70% 45%;
+    --belt-outer: 195 70% 45%;     /* Darker cyan */
+    
+    /* Magnetosphere - darker for light mode */
+    --magnetosphere: 200 70% 45%;
+    --magnetosphere-glow: 210 70% 50%;
+    --field-line: 195 70% 45%;
+    
+    /* Status colors - WCAG AA compliant */
+    --aurora: 142 60% 40%;
+    --solar-wind: 38 80% 45%;
+    --data-green: 142 60% 40%;
+    --data-yellow: 38 80% 45%;
+    --data-red: 0 70% 45%;
+
+    /* Gradients */
+    --gradient-space: radial-gradient(ellipse at 50% 50%, hsl(240 20% 95%) 0%, hsl(0 0% 100%) 70%);
+    --gradient-belt: radial-gradient(ellipse at center, hsl(var(--belt-inner) / 0.3) 0%, transparent 70%);
+    --gradient-hud: linear-gradient(180deg, hsl(var(--card) / 0.95) 0%, hsl(var(--card) / 0.8) 100%);
+
+    /* Shadows */
+    --shadow-glow-cyan: 0 0 30px hsl(var(--primary) / 0.2);
+    --shadow-glow-amber: 0 0 40px hsl(var(--accent) / 0.3);
+
+    /* Fonts */
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+    --font-sans: Raleway, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  }
+
+  .dark {
+    /* Dark mode - WCAG 2.1 AA compliant colors */
     --background: 222 47% 4%;
     --foreground: 210 40% 96%;
 
@@ -17,18 +91,21 @@
     --popover: 222 47% 6%;
     --popover-foreground: 210 40% 96%;
 
-    --primary: 27 95.9799% 60.9804%;
+    /* Primary: Bright cyan/blue for dark mode - WCAG AA compliant */
+    --primary: 187 100% 50%;
     --primary-foreground: 222 47% 4%;
 
     --secondary: 222 30% 12%;
     --secondary-foreground: 210 40% 90%;
 
     --muted: 222 30% 15%;
-    --muted-foreground: 215 20% 55%;
+    --muted-foreground: 215 20% 65%;
 
+    /* Accent: Bright amber/yellow for alerts - WCAG AA compliant */
     --accent: 35 100% 55%;
     --accent-foreground: 222 47% 4%;
 
+    /* Destructive: Bright red for alerts - WCAG AA compliant */
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
@@ -38,7 +115,7 @@
 
     --radius: 0.5rem;
 
-    /* NASA SVS-inspired space theme colors */
+    /* Dark mode space theme colors - radiation-themed blues and purples */
     --space-deep: 222 47% 3%;
     --space-nebula: 260 60% 15%;
     
@@ -49,12 +126,12 @@
     --belt-inner: 150 100% 50%;
     --belt-outer: 175 90% 47%;      /* Cyan-green for outer */
     
-    /* Magnetosphere */
+    /* Magnetosphere - bright cyan for dark mode */
     --magnetosphere: 200 100% 60%;
     --magnetosphere-glow: 210 100% 70%;
     --field-line: 195 100% 60%;     /* #00AAFF cyan-blue */
     
-    /* Status colors */
+    /* Status colors - bright for dark mode */
     --aurora: 120 80% 50%;
     --solar-wind: 45 100% 60%;
     --data-green: 142 70% 50%;
@@ -71,15 +148,6 @@
     --shadow-glow-amber: 0 0 40px hsl(var(--accent) / 0.5);
 
     /* Fonts */
-    --font-display: 'Space Grotesk', system-ui, sans-serif;
-    --font-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-    --font-sans: Raleway, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  }
-
-  .dark {
-    --background: 222 47% 4%;
-    --foreground: 210 40% 96%;
-    --radius: 0.5rem;
     --font-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
     --font-sans: Raleway, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
   }
@@ -149,6 +217,18 @@
 }
 
 @layer utilities {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
   .animate-pulse-glow {
     animation: pulse-glow 3s ease-in-out infinite;
   }

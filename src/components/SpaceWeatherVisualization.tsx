@@ -14,6 +14,7 @@ interface LayerVisibility {
   magnetosphere: boolean;
   fieldLines: boolean;
   mhdWaves: boolean;
+  mmsReconnection: boolean;
 }
 
 type EncodingMode = 'color' | 'size' | 'both';
@@ -27,6 +28,7 @@ export const SpaceWeatherVisualization = () => {
     magnetosphere: true,
     fieldLines: true,
     mhdWaves: true,
+    mmsReconnection: false,
   });
 
   const [encodingMode, setEncodingMode] = useState<EncodingMode>('color');

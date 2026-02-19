@@ -1,9 +1,0 @@
-
-{
-  "name": "CyberTiger Daemon Interface",
-  "description": "A high-performance tactical dashboard for the CyberTiger daemon, specializing in the storage, synthesis, and deployment of counterattacking tokens to neutralize digital threats.",
-  "requestFramePermissions": [
-    "camera",
-    "geolocation"
-  ]
-}

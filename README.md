@@ -71,3 +71,34 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Worktree Workflow
+
+For branch-isolated development with Git worktrees, see:
+
+- `docs/WORKTREE_ARCHITECTURE.md`
+
+## CyberTiger Security Daemon
+
+Security daemon and control mapping:
+
+- `backend/cybertiger/daemon.ts`
+- `docs/CYBERTIGER_COMPLIANCE_BASELINE.md`
+
+Validation commands:
+
+```sh
+npm run check:backend-env
+npm run check:security-compliance
+```
+
+## Release Workflow
+
+Release guidance and commands:
+
+- `docs/RELEASE_CHECKLIST.md`
+
+```sh
+npm run release:check
+npm run release:tag -- vX.Y.Z
+```

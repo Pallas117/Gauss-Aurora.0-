@@ -1,4 +1,4 @@
-import { Globe, Orbit, Waves, GitBranch, Radio } from 'lucide-react';
+import { Globe, Orbit, Waves, GitBranch, Radio, Compass } from 'lucide-react';
 
 interface LayerVisibility {
   earth: boolean;
@@ -6,6 +6,7 @@ interface LayerVisibility {
   magnetosphere: boolean;
   fieldLines: boolean;
   mhdWaves: boolean;
+  mmsReconnection?: boolean;
 }
 
 interface LayerTogglesProps {
@@ -81,6 +82,13 @@ export const LayerToggles = ({ layers, onToggle }: LayerTogglesProps) => {
           onClick={() => onToggle('mhdWaves')}
           icon={<Radio size={16} />}
           label="MHD Waves"
+        />
+
+        <ToggleButton
+          active={layers.mmsReconnection !== false}
+          onClick={() => onToggle('mmsReconnection')}
+          icon={<Compass size={16} />}
+          label="MMS Reconnection"
         />
       </div>
     </div>

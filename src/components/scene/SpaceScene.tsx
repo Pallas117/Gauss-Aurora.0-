@@ -19,6 +19,8 @@ import { RadiationDataOverlay } from './RadiationDataOverlay';
 import { RadiationDataOverlayLOD } from './RadiationDataOverlayLOD';
 import { MHDWaves } from './MHDWaves';
 import type { RadiationDataPoint } from '@/lib/types/radiation';
+import type { MMSReconVectorPoint } from '@/lib/types/space-weather';
+import { MMSReconnectionVectors } from './MMSReconnectionVectors';
 
 interface LayerVisibility {
   earth: boolean;
@@ -28,6 +30,7 @@ interface LayerVisibility {
   mhdWaves?: boolean;
   orbitRings?: boolean;
   radiationData?: boolean;
+  mmsReconnection?: boolean;
 }
 
 interface SpaceSceneProps {
@@ -48,6 +51,8 @@ interface SpaceSceneProps {
   lodLevel?: number;
   /** Encoding mode for radiation data: 'color', 'size', or 'both' */
   encodingMode?: 'color' | 'size' | 'both';
+  /** MMS tetrahedron-derived reconnection vectors */
+  mmsVectors?: MMSReconVectorPoint[];
 }
 
 const SceneContent = ({
@@ -61,6 +66,7 @@ const SceneContent = ({
   enableLOD = true,
   lodLevel,
   encodingMode = 'color',
+  mmsVectors,
 }: Omit<SpaceSceneProps, 'canvasRef'>) => {
   const groupRef = useRef<THREE.Group>(null);
   const controlsRef = useRef<any>(null);
@@ -214,6 +220,11 @@ const SceneContent = ({
         />
 
         <MHDWaves visible={layers.mhdWaves !== false} />
+
+        <MMSReconnectionVectors
+          visible={layers.mmsReconnection !== false}
+          vectors={mmsVectors ?? []}
+        />
 
         {/* Orbit rings for LEO, MEO, GEO */}
         <OrbitRings

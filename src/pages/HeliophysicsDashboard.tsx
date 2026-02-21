@@ -7,15 +7,7 @@ import { SolarWindSpeedChart } from "@/components/heliophysics/SolarWindSpeedCha
 import { useAuroraMap } from "@/hooks/useAuroraMap";
 import { useMMSReconnection } from "@/hooks/useMMSReconnection";
 import { useSolarWind5s } from "@/hooks/useSolarWind5s";
-
-interface LayerVisibility {
-  earth: boolean;
-  belts: boolean;
-  magnetosphere: boolean;
-  fieldLines: boolean;
-  mhdWaves: boolean;
-  mmsReconnection: boolean;
-}
+import type { LayerVisibility } from "@/components/types";
 
 function formatDelay(seconds: number | undefined): string {
   if (!seconds || seconds <= 0) return "n/a";

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Database, Search, Terminal as TerminalIcon } from 'lucide-react';
 
 type RagStatus = {
   ok: boolean;
@@ -97,28 +98,30 @@ export function GaussRagPanel() {
       : 'No index yet';
 
   return (
-    <div className="hud-panel p-3 w-[360px] pointer-events-auto animate-fade-in-up space-y-3">
+    <div className="hud-panel p-4 w-[min(92vw,440px)] pointer-events-auto animate-fade-in-up space-y-3">
       <div className="scanline" />
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-2">
         <div>
-          <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-            Gauss RAG
+          <h3 className="text-xs font-semibold tracking-[0.18em] text-primary uppercase flex items-center gap-2">
+            <TerminalIcon size={14} />
+            Logic Engine
           </h3>
-          <p className="text-[11px] text-muted-foreground/70">
-            Retrieval layer for Gauss memory
+          <p className="text-[11px] text-muted-foreground/75 uppercase tracking-wide mt-1">
+            LanceDB Retrieval Layer
           </p>
         </div>
         <button
           type="button"
           onClick={handleIndex}
           disabled={indexing}
-          className="text-[11px] px-2 py-1 border rounded-md border-border hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+          className="text-[11px] px-3 py-1.5 border rounded-full border-primary/35 hover:bg-primary/15 hover:text-primary disabled:opacity-50 font-semibold tracking-wide inline-flex items-center gap-2"
         >
+          <Database size={12} />
           {indexing ? 'Indexing…' : 'Index lightbound'}
         </button>
       </div>
 
-      <p className="text-[11px] text-muted-foreground/70">
+      <p className="text-[11px] text-muted-foreground/80">
         {chunkLabel}. Updating the index lets your LLM adapt to new Gauss
         documents without retraining the core model.
       </p>
@@ -128,14 +131,15 @@ export function GaussRagPanel() {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Ask Gauss about mission concepts, threats, or documents…"
-          className="w-full h-20 text-xs bg-background/80 border border-border rounded-md px-2 py-1 resize-none"
+          className="w-full h-24 text-xs bg-background/75 border border-border/80 rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
         <button
           type="button"
           onClick={handleAsk}
           disabled={asking || !question.trim()}
-          className="w-full text-[11px] px-2 py-1 border rounded-md border-border hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+          className="w-full text-[11px] px-3 py-2 border rounded-xl border-primary/35 hover:bg-primary hover:text-primary-foreground disabled:opacity-50 font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2"
         >
+          <Search size={12} />
           {asking ? 'Consulting Gauss RAG…' : 'Ask Gauss RAG'}
         </button>
       </div>
@@ -178,4 +182,3 @@ export function GaussRagPanel() {
     </div>
   );
 }
-

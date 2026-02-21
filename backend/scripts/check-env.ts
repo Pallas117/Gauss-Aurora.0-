@@ -9,6 +9,7 @@ const requirements: EnvRequirement[] = [
   { key: "SUPABASE_ANON_KEY", required: true, description: "Supabase anon/public key" },
   { key: "SUPABASE_SERVICE_ROLE_KEY", required: true, description: "Supabase service role key" },
   { key: "PROXY_PORT", required: false, description: "Backend HTTP port (default 3001)" },
+  { key: "PROXY_HOST", required: false, description: "Backend bind host (default 127.0.0.1)" },
   { key: "ALLOWED_ORIGINS", required: false, description: "CSV list for CORS allowlist" },
   { key: "AUTH_REQUIRED", required: false, description: "Set false only for local bypass" },
   { key: "CYBERTIGER_ENABLED", required: false, description: "Enable/disable CyberTiger daemon" },

@@ -55,11 +55,19 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "http://localhost:8080")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+const allowedOriginSet = new Set(allowedOrigins);
+
+function isAllowedOrigin(origin: string | null | undefined): boolean {
+  if (!origin) {
+    return true;
+  }
+  return allowedOriginSet.has(origin);
+}
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true);
         return;
       }
@@ -375,6 +383,7 @@ app.post("/api/ai/nowcast/train", requireRole("admin"), async (_req, res) => {
 });
 
 const port = Number(process.env.PROXY_PORT ?? 3001);
+const host = (process.env.PROXY_HOST ?? "127.0.0.1").trim() || "127.0.0.1";
 const server = http.createServer(app);
 
 const wsSpaceWeather = new WebSocketServer({ server, path: "/ws/feed/space-weather" });
@@ -397,6 +406,12 @@ async function guardSocketConnection(
   requiredRole: "viewer" | "operator" | "admin",
   req: http.IncomingMessage,
 ): Promise<boolean> {
+  const requestOrigin = typeof req.headers.origin === "string" ? req.headers.origin : null;
+  if (!isAllowedOrigin(requestOrigin)) {
+    socket.close(1008, "CORS blocked");
+    return false;
+  }
+
   const auth = await authenticateSocket(req);
   if (!auth || !roleSatisfies(auth.role, requiredRole)) {
     if (req.socket.remoteAddress) {
@@ -459,8 +474,13 @@ const worker = new IngestionWorker((result: IngestionTickResult) => {
 });
 worker.start();
 
-server.listen(port, () => {
-  console.log(`[backend] listening on :${port}`);
+server.listen(port, host, () => {
+  console.log(`[backend] listening on ${host}:${port}`);
+  if (host === "0.0.0.0") {
+    console.warn(
+      "[backend] warning: PROXY_HOST=0.0.0.0 exposes API on all interfaces. Prefer loopback or Tailscale IP.",
+    );
+  }
 });
 
 app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

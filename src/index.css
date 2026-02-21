@@ -82,18 +82,18 @@
 
   .dark {
     /* Dark mode - WCAG 2.1 AA compliant colors */
-    --background: 222 47% 4%;
+    --background: 0 0% 2%;
     --foreground: 210 40% 96%;
 
-    --card: 222 47% 6%;
+    --card: 0 0% 8%;
     --card-foreground: 210 40% 96%;
 
-    --popover: 222 47% 6%;
+    --popover: 0 0% 8%;
     --popover-foreground: 210 40% 96%;
 
-    /* Primary: Bright cyan/blue for dark mode - WCAG AA compliant */
-    --primary: 187 100% 50%;
-    --primary-foreground: 222 47% 4%;
+    /* Primary: Cyber lime */
+    --primary: 77 100% 50%;
+    --primary-foreground: 0 0% 4%;
 
     --secondary: 222 30% 12%;
     --secondary-foreground: 210 40% 90%;
@@ -101,51 +101,51 @@
     --muted: 222 30% 15%;
     --muted-foreground: 215 20% 65%;
 
-    /* Accent: Bright amber/yellow for alerts - WCAG AA compliant */
-    --accent: 35 100% 55%;
-    --accent-foreground: 222 47% 4%;
+    /* Accent: Solar flare orange */
+    --accent: 16 100% 50%;
+    --accent-foreground: 0 0% 98%;
 
     /* Destructive: Bright red for alerts - WCAG AA compliant */
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 222 30% 18%;
-    --input: 222 30% 18%;
-    --ring: 187 100% 50%;
+    --border: 0 0% 100% / 0.14;
+    --input: 0 0% 100% / 0.16;
+    --ring: 77 100% 50%;
 
     --radius: 0.5rem;
 
     /* Dark mode space theme colors - radiation-themed blues and purples */
-    --space-deep: 222 47% 3%;
-    --space-nebula: 260 60% 15%;
+    --space-deep: 0 0% 2%;
+    --space-nebula: 77 40% 8%;
     
     /* Van Allen Belt colors - NASA scientific palette */
-    --belt-low: 150 100% 50%;       /* #00FF88 bright green */
-    --belt-mid: 54 100% 50%;        /* #FFEE00 yellow */
-    --belt-high: 16 100% 50%;       /* #FF4400 orange-red */
-    --belt-inner: 150 100% 50%;
-    --belt-outer: 175 90% 47%;      /* Cyan-green for outer */
+    --belt-low: 77 100% 50%;
+    --belt-mid: 54 100% 52%;
+    --belt-high: 16 100% 50%;
+    --belt-inner: 77 100% 50%;
+    --belt-outer: 95 100% 55%;
     
     /* Magnetosphere - bright cyan for dark mode */
-    --magnetosphere: 200 100% 60%;
-    --magnetosphere-glow: 210 100% 70%;
-    --field-line: 195 100% 60%;     /* #00AAFF cyan-blue */
+    --magnetosphere: 87 90% 58%;
+    --magnetosphere-glow: 77 100% 62%;
+    --field-line: 87 90% 58%;
     
     /* Status colors - bright for dark mode */
-    --aurora: 120 80% 50%;
-    --solar-wind: 45 100% 60%;
-    --data-green: 142 70% 50%;
-    --data-yellow: 45 100% 55%;
-    --data-red: 0 80% 55%;
+    --aurora: 77 100% 50%;
+    --solar-wind: 16 100% 50%;
+    --data-green: 77 100% 50%;
+    --data-yellow: 54 100% 52%;
+    --data-red: 16 100% 50%;
 
     /* Gradients */
-    --gradient-space: radial-gradient(ellipse at 50% 50%, hsl(260 60% 8%) 0%, hsl(222 47% 3%) 70%);
+    --gradient-space: radial-gradient(120% 140% at 50% 0%, hsl(77 48% 9%) 0%, hsl(0 0% 2%) 46%, hsl(0 0% 2%) 100%);
     --gradient-belt: radial-gradient(ellipse at center, hsl(var(--belt-inner) / 0.6) 0%, transparent 70%);
     --gradient-hud: linear-gradient(180deg, hsl(var(--card) / 0.95) 0%, hsl(var(--card) / 0.8) 100%);
 
     /* Shadows */
-    --shadow-glow-cyan: 0 0 30px hsl(var(--primary) / 0.4);
-    --shadow-glow-amber: 0 0 40px hsl(var(--accent) / 0.5);
+    --shadow-glow-cyan: 0 0 28px hsl(var(--primary) / 0.28);
+    --shadow-glow-amber: 0 0 34px hsl(var(--accent) / 0.35);
 
     /* Fonts */
     --font-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
@@ -171,10 +171,13 @@
 
 @layer components {
   .hud-panel {
-    @apply bg-card/90 backdrop-blur-md border border-border/50 rounded-lg;
-    box-shadow: 
-      inset 0 1px 0 hsl(var(--primary) / 0.1),
-      0 4px 20px hsl(var(--background) / 0.5);
+    @apply backdrop-blur-xl rounded-2xl;
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    background: linear-gradient(180deg, hsl(var(--card) / 0.72) 0%, hsl(var(--card) / 0.58) 100%);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.08),
+      0 8px 28px hsl(0 0% 0% / 0.45),
+      0 0 0 1px hsl(var(--primary) / 0.06);
   }
 
   .hud-value {
@@ -192,8 +195,8 @@
   }
 
   .toggle-button[data-active="true"] {
-    @apply bg-primary/10 border-primary/40 text-primary;
-    box-shadow: 0 0 15px hsl(var(--primary) / 0.2);
+    @apply bg-primary/10 border-primary/50 text-primary;
+    box-shadow: 0 0 18px hsl(var(--primary) / 0.22);
   }
 
   .toggle-button[data-active="false"] {
@@ -213,6 +216,18 @@
       hsl(var(--primary) / 0.03) 2px,
       hsl(var(--primary) / 0.03) 4px
     );
+  }
+
+  .spaceops-badge {
+    @apply inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest;
+    background: hsl(var(--primary) / 0.1);
+    border: 1px solid hsl(var(--primary) / 0.22);
+    color: hsl(var(--primary));
+  }
+
+  .spaceops-dot {
+    @apply h-1.5 w-1.5 rounded-full animate-pulse;
+    background: hsl(var(--primary));
   }
 }
 
@@ -255,11 +270,11 @@
   @keyframes fade-in-up {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translate3d(0, 10px, 0);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translate3d(0, 0, 0);
     }
   }
 

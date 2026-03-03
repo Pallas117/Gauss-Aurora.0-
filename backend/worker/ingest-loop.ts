@@ -1,7 +1,11 @@
 import { fetchEsaReadout, getEsaStatus, type ESAReadout } from "../adapters/esa-hapi.js";
 import { fetchJaxaReadout, getJaxaStatus, type JAXAReadout } from "../adapters/jaxa-erg.js";
 import { fetchMmsCdawebSamples, getMmsCdawebStatus } from "../adapters/mms-cdaweb.js";
-import { fetchMmsBurstWindows, getMmsLaspStatus } from "../adapters/mms-lasp.js";
+import {
+  fetchMmsBurstWindows,
+  getMmsLaspStatus,
+  isBurstModeAt,
+} from "../adapters/mms-lasp.js";
 import { fetchNoaaReadout, getNoaaStatus, type NOAAReadout } from "../adapters/noaa-swpc.js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildAuroraGrid } from "../physics/healpix.js";
@@ -10,6 +14,7 @@ import {
   type MhdInput,
   type MhdState,
 } from "../physics/mhd-nowcast.js";
+import { fuseMmsVector } from "../physics/mms-probability.js";
 import {
   computeMMSReconnectionVector,
   withinSkewWindow,
@@ -20,8 +25,13 @@ import {
   pushCanonical,
   pushMms,
   setAuroraMap,
+  setRiskZones,
+  setSatelliteObjects,
   setSourceStatus,
 } from "../state.js";
+import { fetchPrivateerRiskZones } from "../adapters/privateer.js";
+import { fetchRiskZones, fetchSatelliteObjects } from "../ssa/open-catalog-client.js";
+import { isMemoryOverCeiling } from "../memory-check.js";
 import type {
   CanonicalSpaceWeatherPoint,
   IngestionTickResult,
@@ -29,16 +39,85 @@ import type {
   SourceStatus,
 } from "../types.js";
 
-const TICK_MS = 5000;
-const NOAA_MS = 60000;
-const ESA_MS = 10000;
-const JAXA_MS = 60000;
-const MMS_MS = 5000;
-const LASP_MS = 60000;
+type WorkerPowerProfile = "nominal" | "low-power";
+
+type WorkerCadenceConfig = {
+  tickMs: number;
+  noaaMs: number;
+  esaMs: number;
+  jaxaMs: number;
+  mmsMs: number;
+  laspMs: number;
+  sourceHealthMs: number;
+  cleanupMs: number;
+  debrisMs: number;
+  auroraNside: number;
+};
+
+type IngestionWorkerOptions = {
+  cadence?: Partial<WorkerCadenceConfig>;
+  powerProfile?: WorkerPowerProfile;
+  /** When true, skip memory-ceiling check so tests can assert full tick behavior (e.g. offline resilience). */
+  skipMemoryCeiling?: boolean;
+};
+
+const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+
+const NOMINAL_CADENCE: WorkerCadenceConfig = {
+  tickMs: 5000,
+  noaaMs: 60000,
+  esaMs: 10000,
+  jaxaMs: 60000,
+  mmsMs: 5000,
+  laspMs: 60000,
+  sourceHealthMs: 5000,
+  cleanupMs: 5000,
+  debrisMs: SIX_HOURS_MS,
+  auroraNside: 64,
+};
+
+const LOW_POWER_CADENCE: WorkerCadenceConfig = {
+  tickMs: 10000,
+  noaaMs: 120000,
+  esaMs: 30000,
+  jaxaMs: 120000,
+  mmsMs: 10000,
+  laspMs: 120000,
+  sourceHealthMs: 30000,
+  cleanupMs: 20000,
+  debrisMs: SIX_HOURS_MS,
+  auroraNside: 32,
+};
+
+function normalizePowerProfile(value: string | undefined): WorkerPowerProfile {
+  const normalized = (value ?? "").trim().toLowerCase();
+  if (normalized === "low" || normalized === "low-power" || normalized === "lowpower") {
+    return "low-power";
+  }
+  return "nominal";
+}
+
+function resolveCadenceConfig(options?: IngestionWorkerOptions): WorkerCadenceConfig {
+  const powerSave = (process.env.POWER_SAVE_MODE ?? "false").trim().toLowerCase() === "true";
+  const envProfile = normalizePowerProfile(process.env.INGEST_POWER_PROFILE);
+  const requestedProfile = options?.powerProfile ?? (powerSave ? "low-power" : envProfile);
+  const base = requestedProfile === "low-power" ? LOW_POWER_CADENCE : NOMINAL_CADENCE;
+
+  return {
+    ...base,
+    ...(options?.cadence ?? {}),
+  };
+}
+
+function isAirGapped(): boolean {
+  const raw = (process.env.GAUSS_AIR_GAP ?? "").trim().toLowerCase();
+  return raw === "true" || raw === "1" || raw === "yes" || raw === "on";
+}
 
 export class IngestionWorker {
   private timer: NodeJS.Timeout | null = null;
   private running = false;
+  private tickInFlight = false;
   private previousState: MhdState | null = null;
   private previousDst: number | null = null;
   private couplingWindow: number[] = [];
@@ -49,27 +128,61 @@ export class IngestionWorker {
   private jaxa: JAXAReadout | null = null;
   private latestCanonical: CanonicalSpaceWeatherPoint | null = null;
   private latestMms: MMSReconVectorPoint | null = null;
+  private readonly cadence: WorkerCadenceConfig;
+  private readonly skipMemoryCeiling: boolean;
 
-  constructor(private onTick?: (result: IngestionTickResult) => void) {}
+  constructor(
+    private onTick?: (result: IngestionTickResult) => void,
+    options: IngestionWorkerOptions = {},
+  ) {
+    this.cadence = resolveCadenceConfig(options);
+    this.skipMemoryCeiling = options.skipMemoryCeiling === true;
+  }
 
   start(): void {
     if (this.running) return;
     this.running = true;
-    this.tick().catch((error) => {
-      console.error("[IngestionWorker] Initial tick failed", error);
-    });
-    this.timer = setInterval(() => {
-      this.tick().catch((error) => {
-        console.error("[IngestionWorker] Tick failed", error);
-      });
-    }, TICK_MS);
+    this.scheduleNextTick(0);
   }
 
   stop(): void {
     this.running = false;
+    this.tickInFlight = false;
+    this.clearScheduledTick();
+  }
+
+  private clearScheduledTick(): void {
     if (this.timer) {
-      clearInterval(this.timer);
+      clearTimeout(this.timer);
       this.timer = null;
+    }
+  }
+
+  private scheduleNextTick(delayMs: number = this.cadence.tickMs): void {
+    if (!this.running) {
+      return;
+    }
+    this.clearScheduledTick();
+    this.timer = setTimeout(() => {
+      void this.runScheduledTick();
+    }, Math.max(delayMs, 0));
+  }
+
+  private async runScheduledTick(): Promise<void> {
+    if (!this.running || this.tickInFlight) {
+      return;
+    }
+
+    this.tickInFlight = true;
+    try {
+      await this.tick();
+    } catch (error) {
+      console.error("[IngestionWorker] Tick failed", error);
+    } finally {
+      this.tickInFlight = false;
+      if (this.running) {
+        this.scheduleNextTick(this.cadence.tickMs);
+      }
     }
   }
 
@@ -124,18 +237,34 @@ export class IngestionWorker {
   }
 
   private sourceStatus(): SourceStatus[] {
-    return [
+    const status = [
       getNoaaStatus(),
       getEsaStatus(),
       getJaxaStatus(),
       getMmsCdawebStatus(),
       getMmsLaspStatus(),
     ];
+    if (!isAirGapped()) {
+      return status;
+    }
+    return status.map((s) => ({
+      ...s,
+      healthy: false,
+      message: "disabled: air-gapped",
+    }));
   }
+
+  private static supabaseSkipLogged = false;
 
   private async writeRawToSupabase(stream: string, observedAt: string, payload: unknown): Promise<void> {
     const supabase = getSupabaseAdminClient();
     if (!supabase) {
+      if (!IngestionWorker.supabaseSkipLogged) {
+        IngestionWorker.supabaseSkipLogged = true;
+        console.warn(
+          "[IngestionWorker] Supabase not configured (set SUPABASE_URL to your project URL, not the placeholder); skipping DB writes.",
+        );
+      }
       return;
     }
 
@@ -204,9 +333,9 @@ export class IngestionWorker {
 
   private async invokeAuroraMapRpcCompat(supabase: SupabaseClient, nowIso: string): Promise<void> {
     const candidatePayloads: Array<Record<string, unknown>> = [
-      { ts: nowIso, nside: 64 },
-      { p_ts: nowIso, p_nside: 64 },
-      { p_nside: 64, p_ts: nowIso },
+      { ts: nowIso, nside: this.cadence.auroraNside },
+      { p_ts: nowIso, p_nside: this.cadence.auroraNside },
+      { p_nside: this.cadence.auroraNside, p_ts: nowIso },
     ];
 
     let lastError: unknown = null;
@@ -243,28 +372,63 @@ export class IngestionWorker {
 
   async tick(): Promise<IngestionTickResult> {
     const nowIso = new Date().toISOString();
+    const airGapped = isAirGapped();
 
-    if (this.shouldFetch("noaa", NOAA_MS)) {
-      this.noaa = await fetchNoaaReadout();
-    }
-    if (this.shouldFetch("esa", ESA_MS)) {
-      this.esa = await fetchEsaReadout();
-    }
-    if (this.shouldFetch("jaxa", JAXA_MS)) {
-      this.jaxa = await fetchJaxaReadout();
+    if (!this.skipMemoryCeiling && isMemoryOverCeiling()) {
+      console.warn("[IngestionWorker] PM: memory over 5.8GB ceiling, dropping ingest tick");
+      return {
+        canonicalPoint: null,
+        mmsVector: null,
+        sourceStatus: this.sourceStatus(),
+        auroraMap: null,
+      };
     }
 
-    let mmsVector: MMSReconVectorPoint | null = null;
-    let mmsSamples: MMSSpacecraftSample[] = [];
-    if (this.shouldFetch("mms", MMS_MS)) {
-      mmsSamples = await fetchMmsCdawebSamples();
-      if (mmsSamples.length >= 4 && withinSkewWindow(mmsSamples, 1.5)) {
-        mmsVector = computeMMSReconnectionVector(mmsSamples);
+    if (!airGapped) {
+      if (this.shouldFetch("noaa", this.cadence.noaaMs)) {
+        this.noaa = await fetchNoaaReadout();
+      }
+      if (this.shouldFetch("esa", this.cadence.esaMs)) {
+        this.esa = await fetchEsaReadout();
+      }
+      if (this.shouldFetch("jaxa", this.cadence.jaxaMs)) {
+        this.jaxa = await fetchJaxaReadout();
       }
     }
 
-    if (this.shouldFetch("lasp", LASP_MS)) {
-      await fetchMmsBurstWindows();
+    let measuredMmsVector: MMSReconVectorPoint | null = null;
+    let mmsSamples: MMSSpacecraftSample[] = [];
+    if (!airGapped) {
+      if (this.shouldFetch("mms", this.cadence.mmsMs)) {
+        mmsSamples = await fetchMmsCdawebSamples();
+        if (mmsSamples.length >= 4 && withinSkewWindow(mmsSamples, 1.5)) {
+          measuredMmsVector = computeMMSReconnectionVector(mmsSamples);
+        }
+      }
+    }
+
+    if (!airGapped) {
+      if (this.shouldFetch("lasp", this.cadence.laspMs)) {
+        await fetchMmsBurstWindows();
+      }
+      if (this.shouldFetch("debris", this.cadence.debrisMs)) {
+        try {
+          const usePrivateer =
+            typeof process.env.PRIVATEER_API_URL === "string" && process.env.PRIVATEER_API_URL.trim().length > 0;
+          const zones = usePrivateer
+            ? await fetchPrivateerRiskZones({ orbitTypes: ["MEO", "GEO"] })
+            : await fetchRiskZones({ orbitTypes: ["MEO", "GEO"] });
+          setRiskZones(zones);
+        } catch (err) {
+          console.warn("[IngestionWorker] Risk zones fetch failed", err);
+        }
+        try {
+          const objects = await fetchSatelliteObjects();
+          setSatelliteObjects(objects);
+        } catch (err) {
+          console.warn("[IngestionWorker] Satellite objects fetch failed", err);
+        }
+      }
     }
 
     const mhdInput = this.blendInputs(nowIso);
@@ -274,6 +438,16 @@ export class IngestionWorker {
       this.couplingWindow,
       this.previousDst,
     );
+    const burstMode = isBurstModeAt(nowIso);
+    const mmsVector = fuseMmsVector({
+      measuredVector: measuredMmsVector,
+      previousVector: this.latestMms,
+      canonicalPoint: point,
+      previousCanonicalPoint: this.latestCanonical,
+      sampleCount: mmsSamples.length,
+      burstMode,
+      nowIso,
+    });
 
     if (!this.noaa) {
       point.quality.stale = true;
@@ -287,16 +461,21 @@ export class IngestionWorker {
       // JAXA is low-weight, so no severe penalty.
       point.quality.interpolated = point.quality.interpolated || false;
     }
+    if (airGapped) {
+      point.quality.stale = true;
+      point.quality.interpolated = true;
+      point.quality.lowConfidence = true;
+    }
 
     this.previousState = state;
     this.previousDst = point.indices.dst;
     this.couplingWindow.push(point.coupling.newell);
     this.trimCouplingWindow();
 
-    const { grid, harmonics } = buildAuroraGrid(point, 64);
+    const { grid, harmonics } = buildAuroraGrid(point, this.cadence.auroraNside);
     const auroraMap = {
       timestamp: point.timestamp,
-      nside: 64,
+      nside: this.cadence.auroraNside,
       grid,
       harmonics,
     };
@@ -323,8 +502,12 @@ export class IngestionWorker {
         sampleCount: auroraMap.grid.length,
         harmonics: auroraMap.harmonics,
       });
-      await this.writeSourceHealth(status);
-      await this.invokeCleanupRpc(point.timestamp);
+      if (this.shouldFetch("source-health-write", this.cadence.sourceHealthMs)) {
+        await this.writeSourceHealth(status);
+      }
+      if (this.shouldFetch("cleanup-rpc", this.cadence.cleanupMs)) {
+        await this.invokeCleanupRpc(point.timestamp);
+      }
     } catch (error) {
       console.warn("[IngestionWorker] Supabase write/rpc failed", error);
     }

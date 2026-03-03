@@ -7,6 +7,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CanonicalSpaceWeatherPoint } from "@/lib/types/space-weather";
 
@@ -31,13 +32,17 @@ export function SolarWindSpeedChart({
   error,
   source,
 }: SolarWindSpeedChartProps) {
-  const chartData = points.map((point) => ({
-    timestamp: point.timestamp,
-    speed: Number(point.solarWind.speed.toFixed(2)),
-    density: Number(point.solarWind.density.toFixed(2)),
-    bz: Number(point.magneticField.z.toFixed(2)),
-    stormTier: point.alerts.stormTier,
-  }));
+  const chartData = useMemo(
+    () =>
+      points.map((point) => ({
+        timestamp: point.timestamp,
+        speed: Number(point.solarWind.speed.toFixed(2)),
+        density: Number(point.solarWind.density.toFixed(2)),
+        bz: Number(point.magneticField.z.toFixed(2)),
+        stormTier: point.alerts.stormTier,
+      })),
+    [points],
+  );
 
   return (
     <Card className="h-full">

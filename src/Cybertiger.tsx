@@ -1,35 +1,45 @@
+import { Suspense } from "react";
+import { BootGuard } from "@/components/BootGuard";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
 import { GaussThemeProvider } from "@/components/ThemeContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import HeliophysicsDashboard from "./pages/HeliophysicsDashboard";
+import { RouterProvider } from "react-router-dom";
+import { appRouter } from "@/app/routes";
+import { warnIfSupabaseEnvMissing } from "@/lib/auth-env-check";
+import { MissionSnapshotProvider } from "@/hooks/useMissionSnapshot";
+
+const RouterFallback = () => (
+  <div className="p-6 text-sm text-muted-foreground">Loading mission modules…</div>
+);
+
+warnIfSupabaseEnvMissing();
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ThemeProvider defaultTheme="system" storageKey="gauss-aurora-theme">
-    <GaussThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/heliophysics" element={<HeliophysicsDashboard />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </GaussThemeProvider>
-  </ThemeProvider>
+  <ErrorBoundary>
+    <ThemeProvider defaultTheme="dark" storageKey="gauss-aurora-theme" forceDark>
+      <GaussThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <MissionSnapshotProvider>
+              <BootGuard>
+                <Suspense fallback={<RouterFallback />}>
+                  <RouterProvider router={appRouter} />
+                </Suspense>
+              </BootGuard>
+            </MissionSnapshotProvider>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </GaussThemeProvider>
+    </ThemeProvider>
+  </ErrorBoundary>
 );
 
 export default App;

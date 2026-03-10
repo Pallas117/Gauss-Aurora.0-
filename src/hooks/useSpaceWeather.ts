@@ -9,6 +9,7 @@ import {
   validateSpaceWeatherResponse,
   applyDecay,
 } from '@/lib/dataProcessing';
+import { getAdaptivePollInterval } from '@/lib/power/polling';
 
 // ============================================================================
 // CONFIGURATION
@@ -17,6 +18,8 @@ import {
 const UPDATE_INTERVAL = 60000; // 1 minute
 const INTERPOLATION_DURATION = 10000; // 10 seconds for smooth transitions
 const FALLBACK_TO_MOCK_AFTER = 3; // Consecutive failures before mock mode
+const RENDER_TICK_MS = 100;
+const HIDDEN_RENDER_TICK_MS = 1500;
 
 // ============================================================================
 // MOCK DATA GENERATOR (fallback)
@@ -61,7 +64,6 @@ export const useSpaceWeather = (): UseSpaceWeatherReturn => {
   const interpolatorRef = useRef<EMAInterpolator>(
     new EMAInterpolator(generateMockData(), INTERPOLATION_DURATION)
   );
-  const animationRef = useRef<number>();
   const failureCountRef = useRef(0);
   const lastFetchTimeRef = useRef<number>(0);
 
@@ -124,7 +126,13 @@ export const useSpaceWeather = (): UseSpaceWeatherReturn => {
   // ============================================================================
 
   useEffect(() => {
-    const animate = () => {
+    let active = true;
+    let timer: number | null = null;
+
+    const tick = () => {
+      if (!active) {
+        return;
+      }
       let interpolated = interpolatorRef.current.getInterpolated();
       
       // Apply decay if data is stale
@@ -135,15 +143,20 @@ export const useSpaceWeather = (): UseSpaceWeatherReturn => {
       
       setData(interpolated);
       setVisualParams(calculateVisualizationParams(interpolated));
-      
-      animationRef.current = requestAnimationFrame(animate);
+
+      const baseCadenceMs =
+        typeof document !== 'undefined' && document.visibilityState !== 'visible'
+          ? HIDDEN_RENDER_TICK_MS
+          : RENDER_TICK_MS;
+      timer = window.setTimeout(tick, getAdaptivePollInterval(baseCadenceMs));
     };
 
-    animate();
+    tick();
     
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
+      active = false;
+      if (timer !== null) {
+        window.clearTimeout(timer);
       }
     };
   }, []);
@@ -153,13 +166,50 @@ export const useSpaceWeather = (): UseSpaceWeatherReturn => {
   // ============================================================================
 
   useEffect(() => {
-    // Initial fetch
-    fetchData();
-    
-    // Set up periodic refresh
-    const interval = setInterval(fetchData, UPDATE_INTERVAL);
-    
-    return () => clearInterval(interval);
+    let active = true;
+    let timer: number | null = null;
+    let inFlight = false;
+
+    const run = async () => {
+      if (!active || inFlight) {
+        return;
+      }
+      inFlight = true;
+      try {
+        await fetchData();
+      } finally {
+        inFlight = false;
+      }
+      if (!active) {
+        return;
+      }
+      timer = window.setTimeout(run, getAdaptivePollInterval(UPDATE_INTERVAL));
+    };
+
+    void run();
+
+    const handleOnline = () => {
+      if (!active) {
+        return;
+      }
+      if (timer !== null) {
+        window.clearTimeout(timer);
+      }
+      void run();
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', handleOnline);
+    }
+
+    return () => {
+      active = false;
+      if (timer !== null) {
+        window.clearTimeout(timer);
+      }
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('online', handleOnline);
+      }
+    };
   }, [fetchData]);
 
   // ============================================================================

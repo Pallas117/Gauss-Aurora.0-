@@ -197,7 +197,7 @@ async function main(): Promise<void> {
   }
 
   const supabaseUrl = envValue("SUPABASE_URL", "VITE_SUPABASE_URL");
-  const anonKey = envValue("SUPABASE_ANON_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY");
+  const anonKey = envValue("VITE_SUPABASE_PUBLISHABLE_KEY", "SUPABASE_ANON_KEY");
   const backendBaseUrl = envValue("BACKEND_BASE_URL") ?? "http://127.0.0.1:3001";
   const runTrainCheck = isTruthy(envValue("RBAC_TEST_TRAIN"));
   const testIp = syntheticTestIp();

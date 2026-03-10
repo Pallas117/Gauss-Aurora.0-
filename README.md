@@ -4,6 +4,28 @@
 
 **URL**: https://lovable.dev/projects/8df1375b-9034-497c-8731-ec3cf4f902b4
 
+## For non-coders: what is this?
+
+**Project Gauss** is a Space Situational Awareness (SSA) platform: it shows live space weather (solar wind, radiation belts, magnetosphere) on a 3D globe and supports mission operations. For a code-free explanation, glossary, and how to run things, see **[docs/PROJECT_GAUSS_PLAIN_ENGLISH.md](docs/PROJECT_GAUSS_PLAIN_ENGLISH.md)**.
+
+**One-command start** (frontend + backend + local chat stub):
+
+```sh
+npm i && npm run start
+```
+
+Then open the URL shown (e.g. http://localhost:8080). For first-time setup, copy `.env.example` to `.env` and run `npm run check:backend-env` if something fails.
+
+### Alpha testers and 6GB (M1/M2/M3 8GB)
+
+Project Gauss targets **Apple Silicon with 8GB unified memory** and enforces a **6GB effective limit** for mission simulations. Before running the full stack (frontend + backend + MLX/DeepSeek or Surya):
+
+- **Close heavy apps** (Chrome with many tabs, other IDEs, Slack, etc.) to leave headroom.
+- Prefer **stub mode** for the local chat engine (`npm run dev:stack` = stub on port 8089) if you are not testing the real DeepSeek model.
+- For the real MLX model, use `npm start` (starts MLX with `--cache-limit-gb 2.5`). See `.env.example` and `docs/WIRING_AND_REDUNDANCIES.md`.
+
+The full **Alpha Go/No-Go** verification list (memory audit, air-gap, Triad, UI, onboarding) is in **`docs/ALPHA_GO_NO_GO_CHECKLIST.md`**.
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
@@ -102,3 +124,69 @@ Release guidance and commands:
 npm run release:check
 npm run release:tag -- vX.Y.Z
 ```
+
+## Progress Checker CLI
+
+The project includes a repo-aware milestone progress checker:
+
+```sh
+npm run progress
+npm run progress:short
+npm run progress:short:refresh
+npm run progress:json
+```
+
+Run any command and print progress immediately after it:
+
+```sh
+npm run progress:after -- npm run test:fullstack
+```
+
+Update requirements-audit evidence used by V0.2 scoring:
+
+```sh
+npm run audit:adherence:record
+```
+
+Enable automatic progress output at each zsh prompt inside this repo:
+
+```sh
+npm run progress:hook:install
+source ~/.zshrc
+```
+
+Optional controls:
+
+```sh
+export GAUSS_PROGRESS_ENABLED=0   # disable prompt output
+export GAUSS_PROGRESS_INTERVAL=20 # seconds between auto checks
+```
+
+## Workspace Layout (Coding First)
+
+Use the workspace map and focused tree view:
+
+- `docs/WORKSPACE_MAP.md`
+- `bash scripts/process/workspace-tree.sh`
+
+Canonical tool paths (no spaces):
+
+- `gauss-orchestrator/`
+- `tools/progress-checker/`
+- `research/`
+
+Legacy compatibility symlinks were removed in strict cleanup.
+
+## Secure Connectivity Agent
+
+For mobile/public network development with approval-gated network changes:
+
+```sh
+npm run network:secure
+npm run network:secure:apply
+npm run network:secure:watch
+```
+
+Detailed policy and satellite fallback options:
+
+- `docs/NETWORK_CONNECTIVITY_STRATEGY.md`

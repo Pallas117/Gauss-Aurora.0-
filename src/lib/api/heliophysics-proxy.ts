@@ -1,17 +1,25 @@
 import type {
   AuthSessionState,
   AuroraMapResponse,
+  BackendHealthResponse,
   CanonicalSpaceWeatherPoint,
   DashboardLatestResponse,
+  DeepSeekSafeCommandExecuteResponse,
+  DeepSeekSafeCommandPlanResponse,
+  DeepSeekPlannerResponse,
   FeedbackSubmissionRequest,
   FeedbackSubmissionResponse,
   MissionCoreSnapshotResponse,
   MMSReconVectorPoint,
+  OpsCommandJob,
+  OpsCommandMetricsResponse,
+  OpsCommandQueueResponse,
   OpsCommandSnapshotResponse,
   SourceStatus,
   ThreatSummaryResponse,
 } from "@/lib/types/space-weather";
 import { getAuthHeaders } from "@/lib/api/auth";
+import { getApiBaseUrl } from "@/lib/api/base-url";
 import {
   parseAuthSessionResponse,
   parseAuroraMapResponse,
@@ -23,10 +31,9 @@ import {
   parseThreatSummaryResponse,
 } from "@/lib/contracts/heliophysics";
 import { parseOpsCommandSnapshotResponse } from "@/lib/contracts/ops-command";
+import { fetchWithResilience } from "@/lib/network/resilient-fetch";
 
-// @ts-ignore
-const envUrl = typeof import_meta !== 'undefined' ? import_meta?.env?.VITE_HELIO_PROXY_URL : typeof process !== 'undefined' ? process.env?.VITE_HELIO_PROXY_URL : undefined;
-const BASE_URL = envUrl ?? "http://localhost:3001";
+const BASE_URL = getApiBaseUrl();
 
 function throwHelioHttpError(scope: string, status: number): never {
   if (status === 401) {
@@ -38,15 +45,34 @@ function throwHelioHttpError(scope: string, status: number): never {
   throw new Error(`${scope} HTTP ${status}`);
 }
 
+export async function fetchBackendHealth(): Promise<BackendHealthResponse> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/health`,
+    {
+      method: "GET",
+    },
+    {
+      scope: "backend health",
+      timeoutMs: 8_000,
+      retries: 1,
+    },
+  );
+  if (!response.ok) {
+    throwHelioHttpError("backend health", response.status);
+  }
+  return (await response.json()) as BackendHealthResponse;
+}
+
 export async function fetchSpaceWeather5s(
   lookback = "PT24H",
   limit = 17280,
 ): Promise<CanonicalSpaceWeatherPoint[]> {
-  const response = await fetch(
+  const response = await fetchWithResilience(
     `${BASE_URL}/api/feed/space-weather/5s?lookback=${encodeURIComponent(lookback)}&limit=${limit}`,
     {
       headers: await getAuthHeaders(),
     },
+    { scope: "space weather feed" },
   );
   if (!response.ok) {
     throwHelioHttpError("space weather feed", response.status);
@@ -56,9 +82,13 @@ export async function fetchSpaceWeather5s(
 }
 
 export async function fetchSpaceWeatherLatest(): Promise<CanonicalSpaceWeatherPoint> {
-  const response = await fetch(`${BASE_URL}/api/feed/space-weather/latest`, {
-    headers: await getAuthHeaders(),
-  });
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/feed/space-weather/latest`,
+    {
+      headers: await getAuthHeaders(),
+    },
+    { scope: "space weather latest" },
+  );
   if (!response.ok) {
     throwHelioHttpError("space weather latest", response.status);
   }
@@ -69,11 +99,12 @@ export async function fetchMmsReconnection(
   lookback = "PT2H",
   limit = 1440,
 ): Promise<MMSReconVectorPoint[]> {
-  const response = await fetch(
+  const response = await fetchWithResilience(
     `${BASE_URL}/api/feed/mms/reconnection?lookback=${encodeURIComponent(lookback)}&limit=${limit}`,
     {
       headers: await getAuthHeaders(),
     },
+    { scope: "MMS reconnection feed" },
   );
   if (!response.ok) {
     throwHelioHttpError("MMS reconnection feed", response.status);
@@ -83,9 +114,13 @@ export async function fetchMmsReconnection(
 }
 
 export async function fetchMmsReconnectionLatest(): Promise<MMSReconVectorPoint> {
-  const response = await fetch(`${BASE_URL}/api/feed/mms/reconnection/latest`, {
-    headers: await getAuthHeaders(),
-  });
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/feed/mms/reconnection/latest`,
+    {
+      headers: await getAuthHeaders(),
+    },
+    { scope: "MMS reconnection latest" },
+  );
   if (!response.ok) {
     throwHelioHttpError("MMS reconnection latest", response.status);
   }
@@ -93,9 +128,13 @@ export async function fetchMmsReconnectionLatest(): Promise<MMSReconVectorPoint>
 }
 
 export async function fetchAuroraMap(): Promise<AuroraMapResponse> {
-  const response = await fetch(`${BASE_URL}/api/feed/aurora/map?projection=gsm`, {
-    headers: await getAuthHeaders(),
-  });
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/feed/aurora/map?projection=gsm`,
+    {
+      headers: await getAuthHeaders(),
+    },
+    { scope: "aurora map" },
+  );
   if (!response.ok) {
     throwHelioHttpError("aurora map", response.status);
   }
@@ -103,9 +142,13 @@ export async function fetchAuroraMap(): Promise<AuroraMapResponse> {
 }
 
 export async function fetchSourceStatus(): Promise<SourceStatus[]> {
-  const response = await fetch(`${BASE_URL}/api/feed/sources/status`, {
-    headers: await getAuthHeaders(),
-  });
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/feed/sources/status`,
+    {
+      headers: await getAuthHeaders(),
+    },
+    { scope: "source status" },
+  );
   if (!response.ok) {
     throwHelioHttpError("source status", response.status);
   }
@@ -125,11 +168,12 @@ export async function fetchThreatSummary(
   limit = 96,
   horizonMinutes = 30,
 ): Promise<ThreatSummaryResponse> {
-  const response = await fetch(
+  const response = await fetchWithResilience(
     `${BASE_URL}/api/feed/threats/latest?lookback=${encodeURIComponent(lookback)}&limit=${limit}&horizonMinutes=${horizonMinutes}`,
     {
       headers: await getAuthHeaders(),
     },
+    { scope: "threat summary" },
   );
   if (!response.ok) {
     throwHelioHttpError("threat summary", response.status);
@@ -148,9 +192,17 @@ export async function fetchAuthSession(
     Object.assign(headers, await getAuthHeaders());
   }
 
-  const response = await fetch(`${BASE_URL}/api/auth/session`, {
-    headers,
-  });
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/auth/session`,
+    {
+      headers,
+    },
+    {
+      scope: "auth session",
+      timeoutMs: 6_000,
+      retries: 1,
+    },
+  );
   const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
 
   if (!response.ok) {
@@ -194,11 +246,12 @@ export async function fetchDashboardLatest(
   limit = 96,
   horizonMinutes = 30,
 ): Promise<DashboardLatestResponse> {
-  const response = await fetch(
+  const response = await fetchWithResilience(
     `${BASE_URL}/api/feed/dashboard/latest?lookback=${encodeURIComponent(lookback)}&limit=${limit}&horizonMinutes=${horizonMinutes}`,
     {
       headers: await getAuthHeaders(),
     },
+    { scope: "dashboard latest" },
   );
   if (!response.ok) {
     throwHelioHttpError("dashboard latest", response.status);
@@ -218,11 +271,12 @@ export async function fetchOpsCommandLatest(
   limit = 96,
   horizonMinutes = 30,
 ): Promise<OpsCommandSnapshotResponse> {
-  const response = await fetch(
+  const response = await fetchWithResilience(
     `${BASE_URL}/api/ops/command/latest?lookback=${encodeURIComponent(lookback)}&limit=${limit}&horizonMinutes=${horizonMinutes}`,
     {
       headers: await getAuthHeaders(),
     },
+    { scope: "ops command latest" },
   );
   if (!response.ok) {
     throwHelioHttpError("ops command latest", response.status);
@@ -243,11 +297,12 @@ export async function fetchMissionCoreLatest(
   limit = 96,
   horizonMinutes = 30,
 ): Promise<MissionCoreSnapshotResponse> {
-  const response = await fetch(
+  const response = await fetchWithResilience(
     `${BASE_URL}/api/mission/core/latest?lookback=${encodeURIComponent(lookback)}&limit=${limit}&horizonMinutes=${horizonMinutes}`,
     {
       headers: await getAuthHeaders(),
     },
+    { scope: "mission core latest" },
   );
   if (!response.ok) {
     throwHelioHttpError("mission core latest", response.status);
@@ -265,14 +320,22 @@ export async function fetchMissionCoreLatest(
 export async function submitFeedback(
   payload: FeedbackSubmissionRequest,
 ): Promise<FeedbackSubmissionResponse> {
-  const response = await fetch(`${BASE_URL}/api/feedback`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(await getAuthHeaders()),
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/feedback`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(await getAuthHeaders()),
+      },
+      body: JSON.stringify(payload),
     },
-    body: JSON.stringify(payload),
-  });
+    {
+      scope: "feedback submission",
+      retries: 1,
+      timeoutMs: 7_000,
+    },
+  );
 
   if (!response.ok) {
     throwHelioHttpError("feedback submission", response.status);
@@ -294,9 +357,17 @@ export interface AdminUserRow {
 }
 
 export async function fetchAdminUsers(): Promise<{ users: AdminUserRow[] }> {
-  const response = await fetch(`${BASE_URL}/api/admin/users`, {
-    headers: await getAuthHeaders(),
-  });
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/admin/users`,
+    {
+      headers: await getAuthHeaders(),
+    },
+    {
+      scope: "users list",
+      retries: 1,
+      timeoutMs: 7_000,
+    },
+  );
   if (response.status === 401) {
     throw new Error("Sign in required.");
   }
@@ -319,12 +390,189 @@ export interface AuditSummaryResponse {
 }
 
 export async function fetchAuditSummary(): Promise<AuditSummaryResponse> {
-  const response = await fetch(`${BASE_URL}/api/ops/audit/summary`, {
-    headers: await getAuthHeaders(),
-  });
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ops/audit/summary`,
+    {
+      headers: await getAuthHeaders(),
+    },
+    {
+      scope: "audit summary",
+      retries: 1,
+      timeoutMs: 7_000,
+    },
+  );
   if (!response.ok) {
     const json = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
     throw new Error(json.error ?? json.message ?? `Audit summary HTTP ${response.status}`);
   }
   return (await response.json()) as AuditSummaryResponse;
+}
+
+export async function queueOpsCommand(
+  payload: {
+    command_type: string;
+    payload?: Record<string, unknown>;
+    execute?: boolean;
+    simulate?: boolean;
+    idempotency_key?: string;
+    context?: Record<string, unknown>;
+  },
+): Promise<OpsCommandQueueResponse | Record<string, unknown>> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ops/command`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(await getAuthHeaders()),
+      },
+      body: JSON.stringify(payload),
+    },
+    {
+      scope: "ops command queue",
+      retries: 1,
+      timeoutMs: 12_000,
+    },
+  );
+  const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!response.ok) {
+    const error = typeof json.error === "string" ? json.error : `ops command HTTP ${response.status}`;
+    throw new Error(error);
+  }
+  return json;
+}
+
+export async function planOpsCommandWithDeepSeek(
+  payload: {
+    prompt: string;
+    context?: Record<string, unknown>;
+    execute?: boolean;
+    simulate?: boolean;
+    model?: string;
+    idempotency_key?: string;
+  },
+): Promise<DeepSeekPlannerResponse> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ops/command/deepseek`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(await getAuthHeaders()),
+      },
+      body: JSON.stringify(payload),
+    },
+    {
+      scope: "deepseek command planner",
+      retries: 1,
+      timeoutMs: 20_000,
+    },
+  );
+  const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!response.ok) {
+    const error = typeof json.error === "string" ? json.error : `deepseek planner HTTP ${response.status}`;
+    throw new Error(error);
+  }
+  return json as unknown as DeepSeekPlannerResponse;
+}
+
+export async function fetchOpsCommandJob(jobId: string): Promise<OpsCommandJob> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ops/command/job/${encodeURIComponent(jobId)}`,
+    {
+      headers: await getAuthHeaders(),
+    },
+    {
+      scope: "ops command job",
+      retries: 1,
+      timeoutMs: 8_000,
+    },
+  );
+  const json = (await response.json().catch(() => ({}))) as { error?: string; job?: OpsCommandJob };
+  if (!response.ok || !json.job) {
+    throw new Error(json.error ?? `ops command job HTTP ${response.status}`);
+  }
+  return json.job;
+}
+
+export async function fetchOpsCommandMetrics(): Promise<OpsCommandMetricsResponse> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ops/command/metrics`,
+    {
+      headers: await getAuthHeaders(),
+    },
+    {
+      scope: "ops command metrics",
+      retries: 1,
+      timeoutMs: 8_000,
+    },
+  );
+  const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!response.ok) {
+    const error = typeof json.error === "string" ? json.error : `ops command metrics HTTP ${response.status}`;
+    throw new Error(error);
+  }
+  return json as unknown as OpsCommandMetricsResponse;
+}
+
+export async function planDeepSeekSafeCommand(
+  payload: {
+    prompt: string;
+    context?: Record<string, unknown>;
+    model?: string;
+  },
+): Promise<DeepSeekSafeCommandPlanResponse> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ops/command/deepseek/run/plan`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(await getAuthHeaders()),
+      },
+      body: JSON.stringify(payload),
+    },
+    {
+      scope: "deepseek safe command plan",
+      retries: 1,
+      timeoutMs: 20_000,
+    },
+  );
+  const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!response.ok) {
+    const error = typeof json.error === "string" ? json.error : `safe command plan HTTP ${response.status}`;
+    throw new Error(error);
+  }
+  return json as unknown as DeepSeekSafeCommandPlanResponse;
+}
+
+export async function executeDeepSeekSafeCommand(
+  payload: {
+    approval_token?: string;
+    simulate?: boolean;
+    plan?: Record<string, unknown>;
+  },
+): Promise<DeepSeekSafeCommandExecuteResponse> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ops/command/deepseek/run/execute`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(await getAuthHeaders()),
+      },
+      body: JSON.stringify(payload),
+    },
+    {
+      scope: "deepseek safe command execute",
+      retries: 0,
+      timeoutMs: 30_000,
+    },
+  );
+  const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!response.ok) {
+    const error = typeof json.error === "string" ? json.error : `safe command execute HTTP ${response.status}`;
+    throw new Error(error);
+  }
+  return json as unknown as DeepSeekSafeCommandExecuteResponse;
 }

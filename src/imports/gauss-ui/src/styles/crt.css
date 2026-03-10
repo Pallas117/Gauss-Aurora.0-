@@ -1,0 +1,32 @@
+.crt-overlay {
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+}
+
+.text-glow {
+  text-shadow: 0 0 5px currentColor;
+}
+
+.font-dsky {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.1em;
+}
+
+/* Flicker animation */
+@keyframes flicker {
+  0% { opacity: 0.97; }
+  5% { opacity: 0.95; }
+  10% { opacity: 0.9; }
+  15% { opacity: 0.95; }
+  20% { opacity: 0.99; }
+  50% { opacity: 0.95; }
+  55% { opacity: 0.9; }
+  60% { opacity: 0.99; }
+  75% { opacity: 0.95; }
+  100% { opacity: 0.98; }
+}
+
+.animate-flicker {
+  animation: flicker 0.15s infinite;
+}

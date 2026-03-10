@@ -1,0 +1,71 @@
+{
+  "generatedAt": "2026-03-07T06:26:40.653Z",
+  "mode": "rag_grounded",
+  "transportUrl": "http://127.0.0.1:3002",
+  "scenarios": [
+    {
+      "scenarioId": "math-adaptive-sampling",
+      "category": "mathematics",
+      "prompt": "A solar-wind signal has been smooth for 40 minutes. Explain how to decide whether polling can be reduced without losing safety.",
+      "answer": "Okay, so I'm trying to figure out how to decide whether polling can be reduced without losing safety, given that a solar-wind signal has been smooth for 40 minutes. Let me break this down step by step.\n\nFirst, I need to understand the context. The solar-wind signal is smooth for 40 minutes, which is a good thing. But I need to decide if I can reduce the polling without compromising safety. Polling here probably refers to some kind of monitoring or data collection, maybe for safety purposes.\n\nThe options are to either reduce polling, keep it as is, or proceed with monitoring. The goal is to maintain safety, so I need to assess the risks of reducing polling. If reducing polling would cause safety issues, I should avoid it. If it doesn't, then I can proceed.\n\nI should start by assessing the current situation. The solar-wind signal is smooth, which is a positive sign. But I need to consider what reducing polling would mean. If I reduce polling, I might be missing critical data or information that's necessary for safety. For example, if I don't have real-time data on solar-wind activity, I might not be able to take immediate action if it becomes an issue.\n\nNext, I should consider the potential consequences of reducing polling. If I don't have enough data, I might not be able to detect when solar-wind signals become unstable or dangerous. This could lead to missed alerts or failures in safety measures. Plus, if I don't have real-time data, I might not be able to respond quickly enough to potential problems, which could have severe consequences.\n\nI should also think about the risks of not having enough data. If I don't have enough data, I might not be able to assess the severity of the solar-wind signal accurately. This could lead to underestimating the risks, which might not be wise. Plus, if I don't have enough data, I might not be able to implement effective safety measures.\n\nAnother thing to consider is the impact on other systems. If I reduce polling, I might be disrupting other critical systems that rely on real-time data. For example, if I'm monitoring for solar-wind, I might be interfering with other systems that need real-time data for safety. This could lead to data loss or other issues.\n\nI should also think about the confidence in the current data. If the solar-wind signal is smooth for 40 minutes, does that mean it's perfectly safe? There might be some variability",
+      "sourceCount": 7,
+      "score": {
+        "scenarioId": "math-adaptive-sampling",
+        "category": "mathematics",
+        "overall": 26,
+        "hardFail": false,
+        "policyAligned": false,
+        "axes": {
+          "foundations": {
+            "earned": 0,
+            "max": 35,
+            "note": "Foundational concepts are missing or too shallow."
+          },
+          "rigor": {
+            "earned": 6,
+            "max": 25,
+            "note": "Answer needs clearer assumptions, bounds, or uncertainty handling."
+          },
+          "stewardship": {
+            "earned": 20,
+            "max": 20,
+            "note": "Scenario does not require additional stewardship scoring beyond baseline."
+          },
+          "auditability": {
+            "earned": 0,
+            "max": 20,
+            "note": "Answer should be more explicit about evidence, provenance, or review path."
+          }
+        },
+        "stewardshipIndex": 0.522,
+        "matchedSignals": [],
+        "missingSignals": [
+          "\\bresidual",
+          "\\berror",
+          "\\bvalidation",
+          "\\bsample",
+          "\\binvariant",
+          "\\bbound",
+          "\\btrend",
+          "\\bbackoff"
+        ],
+        "recommendedImprovements": [
+          "State the governing invariants, constraints, and measurable quantities more explicitly.",
+          "Declare assumptions, uncertainty bounds, and validation checks before concluding.",
+          "Make the rationale auditable with provenance, approval, or rollback signals."
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "overall": 26,
+    "passed": 0,
+    "total": 1,
+    "hardFailures": 0
+  },
+  "recommendations": [
+    "State the governing invariants, constraints, and measurable quantities more explicitly.",
+    "Declare assumptions, uncertainty bounds, and validation checks before concluding.",
+    "Make the rationale auditable with provenance, approval, or rollback signals."
+  ]
+}

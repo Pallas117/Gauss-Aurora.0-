@@ -1,0 +1,17 @@
+{
+  "name": "gauss-telemetry-processor",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file-if-exists=../../.env --import tsx src/index.ts",
+    "dev": "node --env-file-if-exists=../../.env --import tsx --watch src/index.ts"
+  },
+  "dependencies": {
+    "@influxdata/influxdb-client": "^1.35.0",
+    "kafkajs": "^2.2.4",
+    "tsx": "^4.20.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

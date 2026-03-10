@@ -1,0 +1,279 @@
+{
+  "generated_at": "2026-03-04T06:05:05Z",
+  "root": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora",
+  "branch": "2026-02-10-2ybo",
+  "last_autonomous_run": null,
+  "backend_ai_granular": "Backend/AI granular: 19 passed, 0 failed (19 total)",
+  "overnight_monitoring": {
+    "label": "overnight-20260303-232619",
+    "summary_path": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/monitoring/overnight-20260303-232619.summary.txt",
+    "jsonl_path": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/monitoring/overnight-20260303-232619.jsonl",
+    "samples": 540,
+    "sample_window_start": "2026-03-03T23:26:19+0800",
+    "sample_window_end": "2026-03-04T08:31:22+0800",
+    "battery_start_percent": 13,
+    "battery_end_percent": 58,
+    "battery_state_start": "charging",
+    "battery_state_end": "charging",
+    "metrics": {
+      "mem_unused_p50_mb": 139.0,
+      "mem_unused_p95_mb": 449.0,
+      "gauss_cpu_p95_pct": 50.7,
+      "gpu_device_p95_pct": 42.0,
+      "load_avg_1m_p95": 5.82,
+      "low_mem_headroom_samples": 177,
+      "gauss_cpu_spike_samples": 23,
+      "gpu_spike_samples": 27
+    },
+    "summary_metrics": {
+      "load_avg_1m": {
+        "avg": 3.2,
+        "min": 1.63,
+        "max": 21.88,
+        "samples": 540
+      },
+      "gpu_device_util_pct": {
+        "avg": 8.54,
+        "min": 0.0,
+        "max": 70.0,
+        "samples": 540
+      },
+      "gpu_renderer_util_pct": {
+        "avg": 8.39,
+        "min": 0.0,
+        "max": 70.0,
+        "samples": 540
+      },
+      "cpu_idle_pct": {
+        "avg": 58.24,
+        "min": 0.22,
+        "max": 74.9,
+        "samples": 540
+      },
+      "gpu_tiler_util_pct": {
+        "avg": 8.32,
+        "min": 0.0,
+        "max": 59.0,
+        "samples": 540
+      },
+      "cpu_sys_pct": {
+        "avg": 14.72,
+        "min": 10.19,
+        "max": 45.39,
+        "samples": 540
+      },
+      "gauss_cpu_pct": {
+        "avg": 6.88,
+        "min": 0.0,
+        "max": 194.5,
+        "samples": 540
+      },
+      "gauss_rss_mb": {
+        "avg": 236.37,
+        "min": 37.4,
+        "max": 685.2,
+        "samples": 540
+      },
+      "cpu_user_pct": {
+        "avg": 27.13,
+        "min": 14.11,
+        "max": 75.28,
+        "samples": 540
+      }
+    },
+    "alerts": [
+      "Low memory headroom overnight (mem_unused p50 139MB, <=100MB for 177 samples).",
+      "Gauss CPU bursts observed (p95 50.7%, spikes>=60%: 23).",
+      "GPU burst windows detected (device util p95 42.0%, spikes>=45%: 27).",
+      "Host load jitter high (1m load p95 5.82); avoid full-parallel heavy suites by default."
+    ],
+    "actions": [
+      {
+        "milestone": "Runtime Efficiency",
+        "key": "monitoring-memory-headroom",
+        "label": "Low free memory headroom overnight",
+        "target": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/playwright.config.ts",
+        "hint": "Constrain default Playwright worker count when free RAM is low to reduce swap and UI flake.",
+        "score": 28.0
+      },
+      {
+        "milestone": "Runtime Efficiency",
+        "key": "monitoring-cpu-bursts",
+        "label": "Burst CPU spikes in monitored processes",
+        "target": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/AutomationPage.tsx",
+        "hint": "Replace fixed polling loops with adaptive cadence tied to power/profile constraints.",
+        "score": 26.0
+      },
+      {
+        "milestone": "Runtime Efficiency",
+        "key": "monitoring-gpu-bursts",
+        "label": "Burst GPU load windows",
+        "target": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/SDAPage.tsx",
+        "hint": "Use lightweight SVG SDA fallback in low-power or compact viewport sessions.",
+        "score": 24.0
+      }
+    ]
+  },
+  "readiness": {
+    "overall": 96,
+    "velocity_points_per_day": 0.317,
+    "next_incomplete_milestone": "V0.2 Audit Parity"
+  },
+  "worktree": {
+    "dirty": true,
+    "modified": 178,
+    "staged": 673,
+    "untracked": 46,
+    "conflicts": 0,
+    "hotspots": [
+      {
+        "area": "src",
+        "count": 233
+      },
+      {
+        "area": "research",
+        "count": 108
+      },
+      {
+        "area": "backend",
+        "count": 97
+      },
+      {
+        "area": "gauss-orchestrator",
+        "count": 84
+      },
+      {
+        "area": "docs",
+        "count": 55
+      },
+      {
+        "area": "reports",
+        "count": 35
+      },
+      {
+        "area": "scripts",
+        "count": 24
+      },
+      {
+        "area": "tests",
+        "count": 21
+      }
+    ],
+    "sample_changed_files": [
+      ".cursor/plans/turing_pool_cache_compute_and_device_monitor_d20ce252.plan.md",
+      ".cursor/rules/ORCHESTRATOR-SUBAGENT-SYNERGY.mdc",
+      ".cursor/rules/PROJECT-GAUSS-STRICT-OPTIMIZATION-DIRECTIVE.mdc",
+      ".cursor/worktrees.json",
+      ".detoxrc.js",
+      ".env.example",
+      ".github/workflows/ci-tests.yml",
+      ".gitignore",
+      "DEVELOPMENT_EVALUATION.md",
+      "README.md",
+      "backend/__init__.py",
+      "backend/adapters/mms-lasp.ts",
+      "backend/adapters/privateer.ts",
+      "backend/api/main.py",
+      "backend/auth.ts",
+      "backend/contracts/heliophysics-contract.test.ts",
+      "backend/contracts/heliophysics-contract.ts",
+      "backend/contracts/mission-core-contract.test.ts",
+      "backend/contracts/mission-core-contract.ts",
+      "backend/contracts/packet-ingest-contract.test.ts"
+    ]
+  },
+  "routes": [
+    "/",
+    "/command",
+    "/sda",
+    "/systems",
+    "/intel",
+    "/heliophysics",
+    "/orbit",
+    "/dev-hud",
+    "/admin/users",
+    "/staff/portal",
+    "/signup",
+    "/onboarding",
+    "/portal",
+    "/landing",
+    "*"
+  ],
+  "critical_endpoints": [
+    "/api/auth/session",
+    "/api/auth/onboarding",
+    "/api/feed/space-weather/5s",
+    "/api/feed/space-weather/latest",
+    "/api/feed/mms/reconnection",
+    "/api/feed/mms/reconnection/latest",
+    "/api/feed/aurora/map",
+    "/api/feed/sources/status",
+    "/api/feed/threats/latest",
+    "/api/feed/dashboard/latest",
+    "/api/ops/command/latest",
+    "/api/ops/command/log",
+    "/api/ops/pipeline/triad/latest",
+    "/api/ops/network/audit",
+    "/api/ops/audit/summary",
+    "/api/ops/turing/devices",
+    "/api/security/cybertiger/status"
+  ],
+  "backprop_actions": [
+    {
+      "milestone": "Runtime Efficiency",
+      "key": "monitoring-memory-headroom",
+      "label": "Low free memory headroom overnight",
+      "target": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/playwright.config.ts",
+      "hint": "Constrain default Playwright worker count when free RAM is low to reduce swap and UI flake.",
+      "score": 28.0
+    },
+    {
+      "milestone": "Runtime Efficiency",
+      "key": "monitoring-cpu-bursts",
+      "label": "Burst CPU spikes in monitored processes",
+      "target": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/AutomationPage.tsx",
+      "hint": "Replace fixed polling loops with adaptive cadence tied to power/profile constraints.",
+      "score": 26.0
+    },
+    {
+      "milestone": "Runtime Efficiency",
+      "key": "monitoring-gpu-bursts",
+      "label": "Burst GPU load windows",
+      "target": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/SDAPage.tsx",
+      "hint": "Use lightweight SVG SDA fallback in low-power or compact viewport sessions.",
+      "score": 24.0
+    },
+    {
+      "milestone": "V0.2 Audit Parity",
+      "key": "requirements-audit-runtime-failures",
+      "label": "Runtime requirements audit currently failing",
+      "target": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/progress/requirements-audit.latest.json",
+      "hint": "Run `npm run audit:adherence` and fix failing gates.",
+      "score": 20.0
+    }
+  ],
+  "blockers": [
+    "Runtime Efficiency: Low free memory headroom overnight",
+    "Runtime Efficiency: Burst CPU spikes in monitored processes",
+    "Runtime Efficiency: Burst GPU load windows",
+    "V0.2 Audit Parity: Runtime requirements audit currently failing",
+    "Overnight monitoring: Low memory headroom overnight (mem_unused p50 139MB, <=100MB for 177 samples).",
+    "Overnight monitoring: Gauss CPU bursts observed (p95 50.7%, spikes>=60%: 23).",
+    "High readiness but large dirty worktree; isolate scope before release."
+  ],
+  "prompt_capsule": {
+    "goal": "Use this capsule as the only context primer, then request only missing file reads.",
+    "now": [
+      "Runtime Efficiency: Low free memory headroom overnight",
+      "Runtime Efficiency: Burst CPU spikes in monitored processes",
+      "Runtime Efficiency: Burst GPU load windows"
+    ],
+    "next": [
+      "Constrain default Playwright worker count when free RAM is low to reduce swap and UI flake.",
+      "Replace fixed polling loops with adaptive cadence tied to power/profile constraints.",
+      "Use lightweight SVG SDA fallback in low-power or compact viewport sessions."
+    ],
+    "scope_rule": "Work only in hotspot areas unless blocker requires cross-cutting change.",
+    "last_autonomous_run": null
+  }
+}

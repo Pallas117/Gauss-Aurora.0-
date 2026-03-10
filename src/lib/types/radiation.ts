@@ -76,6 +76,29 @@ export interface RadiationDataPoint {
   orbitType: OrbitType;
   particleType: ParticleType;
   energyRange: EnergyRange;
+  visualPriorityScore?: number;
+}
+
+/**
+ * Risk zone point for debris/SSA overlay (open-catalog). Same visual pattern as radiation (points, color by value).
+ */
+export interface RiskZonePoint {
+  timestamp?: string;
+  orbitType: OrbitType;
+  altitude: number;
+  latitude?: number;
+  longitude?: number;
+  /** 0–1 risk score for color encoding */
+  riskScore: number;
+  objectCount?: number;
+  visualPriorityScore?: number;
+}
+
+/** Union for unified radiation/risk overlay: color by flux (radiation) or riskScore (risk). */
+export type VisualizationPoint = RadiationDataPoint | RiskZonePoint;
+
+export function isRiskZonePoint(p: VisualizationPoint): p is RiskZonePoint {
+  return 'riskScore' in p && typeof (p as RiskZonePoint).riskScore === 'number';
 }
 
 /**
@@ -157,4 +180,3 @@ export interface RealTimeRadiationSnapshot {
     alertLevel: 'low' | 'moderate' | 'high' | 'severe';
   };
 }
-

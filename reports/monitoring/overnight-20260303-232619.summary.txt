@@ -1,0 +1,22 @@
+Overnight Resource Monitor Summary
+label: overnight-20260303-232619
+jsonl: reports/monitoring/overnight-20260303-232619.jsonl
+processes: reports/monitoring/overnight-20260303-232619.processes.log
+interval_sec: 60
+requested_duration_hours: 9
+samples_captured: 540
+elapsed_hours: 8.98
+battery_start_percent: 13
+battery_end_percent: 58
+battery_drain_percent_per_hour: -5.01
+
+metric,avg,min,max,samples
+load_avg_1m,3.20,1.63,21.88,540
+gpu_device_util_pct,8.54,0.00,70.00,540
+gpu_renderer_util_pct,8.39,0.00,70.00,540
+cpu_idle_pct,58.24,0.22,74.90,540
+gpu_tiler_util_pct,8.32,0.00,59.00,540
+cpu_sys_pct,14.72,10.19,45.39,540
+gauss_cpu_pct,6.88,0.00,194.50,540
+gauss_rss_mb,236.37,37.40,685.20,540
+cpu_user_pct,27.13,14.11,75.28,540

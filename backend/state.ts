@@ -5,9 +5,30 @@ import type {
   SourceStatus,
   SphericalHarmonicCoefficients,
 } from "./types.js";
+import type { RiskZone, SatelliteObject } from "./ssa/open-catalog-client.js";
+import {
+  getRiskZoneSnapshot,
+  getSatelliteObjectsSnapshot,
+  setRiskZoneSnapshot,
+  setSatelliteObjectsSnapshot,
+  type RiskZoneSnapshot,
+  type SatelliteObjectsSnapshot,
+} from "./ssa/space-domain-store.js";
 
-const MAX_POINTS = 20000;
-const MAX_MMS_POINTS = 5000;
+const DEFAULT_MAX_CANONICAL = 20_000;
+const DEFAULT_MAX_MMS = 5_000;
+
+function getMaxCanonicalPoints(): number {
+  const raw = (process.env.CANONICAL_FEED_MAX ?? "").trim();
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? n : DEFAULT_MAX_CANONICAL;
+}
+
+function getMaxMmsPoints(): number {
+  const raw = (process.env.MMS_FEED_MAX ?? "").trim();
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 ? n : DEFAULT_MAX_MMS;
+}
 
 const canonicalFeed: CanonicalSpaceWeatherPoint[] = [];
 const mmsFeed: MMSReconVectorPoint[] = [];
@@ -23,20 +44,34 @@ let auroraMap:
 
 export function pushCanonical(point: CanonicalSpaceWeatherPoint): void {
   canonicalFeed.push(point);
-  if (canonicalFeed.length > MAX_POINTS) {
+  const max = getMaxCanonicalPoints();
+  if (canonicalFeed.length > max) {
     canonicalFeed.shift();
   }
 }
 
 export function pushMms(point: MMSReconVectorPoint): void {
   mmsFeed.push(point);
-  if (mmsFeed.length > MAX_MMS_POINTS) {
+  const max = getMaxMmsPoints();
+  if (mmsFeed.length > max) {
     mmsFeed.shift();
   }
 }
 
 export function setSourceStatus(status: SourceStatus[]): void {
   sourceStatus = status;
+}
+
+export function upsertSourceStatus(statusEntry: SourceStatus): void {
+  const index = sourceStatus.findIndex((entry) => entry.source === statusEntry.source);
+  if (index >= 0) {
+    sourceStatus[index] = {
+      ...sourceStatus[index],
+      ...statusEntry,
+    };
+    return;
+  }
+  sourceStatus = [...sourceStatus, statusEntry];
 }
 
 export function setAuroraMap(map: {
@@ -77,4 +112,22 @@ export function getAuroraMap():
     }
   | null {
   return auroraMap;
+}
+
+export type { RiskZoneSnapshot, SatelliteObjectsSnapshot };
+
+export function setRiskZones(zones: RiskZone[]): void {
+  setRiskZoneSnapshot(zones);
+}
+
+export function getRiskZones(): RiskZoneSnapshot | null {
+  return getRiskZoneSnapshot();
+}
+
+export function setSatelliteObjects(objects: SatelliteObject[]): void {
+  setSatelliteObjectsSnapshot(objects);
+}
+
+export function getSatelliteObjects(): SatelliteObjectsSnapshot | null {
+  return getSatelliteObjectsSnapshot();
 }

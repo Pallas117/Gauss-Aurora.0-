@@ -2,6 +2,8 @@
 
 This document describes the comprehensive caching strategy and data fetching optimizations implemented for the space radiation web app.
 
+**Retention and data reduction:** Backend in-memory caps, Supabase cleanup RPCs, and the link between data analysis models and "crunch / delete waste" are documented in [DATA_ANALYSIS_MODELS.md](DATA_ANALYSIS_MODELS.md). Frontend retention is covered by the cache strategy below and the "last 50 events" rule from the optimization directive.
+
 ## Architecture Overview
 
 The app uses a **service-based architecture** with typed clients for each data source, combined with **React Query (TanStack Query)** for intelligent caching and revalidation.

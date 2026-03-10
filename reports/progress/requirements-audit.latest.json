@@ -1,0 +1,176 @@
+{
+  "generated_at": "2026-03-10T18:47:17.660Z",
+  "strict_mode": false,
+  "totals": {
+    "pass": 14,
+    "warn": 0,
+    "fail": 0,
+    "skip": 0
+  },
+  "checks": [
+    {
+      "name": "RBAC Environment Preflight",
+      "command": "env RBAC_VIEWER_EMAIL RBAC_VIEWER_PASSWORD RBAC_OPERATOR_EMAIL RBAC_OPERATOR_PASSWORD",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "All required RBAC variables are set (RBAC_VIEWER_EMAIL, RBAC_VIEWER_PASSWORD, RBAC_OPERATOR_EMAIL, RBAC_OPERATOR_PASSWORD)"
+    },
+    {
+      "name": "RBAC Runtime Smoke Test",
+      "command": "npm run test:rbac",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "> vite_react_shadcn_ts@0.0.0 test:rbac\n> node --env-file-if-exists=.env --import tsx backend/scripts/rbac-smoke.ts\n\n[PASS] No token rejected - HTTP 401\n[PASS] viewer can access viewer endpoint - HTTP 200\n[PASS] viewer role resolved - reported=viewer\n[PASS] operator can access viewer endpoint - HTTP 200\n[PASS] operator role resolved - reported=operator\n[SKIP] admin status check - token not configured\n[PASS] viewer blocked from infer - HTTP 403\n[PASS] operator allowed to infer - HTTP 200\n[PASS] operator blocked from train - HTTP 403\n[SKIP] admin train check - set RBAC_TEST_TRAIN=true to enable\n\nRBAC smoke test passed. (testIp=198.51.100.48)"
+    },
+    {
+      "name": "TypeScript Lint",
+      "command": "npm run lint",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "> vite_react_shadcn_ts@0.0.0 lint\n> tsc --noEmit"
+    },
+    {
+      "name": "Unit/Integration Tests",
+      "command": "npm test",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "> vite_react_shadcn_ts@0.0.0 test\n> node --import tsx --test \"backend/**/*.test.ts\"\n\n✔ resolveClientBaseUrl preserves an explicit https origin without forcing port 3001 (0.822791ms)\n✔ resolveClientBaseUrl preserves a same-origin relative api path (0.184292ms)\n✔ resolveClientBaseUrl rewrites loopback env hosts to the current host for remote clients (0.142ms)\n✔ source status response contract accepts valid payload (2.604209ms)\n✔ source status response contract rejects malformed payload (0.566125ms)\n✔ mission core snapshot contract accepts valid payload (7.085709ms)\n✔ mission core snapshot contract rejects malformed payload (0.958541ms)\n✔ packet ingest contract accepts valid payload (2.617209ms)\n✔ packet ingest contract rejects invalid APID and payload hex (0.835666ms)\n✔ blocks malicious sign\n...<truncated>"
+    },
+    {
+      "name": "Orchestrator Tests",
+      "command": "npm run test:orchestrator",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "> vite_react_shadcn_ts@0.0.0 test:orchestrator\n> cd \"gauss-orchestrator\" && cargo test --all-targets\n\n\nrunning 73 tests\ntest anonymization::tests::anonymize_basic ... ok\ntest analysis::tests::detects_none ... ok\ntest analysis::tests::detects_classified ... ok\ntest bug_tracker::tests::test_bug_report_creation ... ok\ntest bug_tracker::tests::test_bug_tracker_mark_fixed ... ok\ntest bug_tracker::tests::test_bug_tracker_report ... ok\ntest bug_tracker::tests::test_bug_report_with_steps ... ok\ntest code_analysis::tests::test_recommended_action_display ... ok\ntest code_analysis::tests::test_risk_level_display ... ok\ntest code_fixer::tests::test_fix_result ... ok\ntest code_indexer::tests::test_issue_severity_ordering ... ok\ntest code_indexer::tests::test_symbol_type_display ... ok\ntest code_analysi\n...<truncated>"
+    },
+    {
+      "name": "Orchestrator ingest E2E",
+      "command": "node --env-file-if-exists=.env --import tsx backend/scripts/orchestrator-ingest-e2e.ts",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "OK: accepted_count=1, rejected_count=0"
+    },
+    {
+      "name": "Orchestrator live ingest (one file)",
+      "command": "npm run test:orchestrator:live-ingest",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "> vite_react_shadcn_ts@0.0.0 test:orchestrator:live-ingest\n> node --env-file-if-exists=.env --import tsx backend/scripts/orchestrator-live-ingest.ts"
+    },
+    {
+      "name": "Security Compliance Mapping Check",
+      "command": "node --env-file-if-exists=.env --import tsx backend/scripts/security-compliance-check.ts --json-out reports/progress/security-compliance.latest.json",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "CyberTiger Security Compliance Check\n====================================\n[PASS] NIST-AC-3 (NIST SP 800-53 Rev.5) - Access enforcement with authenticated API boundary\n       AUTH_REQUIRED is enabled by default.\n[PASS] NIST-CSF-PR.AA (NIST CSF 2.0) - Role-based authorization control\n       Role gate calls found in backend routes.\n[PASS] ISO-A.8.15 (ISO/IEC 27001:2022) - Logging and security event traceability\n       CyberTiger event generation patterns detected.\n[PASS] NIST-SC-7 (NIST SP 800-53 Rev.5) - Boundary protection and request throttling\n       Rate-limiting controls present in daemon implementation.\n[PASS] NIST-SI-4 (NIST SP 800-53 Rev.5) - Security monitoring and anomaly detection\n       Signature-based detection controls present.\n[PASS] SPACE-NISTIR-8401 (NISTIR 8401 / Satellite \n...<truncated>"
+    },
+    {
+      "name": "Directive adherence (Python)",
+      "command": "npm run check:directive",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "> vite_react_shadcn_ts@0.0.0 check:directive\n> node --env-file-if-exists=.env --import tsx backend/scripts/directive-adherence-check.ts\n\n[PASS] Directive adherence (Python GC + lazy load)"
+    },
+    {
+      "name": "Production Build",
+      "command": "npm run build",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "> vite_react_shadcn_ts@0.0.0 build\n> vite build\n\nvite v7.3.1 building client environment for production...\ntransforming...\n✓ 2518 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                         2.81 kB │ gzip:   0.84 kB\ndist/assets/index-pDu8jCJc.css                        115.14 kB │ gzip:  19.45 kB\ndist/assets/NotFound-CgNny3MJ.js                        0.63 kB │ gzip:   0.38 kB\ndist/assets/subsystem-space-orbit-BY-92e06.js           1.10 kB │ gzip:   0.64 kB\ndist/assets/operator-sources-CB8LXVPY.js                1.91 kB │ gzip:   0.61 kB\ndist/assets/ChronosPage-C-zZSKsY.js                     3.04 kB │ gzip:   1.26 kB\ndist/assets/AdminUsersPage-DqYrEeSm.js                  3.24 kB │ gzip:   1.18 kB\ndist/assets/theme-vendor-dIe38rK\n...<truncated>"
+    },
+    {
+      "name": "Backend Environment Sanity",
+      "command": "npm run check:backend-env",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "> vite_react_shadcn_ts@0.0.0 check:backend-env\n> node --env-file-if-exists=.env --import tsx backend/scripts/check-env.ts\n\n[backend-env] Checking backend configuration:\nOK  SUPABASE_URL=https://qmlanlazhbhiwcaxgzxt.supabase.co  (Supabase project URL)\nOK  SUPABASE_ANON_KEY=eyJh...J-gE  (Supabase anon/public key)\nOK  SUPABASE_SERVICE_ROLE_KEY=eyJh...TzTI  (Supabase service role key)\nOK  PROXY_PORT=3001  (Backend HTTP port (default 3001))\nOK  PROXY_HOST=0.0.0.0  (Backend bind host (default 0.0.0.0 in dev, loopback when private origins disabled))\nOK  FRONTEND_HOST=0.0.0.0  (Frontend dev bind host (e.g. 0.0.0.0 for hotspot/LAN))\nOK  ALLOWED_ORIGINS=http://localhost:8080  (CSV list for CORS allowlist)\nOK  ALLOW_PRIVATE_NETWORK_ORIGINS=true  (Allow hotspot/LAN origins on known dev ports)\nOK  AUTH\n...<truncated>"
+    },
+    {
+      "name": "Supabase RLS Smoke",
+      "command": "node --env-file-if-exists=.env --import tsx backend/scripts/supabase-rls-smoke.ts",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "[PASS] authenticated SELECT sw_nowcast_5s: ok\n[PASS] authenticated SELECT mms_recon_vectors_5s: ok\n[PASS] authenticated SELECT aurora_healpix_maps: ok\n[PASS] authenticated SELECT source_health: ok\n[PASS] authenticated INSERT sw_raw_samples denied: ok (denied)\n\nSupabase RLS smoke test passed."
+    },
+    {
+      "name": "DTN+ISL Network Management Audit",
+      "command": "npm run check:network-management",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "> vite_react_shadcn_ts@0.0.0 check:network-management\n> node --env-file-if-exists=.env --import tsx backend/scripts/network-management-audit.ts\n\nDTN + ISL Network Management Audit\n===============================\n[PASS] DTN-ISL-1 - Network management module\n       Rust DTN/ISL network manager module is present.\n[PASS] DTN-ISL-2 - Pass API network routes\n       Pass API exposes network audit, route planning, and link inventory routes.\n[PASS] DTN-ISL-3 - Backend ops surface for DTN status\n       Backend exposes DTN audit status through ops-control routes and mission logic.\n[PASS] DTN-ISL-4 - Frontend ops contract updated\n       Ops snapshot contract includes DTN/ISL status payload.\n[WARN] DTN-LIVE-0 - Configured DTN audit upstream\n       DTN_ISL_AUDIT_URL is not configured. Backend ops status\n...<truncated>"
+    },
+    {
+      "name": "Demand Features Audit",
+      "command": "npm run check:demand-features",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "> vite_react_shadcn_ts@0.0.0 check:demand-features\n> node --env-file-if-exists=.env --import tsx backend/scripts/demand-features-audit.ts\n\nDemand Features Audit\n=====================\n[PASS] DEMAND-1 - Conjunction interoperability + ethical purpose gating\n       CDM/OMM/OEM/OCM ingest module and SSA conjunction routes are present and mounted with policy checks.\n[PASS] DEMAND-2 - Multi-channel alert delivery and escalation\n       Alert delivery/escalation route(s) detected.\n[PASS] DEMAND-3 - Hotspot/offline handover included in full sweep\n       Full sweep includes Playwright network transition scenario.\n[PASS] DEMAND-4 - Source outage fallback behavior coverage\n       Offline resilience and network transition tests are present.\n[WARN] DEMAND-5 - Enterprise assurance controls in release gate\n...<truncated>"
+    }
+  ],
+  "security_compliance": {
+    "generated_at": "2026-03-10T18:47:08.854Z",
+    "totals": {
+      "pass": 8,
+      "warn": 0,
+      "fail": 0
+    },
+    "controls": [
+      {
+        "id": "NIST-AC-3",
+        "framework": "NIST SP 800-53 Rev.5",
+        "title": "Access enforcement with authenticated API boundary",
+        "status": "pass",
+        "details": "AUTH_REQUIRED is enabled by default."
+      },
+      {
+        "id": "NIST-CSF-PR.AA",
+        "framework": "NIST CSF 2.0",
+        "title": "Role-based authorization control",
+        "status": "pass",
+        "details": "Role gate calls found in backend routes."
+      },
+      {
+        "id": "ISO-A.8.15",
+        "framework": "ISO/IEC 27001:2022",
+        "title": "Logging and security event traceability",
+        "status": "pass",
+        "details": "CyberTiger event generation patterns detected."
+      },
+      {
+        "id": "NIST-SC-7",
+        "framework": "NIST SP 800-53 Rev.5",
+        "title": "Boundary protection and request throttling",
+        "status": "pass",
+        "details": "Rate-limiting controls present in daemon implementation."
+      },
+      {
+        "id": "NIST-SI-4",
+        "framework": "NIST SP 800-53 Rev.5",
+        "title": "Security monitoring and anomaly detection",
+        "status": "pass",
+        "details": "Signature-based detection controls present."
+      },
+      {
+        "id": "SPACE-NISTIR-8401",
+        "framework": "NISTIR 8401 / Satellite Ground Segment",
+        "title": "Documented mapping to satellite cybersecurity guidance",
+        "status": "pass",
+        "details": "Compliance baseline document present."
+      },
+      {
+        "id": "SPACE-DTN-1",
+        "framework": "DTN/ISL Operations Baseline",
+        "title": "DTN + ISL network-management audit control exists",
+        "status": "pass",
+        "details": "Network-management audit script is present."
+      },
+      {
+        "id": "SPACE-DTN-2",
+        "framework": "DTN/ISL Operations Baseline",
+        "title": "API-first network route planning and audit endpoints",
+        "status": "pass",
+        "details": "Pass API exposes network audit and route planning routes."
+      }
+    ]
+  }
+}

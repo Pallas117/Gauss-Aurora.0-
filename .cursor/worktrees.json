@@ -1,0 +1,8 @@
+{
+  "setup-worktree": [
+    "npm install"
+    ,
+    "python3 gauss-orchestrator/scripts/audit.py --strict",
+    "python3 gauss-orchestrator/scripts/test_optimal.py --memory-check --power-check"
+  ]
+}

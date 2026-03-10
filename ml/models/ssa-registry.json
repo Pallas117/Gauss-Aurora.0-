@@ -1,0 +1,29 @@
+{
+  "models": [
+    {
+      "version": "ssa-lane-logreg-v1",
+      "kind": "ssa-lane",
+      "trained_at": "2026-03-10T00:00:00Z",
+      "status": "ready",
+      "metrics": {
+        "samples": 192,
+        "intercept": -1.35,
+        "threshold": 0.68,
+        "weights": {
+          "conjunctionCount": 0.38,
+          "maxCollisionProbability": 1.1,
+          "inverseMissDistance": 0.82,
+          "debrisDensity": 0.55,
+          "highValueNeighborDensity": 0.62,
+          "unidentifiedRatio": 0.3,
+          "geoCrowdingScore": 0.38,
+          "meoCrowdingScore": 0.22,
+          "leoCrowdingScore": 0.12,
+          "tleFreshnessScore": 0.18,
+          "conjunctionFreshnessScore": 0.36,
+          "availabilityScore": 0.28
+        }
+      }
+    }
+  ]
+}

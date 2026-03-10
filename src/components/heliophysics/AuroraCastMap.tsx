@@ -31,7 +31,7 @@ export function AuroraCastMap({ map, loading, error }: AuroraCastMapProps) {
         {error && <p className="text-xs text-destructive">{error}</p>}
         {loading && <p className="text-xs text-muted-foreground">Loading aurora map...</p>}
 
-        <div className="relative h-[280px] w-full overflow-hidden rounded-md border bg-background">
+        <div className="relative h-[280px] w-full overflow-hidden  border bg-background">
           <svg viewBox="0 0 720 360" className="h-full w-full">
             <rect x="0" y="0" width="720" height="360" fill="hsl(var(--background))" />
             {sample.map((point, index) => {

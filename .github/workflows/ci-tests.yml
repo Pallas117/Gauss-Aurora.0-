@@ -1,41 +1,223 @@
-name: CI Tests
+name: Test Suite
 
 on:
   push:
-    branches:
-      - "**"
+    branches: ["**"]
   pull_request:
-  workflow_dispatch:
+
+concurrency:
+  group: test-suite-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
-    name: Full adherence audit
+  rust-orchestrator-tests:
+    name: Rust Orchestrator (CCSDS + XTCE)
     runs-on: ubuntu-latest
-    env:
-      # CI-safe placeholders so environment sanity checks can run.
-      # Real deployment values must be injected at runtime (not from this workflow).
-      SUPABASE_URL: https://example.supabase.co
-      SUPABASE_ANON_KEY: ci-placeholder-anon-key
-      SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role-key
-      AUTH_REQUIRED: "true"
-      CYBERTIGER_ENABLED: "true"
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run orchestrator tests
+        working-directory: gauss-orchestrator
+        run: cargo test --all-targets --all-features
+
+      - name: Install cargo-llvm-cov
+        run: cargo install cargo-llvm-cov --locked
+
+      - name: Compute decoder coverage summary
+        working-directory: gauss-orchestrator
+        run: cargo llvm-cov --tests --json-summary --output-path target/llvmcov.json
+
+      - name: Enforce decoder coverage >= 90%
+        working-directory: gauss-orchestrator
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          
+          summary = json.loads(Path("target/llvmcov.json").read_text())
+          files = summary.get("data", [{}])[0].get("files", [])
+          targets = {
+              "src/telemetry/ccsds.rs",
+              "src/telemetry/decoder_registry.rs",
+              "src/telemetry/mapping.rs",
+              "src/telemetry/xtce.rs",
+              "src/telemetry/quality.rs",
+          }
+          
+          seen = set()
+          failures = []
+          for row in files:
+              filename = row.get("filename", "")
+              for target in targets:
+                  if filename.endswith(target):
+                      seen.add(target)
+                      line_summary = row.get("summary", {}).get("lines", {})
+                      # cargo-llvm-cov summary schema can vary by version.
+                      # Prefer explicit percent; otherwise derive from covered/total counters.
+                      percent = line_summary.get("percent")
+                      if percent is None:
+                          covered = line_summary.get("covered", line_summary.get("count", 0))
+                          total_lines = line_summary.get("count", covered + line_summary.get("notcovered", 0))
+                          percent = 100.0 if total_lines == 0 else (covered * 100.0 / total_lines)
+                      if percent < 90.0:
+                          failures.append((target, percent))
+          
+          missing = sorted(targets - seen)
+          if missing:
+              raise SystemExit(f"Missing coverage entries for decoder files: {missing}")
+          if failures:
+              details = ", ".join(f"{name}={pct:.2f}%" for name, pct in failures)
+              raise SystemExit(f"Decoder coverage below threshold: {details}")
+          
+          print("Decoder coverage gate passed (>= 90%)")
+          PY
+
+  python-tests:
+    name: Python Unit + Integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Python unit tests
+        run: pytest tests/unit -q
+
+      - name: Run Python integration tests
+        run: pytest tests/integration -q
+
+  backend-node-tests:
+    name: Backend Node Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
+        run: npm ci
 
-      - name: Run full adherence audit
-        run: npm run audit:adherence
+      - name: Backend env sanity
+        if: env.SUPABASE_URL != '' || env.VITE_SUPABASE_URL != ''
+        run: npm run check:backend-env
+
+      - name: Run backend tests
+        run: npm test
+
+      - name: Backend ingest-loop tests (low-power profile)
+        run: POWER_SAVE_MODE=true INGEST_POWER_PROFILE=low-power node --import tsx --test "backend/**/*.test.ts" --test-path-pattern "ingest-loop"
+
+      - name: Protocol conformance (GAUSS-COMP-004)
+        run: npm run test:protocol-conformance
+        env:
+          ORCHESTRATOR_DECODE_API_BIND: ""
+
+  directive-adherence:
+    name: Directive Adherence (M1 8GB)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Python test deps
+        run: pip install pytest
+
+      - name: Run directive adherence audit
+        run: npm run audit:directive
+
+  ui-unit-tests:
+    name: UI Unit (Jest + RTL)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Jest UI tests with coverage
+        run: npm run test:unit:ui -- --coverage
+
+  web-e2e:
+    name: Web E2E (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: npm run test:ui
+
+  mobile-e2e:
+    name: Mobile E2E (Detox)
+    if: ${{ hashFiles('mobile/manus/package.json') != '' }}
+    runs-on: macos-latest
+    env:
+      DETOX_DEVICE_TYPE: iPhone 16
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 16
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Detox CLI
+        run: npm install --no-save detox
+
+      - name: Run Detox e2e
+        run: npx detox test -c ios.sim.debug --headless

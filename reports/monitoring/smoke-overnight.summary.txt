@@ -1,0 +1,12 @@
+Overnight Resource Monitor Summary
+label: smoke-overnight
+jsonl: reports/monitoring/smoke-overnight.jsonl
+processes: reports/monitoring/smoke-overnight.processes.log
+interval_sec: 5
+requested_duration_hours: 0.003
+samples_captured: 
+elapsed_hours: 0.00
+battery_start_percent: n/a
+battery_end_percent: n/a
+battery_drain_percent_per_hour: n/a
+

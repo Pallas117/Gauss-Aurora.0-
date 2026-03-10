@@ -1,0 +1,74 @@
+{
+  "documents": {
+    "foundational-axioms/gauss-steward-identity.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "reasons": [
+        "Approved foundational identity and scientific conduct reference for local RAG."
+      ]
+    },
+    "foundational-axioms/mathematical-rigor-and-invariants.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "reasons": [
+        "Approved foundational mathematics and invariants reference for local RAG."
+      ]
+    },
+    "foundational-axioms/physical-laws-and-field-reasoning.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "reasons": [
+        "Approved foundational physics and field reasoning reference for local RAG."
+      ]
+    },
+    "repo-knowledge/repo-knowledge-base.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "regenerated_reference",
+      "reasons": [
+        "Approved generated repo knowledge digest for trusted local ingestion."
+      ]
+    },
+    "spacecraft-ops-probability/mission-ethics-and-voice.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "reasons": [
+        "Approved curated ethics and voice reference for local RAG."
+      ]
+    },
+    "spacecraft-ops-probability/probability-models-and-gating.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "reasons": [
+        "Approved curated probability and gating reference for local RAG."
+      ]
+    },
+    "spacecraft-ops-probability/spacecraft-operations-procedures.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "reasons": [
+        "Approved curated spacecraft operations procedure reference for local RAG."
+      ]
+    }
+  }
+}

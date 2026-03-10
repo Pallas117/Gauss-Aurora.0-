@@ -1,0 +1,2060 @@
+{
+  "generatedAt": "2026-03-06T17:41:50.432Z",
+  "rootDir": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/research/documentation-rag",
+  "policyVersion": "orbital-stewardship-v1",
+  "overridesPath": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/research/documentation-rag/.gauss-doc-trust-overrides.json",
+  "totals": {
+    "files": 103,
+    "supported": 18,
+    "approved": 7,
+    "indexAllowed": 7,
+    "needsReview": 96,
+    "rejected": 0
+  },
+  "documents": [
+    {
+      "path": "2511.19468v1.pdf",
+      "sha256": "5046964f74d6036a2237fd2cd7f3ec27d5de6d336fbbbd3d5ad2a2b4d74ed1bc",
+      "sizeBytes": 593118,
+      "supported": true,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Angeo Solar Wind article.pdf",
+      "sha256": "1c7d4af3f7684b9bc02981d17e8e05743549ead0ab4a160a3cc94918cc60070b",
+      "sizeBytes": 3960948,
+      "supported": true,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "ARPA History Interview of Joseph Lickler.pdf",
+      "sha256": "21a2b800f6dbf62b8880256f120c8d8059b0373f523d256ebc74a6dfbe81f7a5",
+      "sizeBytes": 112228,
+      "supported": true,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Current Technology in Space v4 Briefing.pdf",
+      "sha256": "50642c77c4839e79822f7fae18b319e5ad0c2faa284d6398941934552dbbbf13",
+      "sizeBytes": 406679,
+      "supported": true,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "foundational-axioms/gauss-steward-identity.md",
+      "sha256": "070eadbb4336cf031a480275d90bb385a28fbc96b6679ef8e83c9fc5a5b0a73d",
+      "sizeBytes": 2410,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Approved foundational identity and scientific conduct reference for local RAG."
+      ]
+    },
+    {
+      "path": "foundational-axioms/mathematical-rigor-and-invariants.md",
+      "sha256": "b7708fbd50ab043f1b3df9431c1be70be0d9a171e02f18fab710ed6c6df8395d",
+      "sizeBytes": 2301,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Approved foundational mathematics and invariants reference for local RAG."
+      ]
+    },
+    {
+      "path": "foundational-axioms/physical-laws-and-field-reasoning.md",
+      "sha256": "e58f5e1bcc50cf06105fe0d1bab2c9f54e66cf4d5b4889c74b1633273b7398c9",
+      "sizeBytes": 2317,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Approved foundational physics and field reasoning reference for local RAG."
+      ]
+    },
+    {
+      "path": "Gauss Mainframe/.obsidian/app.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "sizeBytes": 2,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Hidden workspace/tooling artifact.",
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss Mainframe/.obsidian/appearance.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "sizeBytes": 2,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Hidden workspace/tooling artifact.",
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss Mainframe/.obsidian/core-plugins.json",
+      "sha256": "763cf20a921fd9955735b278006820b90b207b2fc04d9e79ca648279c7c14276",
+      "sizeBytes": 696,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Hidden workspace/tooling artifact.",
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss Mainframe/.obsidian/graph.json",
+      "sha256": "89b1b8c279c3229a13509a0fad866ef90a7a70a6536f78d542e9c0960aec3d77",
+      "sizeBytes": 493,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Hidden workspace/tooling artifact.",
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss Mainframe/.obsidian/workspace.json",
+      "sha256": "7ebe6b42040933161a4142fc5e8f2963243c461110904890f60600e949492a27",
+      "sizeBytes": 5346,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Hidden workspace/tooling artifact.",
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss Mainframe/Welcome.md",
+      "sha256": "ecd0dfb6b21143ff52cfe36f93636df57e5b21773c101491b86f10ce17556ca8",
+      "sizeBytes": 203,
+      "supported": true,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss Opportunity.docx",
+      "sha256": "f70bfae22267fdd22234f8d3fc9c4dfefeab5e92f83bd9e838da165c14c03416",
+      "sizeBytes": 17865,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Unsupported extraction format for current RAG pipeline.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Handbook for New Space Actors.pdf",
+      "sha256": "2146856b6a502ceaa6b29f2150f42749614c326f0fcfd7b3d9bb7d0a25924e0d",
+      "sizeBytes": 4228337,
+      "supported": true,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "maximize-the-value-of-hybrid-cloud-in-the-generative-ai-era.pdf",
+      "sha256": "dc91d5817ba6f6278ca95309bcee5eb211e5c3f69ad261e39c9162a21b7a17a5",
+      "sizeBytes": 12325423,
+      "supported": true,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "repo-knowledge/repo-knowledge-base.md",
+      "sha256": "7303a116f92bcba9808a662afe5bcbf9786cb6ade3a2fb1f782595887af4ece1",
+      "sizeBytes": 2802,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "regenerated_reference",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Approved generated repo knowledge digest for trusted local ingestion."
+      ]
+    },
+    {
+      "path": "spacecraft-ops-probability/mission-ethics-and-voice.md",
+      "sha256": "aecd006e2027bfbec3921899d8e9f037c93b10d3994c67dc67d8093330f79d03",
+      "sizeBytes": 3618,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Curated mission reference directory.",
+        "Approved curated ethics and voice reference for local RAG."
+      ]
+    },
+    {
+      "path": "spacecraft-ops-probability/probability-models-and-gating.md",
+      "sha256": "40f1ce2f89f42f6e30187d85b4e91e42606a5b3d9e3840eb1b514a0b98ca239d",
+      "sizeBytes": 1740,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Curated mission reference directory.",
+        "Approved curated probability and gating reference for local RAG."
+      ]
+    },
+    {
+      "path": "spacecraft-ops-probability/spacecraft-operations-procedures.md",
+      "sha256": "cd457d309019190478f798d1d537d6d57dccba2f45719f14749ff791de56003d",
+      "sizeBytes": 1349,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Curated mission reference directory.",
+        "Approved curated spacecraft operations procedure reference for local RAG."
+      ]
+    },
+    {
+      "path": "Vulnerability Assesment of GPS.pdf",
+      "sha256": "ba7bdc504b8f4dbfb59a1487ff42b7e0e0a5f1de7b1c2de9e7eea6b4e461ee9b",
+      "sizeBytes": 428107,
+      "supported": true,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/2-infrastructure-mr.png",
+      "sha256": "494ed514d22d1a42ae5dfd01538d878ebd9fcd9974a3c76d9270c4cb98cf6d30",
+      "sizeBytes": 804520,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/2024-IOMN-map.jpg",
+      "sha256": "90695cfd408c87a719c36887d12cefbe3d3362de966225905d4932a30c7d2183",
+      "sizeBytes": 96862,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/2e.Magnetosphere_image-1.jpg",
+      "sha256": "0d8e0bf0d19cee0a717bf8f6f7578d71c0b1165cf84cbb2262ca6233c78b514e",
+      "sizeBytes": 184236,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/a11y.min.js",
+      "sha256": "cf1aa9163953fb477fe5cf452229042578738fa9e600c6ef64c47e4635ba78c2",
+      "sizeBytes": 2358,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/acd25-0112-003-blockchain-test-drone-photo.jpg",
+      "sha256": "88db12a2edb63eec2bf7986d4ef78fcf7f2474995eceb4cafaa7723ee8bc92b7",
+      "sizeBytes": 30343,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/ad_status.js",
+      "sha256": "eed0dc1fdb5d97ed188ae16fd5e1024a5bb744af47340346be2146300a6c54b9",
+      "sizeBytes": 29,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/afrc2025-0168-030-edit.jpg",
+      "sha256": "05b80ec5b84757ca02ed1022c5803d6e34fb57e33c5a73fdbd2832645d497096",
+      "sizeBytes": 74704,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/afrc2026-0004-044.jpg",
+      "sha256": "d89521420732d5526e47d8c414e64f774ab6b1ce76acbca372223859247b916f",
+      "sizeBytes": 101928,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/api.js",
+      "sha256": "5a1e910247612ee10417dc5052079761edb4c008af3687b41cd612fdc0b26943",
+      "sizeBytes": 1589,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/Apollo16_Sun.jpeg",
+      "sha256": "979c86b81b8e8056ad2893633ff1bfb3631bf2ec3f6c8a3b74bf78d38cb5aa3c",
+      "sizeBytes": 193407,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/archival-footage-for-solar-wind-article-–-apollo-11.png",
+      "sha256": "80fc5fef60a26596423bd054bc09e4614b2eea3364818ba85328a36d3b51b1e4",
+      "sizeBytes": 132163,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/artemis-base-camp-3-2.png",
+      "sha256": "603e7729c58bf76385fe1b35e74d4821effe5aef6e1ed31df763048cd717c506",
+      "sizeBytes": 317283,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/as15-82-11082_orig.jpg",
+      "sha256": "d6ae10b5a73cc9b42279194ca4ce322f17cae3658b399c26609f031227a6eda0",
+      "sizeBytes": 303106,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/base.js",
+      "sha256": "9a67879e1d6731919661ff3ee817b7680de9b27c1ddcd5a295664bd50e4d8fc7",
+      "sizeBytes": 2654937,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/cast_sender.js",
+      "sha256": "ee147e859ad0f09aa50367974e38ab53e7c7054c4a51d400a7f45b0eb251454f",
+      "sizeBytes": 4272,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/cast_sender(1).js",
+      "sha256": "ccec0c86cc7f2a5a86158c88b6085c3283e9fd84606316097b8b1153471305aa",
+      "sizeBytes": 47178,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/chilefires_tmo_20250118_th.jpg",
+      "sha256": "ae517d0918e8f029b6d28b1472c8b2f86c50bacbe64ee4f85e2fd82f8e592729",
+      "sizeBytes": 118290,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/csc.jpg",
+      "sha256": "18314dfee04cc9d662259433d35e85d66114cf10597e39d4928261875576b50a",
+      "sizeBytes": 179846,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/embed.js",
+      "sha256": "27f5ff90acab0b800a14049c377f45309d0b78d0c82663e8f13fef01f125cdab",
+      "sizeBytes": 33164,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/flare131_sdo_2012194_front.jpg",
+      "sha256": "ff9b012f1f1881f4fa34a11ce9d1271c086f454e23cff65683530fe048441f3d",
+      "sizeBytes": 112620,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/frontendFixes.bundle.js",
+      "sha256": "db7943c858ee761d888d6aa4b69464ef5a51f9d7387ece1ccce712e9c5702696",
+      "sizeBytes": 10114,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/gravityforms.min.js",
+      "sha256": "9a7c35457282c3f780c8cb3eb30b7e94f5e251d60334b28bae490bf88dcc2534",
+      "sizeBytes": 45287,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/greatlakes_cloudstreets_tmo_20260120_th.jpg",
+      "sha256": "52cbe3fbc3e2f4c3b556c1fc8e33e7e85b22ba2867e7152a668fafa532b4a08b",
+      "sizeBytes": 212839,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/gtm.js",
+      "sha256": "7447ef2923505e039fc57bb4f99fe7e0fc53941b97bd56e83dfd63289a98124c",
+      "sizeBytes": 281053,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/gtm(1).js",
+      "sha256": "ed984fe384fd755d398d58a743232a0d46e644fa0be17b37891cc535c3314609",
+      "sizeBytes": 338017,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/h-0322-heliopausecycle-v01.00680-print.jpg",
+      "sha256": "8e7beb48981984296a95066f44286ec368eb2f10c9196bfd1fe280219ae2e02b",
+      "sizeBytes": 49144,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/hooks.min.js",
+      "sha256": "9a1e0d38b691f1d22a92cff65ec0439b428170ac39a4493c7ecb06d5585f56a3",
+      "sizeBytes": 4776,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/hubbleart_67.jpg",
+      "sha256": "5226f604f77013daad4b84ad8446b3efcffed4d541fee89a1395c46f32fc6a9c",
+      "sizeBytes": 65534,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/i18n.min.js",
+      "sha256": "f313d12ea6124bd28fc4a6b7163d253bb83d5aeab5edce594880c5c3df475cbc",
+      "sizeBytes": 9141,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/iframe_api",
+      "sha256": "70befdc2acf2502bb0cce3a3b56577b31033e29c580b1086f85cd531197ef116",
+      "sizeBytes": 993,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/iss_atmo.jpg",
+      "sha256": "71cc12feed493d4663b2e95abcce09434bf0b7ea895008a219f7abc7ca4dd37c",
+      "sizeBytes": 33131,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/iss073e0028436~large.jpg",
+      "sha256": "ca5b73edaba94852aba6c0f8b9b5767b02219f639aa150a8397bcef27191661e",
+      "sizeBytes": 325318,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/iss074e0046389~large.jpg",
+      "sha256": "09f48688440b04453cdd9164b8e8df83a4591a19f23fa03a8434aaa5f6ff81bc",
+      "sizeBytes": 486358,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/js",
+      "sha256": "2245274ff260a8cdd3eb320f640f2874b3fe710680bd0c8913300b7604ffcbbc",
+      "sizeBytes": 445267,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/js(1)",
+      "sha256": "702cadabb81fce662d396ae9b62fc4036ae8c1c1587303580ef9a3d13e8a7052",
+      "sizeBytes": 434294,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/js(2)",
+      "sha256": "c7472e98c6ea5da396622cca726acddf60e2cceeea28aef0716fd97bd2e1dc92",
+      "sizeBytes": 393220,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/js(3)",
+      "sha256": "645d9508478d478369bec15a85578f35eb2c3a276128f2c0af72ba832accaef9",
+      "sizeBytes": 393253,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/Jupiter and Saturn_Credit_Bill Dunford.jpeg",
+      "sha256": "bdbd3f35bbfc9d0bfd56419ee53f62853b701172044224cfad721ed8bba983d6",
+      "sizeBytes": 39543,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/Jupiter_aurora_full_size.jpeg",
+      "sha256": "6eaa3d3690352e99862e2b0730dd4045078d852448f4011b2e4e588e6e0a1629",
+      "sizeBytes": 165734,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/kamchatkasnow_amo_20260117_th.jpg",
+      "sha256": "dcd994aa781a5fe016237d72aa1307f6b4d64c8fc55e76b50592b235452d6414",
+      "sizeBytes": 223785,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/KSC-01172026-Artemis II_Rollout-26~large.jpg",
+      "sha256": "40469f9eaa538c851dd0b3fdc5861b86e0db275ec6be147770bc43b5e1ae734b",
+      "sizeBytes": 211580,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/loader.js",
+      "sha256": "0c68a175d033ffefaac61551455eb8d56d0f9756c8fe19f80beb48a695fdec85",
+      "sizeBytes": 3110,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/nasa-logo@2x.png",
+      "sha256": "f3de7b1ffb783f6e462d03d65ee6be358967632fba1864059e35f5d0ef2642b5",
+      "sizeBytes": 8928,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/nhq202512200038orig.jpg",
+      "sha256": "10f3c929086e89792b0eecc11184fc8703c73db6b9dd1497eb50c4f3e0af2e40",
+      "sizeBytes": 475486,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/observingsunposter-jpg.webp",
+      "sha256": "f94431c124864ff91aeddfaace1b2fe2705d93ca31a504e7b8b8b842fea9deb8",
+      "sizeBytes": 282392,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/orion-at-moon-gif.gif",
+      "sha256": "a4b3dab3921aaf3d9e4d14ce91993a714c5b79a419389dac26203b02cc5f57c8",
+      "sizeBytes": 2172385,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/p.js",
+      "sha256": "f501eccb45d1481e4037667ec4b4b7104525766a9b13ce864d3d866c7032ca82",
+      "sizeBytes": 78116,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/parker-with-image-of-solar-wind-ca-1977-print.jpg",
+      "sha256": "99872caff13e473bd9d4bf1a6407c496f09fb55be54f00c79e5b12dce5244c19",
+      "sizeBytes": 132697,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/PIA15526.tif",
+      "sha256": "62aa6b282c03c7d66096be3d319c3e9478935f360d1be4af21553bf67df7314e",
+      "sizeBytes": 137025,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/pum-site-scripts-1.js",
+      "sha256": "e00081a53a5387fe31191b268a10576ee14d5387666c5ed6c4e6c92ccc2ef607",
+      "sizeBytes": 70149,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/pum-site-styles-1.css",
+      "sha256": "c79b341bd5ecbc7a7d1ac78722fcd4fb75d5bc0b66d03ceefa5b3282b1d1fb0e",
+      "sizeBytes": 17664,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/react-dom.min.js",
+      "sha256": "9ab40ec8c39a41ed1420594767d54ad3752f385ba8019085d32374b10720b427",
+      "sizeBytes": 128946,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/react.min.js",
+      "sha256": "32b43e6f80b9818f13f0dbb16baa6b801f4b922babfcdcaa2554d986f5067ce6",
+      "sizeBytes": 10628,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/recaptcha__en.js",
+      "sha256": "d89a3b683ad06f027eaf33c886083c7d6f0fe88ee28e646059c4f521a166cde3",
+      "sizeBytes": 856260,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/remote.js",
+      "sha256": "ccbd088af1fafe755370c1970df0b1c1b0f24b8ada5cf06498620e8114ea4885",
+      "sizeBytes": 124881,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/roman-coresurvey-infographic-gbtds.jpg",
+      "sha256": "04316bcc72acf090d62e8830b298474f01f76dd6e80134ae005f4f4604218ca3",
+      "sizeBytes": 77564,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/saved_resource",
+      "sha256": "a9b6730ef1a9d024b306687ae97531deb8edc1a42d5c6a9921c2349ee8557206",
+      "sizeBytes": 494491,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/saved_resource.html",
+      "sha256": "97f9b10039b05e1af4a3c9b778fc72ba44cf68a376e4ec1d55f2558f16cf3e50",
+      "sizeBytes": 149,
+      "supported": true,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/saved_resource(1)",
+      "sha256": "0a0e1f1000a98a774d2b07ab0166fc721995f586bc25785462c311b3b667c14a",
+      "sizeBytes": 267860,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/saved_resource(2)",
+      "sha256": "0bb378a6181404735384c3aaca17fbaa80b9144a7e02eaca2b87739c3d6e843e",
+      "sizeBytes": 19321,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/saved_resource(3)",
+      "sha256": "ee08b89b49f48ee8ea9af1f1bf09dbeb97f4bc941525e9cdf68ee8e1d671d1f4",
+      "sizeBytes": 4448,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/saved_resource(4)",
+      "sha256": "df95dcea9396f4858c58c23d18f1ae0d86b7101d5960c298f4ec9ebb13d94f60",
+      "sizeBytes": 3760,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/saved_resource(5)",
+      "sha256": "572a6435e3e209f0d01262aa18c4d7ef83f54687cbd7732debdcf76d4969b478",
+      "sizeBytes": 78938,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/saved_resource(6)",
+      "sha256": "09cebfb4e0f4593e333fb743369e14bc185aabc1525182dda505c72edfa47d36",
+      "sizeBytes": 45818,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "restricted",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "File name indicates sensitive or presentation-specific content.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/slick.css",
+      "sha256": "de1e399b07289f3b0a8d35142e363e128124a1185770e214e25e58030dad48e5",
+      "sizeBytes": 1776,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/STScI-01KCA5NP86W9K3M53DHCQMKB3H.jpg",
+      "sha256": "e89fb1384ae6c5a2ac3ae8c5be349ae918f628c19707a7e362a9014dd169578f",
+      "sizeBytes": 26457,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/STScI-01KESWN3G28KZCQPZ2GHHDKAC3.png",
+      "sha256": "aff3c459af1ba9a99a9e369a109d4e6b3082b217692ae75cd20982ba22313b99",
+      "sizeBytes": 1437739,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/style-index.css",
+      "sha256": "9713c517248c149bd0eb8cc8d11f356071e15d2a8c93afdcee571971bd0a750b",
+      "sizeBytes": 41012,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/sun-gallery.jpg",
+      "sha256": "dd2342de648601d82b9d0893b651bee060756bba4b71e49f0daa2ecd81bb3747",
+      "sizeBytes": 12451,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/sunspots.jpg",
+      "sha256": "d474d3246c3a15186ab720d962c7545d39caed4b2599700bca1667815ed0aef0",
+      "sizeBytes": 293565,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/tessinspacerender-3000x1688-1.jpg",
+      "sha256": "66c63fdfa64e0434ec2f564e0e795f515ced29b52f69fb8122ca9d0a627c606a",
+      "sizeBytes": 1911712,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/TRAPPIST-1e_LEO_Const_CMYK_Print.tiff",
+      "sha256": "41f259a76e4bf4424eb355459ae17261089be86749c6c7f7af98b21b71a2054a",
+      "sizeBytes": 128119,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/Universal-Federated-Analytics-Min.js",
+      "sha256": "2f05feed2065b7385b156ebf3a7c6c19def3d412227cee0d46e8a53fb3e9ac41",
+      "sizeBytes": 29714,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/video.min.js",
+      "sha256": "acd0a81a4cc78928f1530598762ed783ee916674bf3a0bf2a6c26a6c0b16ed4b",
+      "sizeBytes": 687485,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/videojs-mux.js",
+      "sha256": "a5379585e35bb00bbee89b000c8f640f3dad193d4226b852295b604e3a618ca1",
+      "sizeBytes": 105447,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/wallpaper_kepler_186f.jpeg",
+      "sha256": "70bb2764542bcccd156ecf5a7afe949c18f7078224c6b431b3ae09fd2bb34bfc",
+      "sizeBytes": 83218,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/www-embed-player-es6.js",
+      "sha256": "c02dfa5a386ddae926a3b42f7b9d9a215099ffdc29545bcb8d12cbab68da219b",
+      "sizeBytes": 343050,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/www-player.css",
+      "sha256": "4a3d9f50726e2dc48728329f15bed529b17e8e1238c784566e6e97a03a710e83",
+      "sizeBytes": 524183,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/www-widgetapi.js",
+      "sha256": "172690ab0ba286f1ef866d9c58a39e5402e69eaa89c9479333728e6a801a64d2",
+      "sizeBytes": 32185,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/x-flare-may-8-2024-131-171-red-crop2.jpg",
+      "sha256": "f07f3ea2ed098f4af2ff50818fda96bdea93bf73be5bfc9f83341392792bab6d",
+      "sizeBytes": 209752,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science_files/zJcB04D95Yc.html",
+      "sha256": "31f2f5d07574baccea79d2d20592edd80ee46d74afb3336692985e9f4e65bab5",
+      "sizeBytes": 175960,
+      "supported": true,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "What Is the Solar Wind_ - NASA Science.html",
+      "sha256": "b5437c2d9d9ac7103d53a980df4394355e6d373b5e3a14bdcae1edb4fc934011",
+      "sizeBytes": 352398,
+      "supported": true,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    }
+  ]
+}

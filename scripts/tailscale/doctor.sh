@@ -17,6 +17,11 @@ HAS_ERRORS=false
 HAS_WARNINGS=false
 RESOLVED_TS_IP=""
 
+is_loopback_host() {
+  local host="${1:-}"
+  [[ "${host}" == "localhost" || "${host}" == "127.0.0.1" || "${host}" == "::1" || "${host}" == "[::1]" ]]
+}
+
 detect_tailscale_ip_fallback() {
   if ! command -v ifconfig >/dev/null 2>&1; then
     return 1
@@ -72,6 +77,10 @@ if [[ "${PROXY_HOST:-}" == "0.0.0.0" ]]; then
   err "PROXY_HOST=0.0.0.0 exposes backend on all interfaces."
 fi
 
+if [[ "${FRONTEND_HOST:-}" == "0.0.0.0" ]]; then
+  err "FRONTEND_HOST=0.0.0.0 exposes frontend on all interfaces."
+fi
+
 if [[ -n "${TS_IP:-}" ]]; then
   if [[ "${TS_IP}" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     RESOLVED_TS_IP="${TS_IP}"
@@ -103,6 +112,35 @@ else
       ok "tailscale ipv4: ${RESOLVED_TS_IP}"
     fi
   fi
+fi
+
+if [[ "${DEV_TAILSCALE_SKIP_DOCTOR:-false}" =~ ^[Tt][Rr][Uu][Ee]$ ]]; then
+  warn "DEV_TAILSCALE_SKIP_DOCTOR=true bypasses preflight checks."
+fi
+
+if [[ -n "${PROXY_HOST:-}" ]] && is_loopback_host "${PROXY_HOST}"; then
+  warn "PROXY_HOST=${PROXY_HOST} is loopback; mobile devices on tailnet cannot reach backend."
+fi
+
+if [[ -n "${FRONTEND_HOST:-}" ]] && is_loopback_host "${FRONTEND_HOST}"; then
+  warn "FRONTEND_HOST=${FRONTEND_HOST} is loopback; mobile devices on tailnet cannot reach frontend."
+fi
+
+if [[ -n "${ALLOWED_ORIGINS:-}" ]]; then
+  OLD_IFS="${IFS}"
+  IFS=','
+  for raw in ${ALLOWED_ORIGINS}; do
+    trimmed="${raw#"${raw%%[![:space:]]*}"}"
+    trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"
+    [[ -z "${trimmed}" ]] && continue
+    if [[ "${trimmed}" == *"*"* ]]; then
+      err "ALLOWED_ORIGINS contains wildcard '${trimmed}'."
+    fi
+    if [[ "${trimmed}" =~ ^https?://0\.0\.0\.0(:[0-9]+)?$ ]]; then
+      err "ALLOWED_ORIGINS contains unsafe 0.0.0.0 entry '${trimmed}'."
+    fi
+  done
+  IFS="${OLD_IFS}"
 fi
 
 check_port() {

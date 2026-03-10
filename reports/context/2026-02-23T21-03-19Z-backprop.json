@@ -1,0 +1,145 @@
+{
+  "generated_at": "2026-02-23T21:03:19Z",
+  "root": "/Users/josh/Documents/lightbound/Gauss/Gauss Aurora",
+  "branch": "2026-02-10-2ybo",
+  "readiness": {
+    "overall": 93,
+    "velocity_points_per_day": 0.0,
+    "next_incomplete_milestone": "V0.5 Offline Ops"
+  },
+  "worktree": {
+    "dirty": true,
+    "modified": 46,
+    "staged": 1,
+    "untracked": 76,
+    "conflicts": 0,
+    "hotspots": [
+      {
+        "area": "src",
+        "count": 46
+      },
+      {
+        "area": "backend",
+        "count": 34
+      },
+      {
+        "area": "tests",
+        "count": 10
+      },
+      {
+        "area": "docs",
+        "count": 5
+      },
+      {
+        "area": "scripts",
+        "count": 5
+      },
+      {
+        "area": "supabase",
+        "count": 5
+      },
+      {
+        "area": ".detoxrc.js",
+        "count": 1
+      },
+      {
+        "area": ".github",
+        "count": 1
+      }
+    ],
+    "sample_changed_files": [
+      "env.example",
+      ".github/workflows/ci-tests.yml",
+      ".gitignore",
+      "README.md",
+      "backend/adapters/mms-lasp.ts",
+      "backend/auth.ts",
+      "backend/ml-client/client.ts",
+      "backend/physics/mhd-nowcast.ts",
+      "backend/scripts/check-env.ts",
+      "backend/scripts/full-adherence-audit.ts",
+      "backend/scripts/rbac-bootstrap.ts",
+      "backend/scripts/rbac-smoke.ts",
+      "backend/server.ts",
+      "backend/supabase.ts",
+      "backend/types.ts",
+      "backend/worker/ingest-loop.test.ts",
+      "backend/worker/ingest-loop.ts",
+      "package-lock.json",
+      "package.json",
+      "scripts/tailscale/dev-mobile.sh"
+    ]
+  },
+  "routes": [
+    "/",
+    "/sda",
+    "/automation",
+    "/intel",
+    "/chronos",
+    "/heliophysics",
+    "/orbit",
+    "/dev-hud",
+    "/signup",
+    "/portal",
+    "*"
+  ],
+  "critical_endpoints": [
+    "/api/auth/session",
+    "/api/feed/space-weather/5s",
+    "/api/feed/space-weather/latest",
+    "/api/feed/mms/reconnection",
+    "/api/feed/mms/reconnection/latest",
+    "/api/feed/aurora/map",
+    "/api/feed/sources/status",
+    "/api/feed/threats/latest",
+    "/api/feed/dashboard/latest",
+    "/api/ops/command/latest",
+    "/api/security/cybertiger/status"
+  ],
+  "backprop_actions": [
+    {
+      "milestone": "V0.5 Offline Ops",
+      "key": "offline-cache-layer",
+      "label": "Offline cache layer implemented",
+      "target": "src/lib/offline/offline-cache.ts",
+      "hint": "Create IndexedDB/local cache adapter for key feeds.",
+      "score": 19.0
+    },
+    {
+      "milestone": "V0.5 Offline Ops",
+      "key": "offline-status-hook",
+      "label": "Offline mode hook implemented",
+      "target": "src/hooks/useOfflineMode.ts",
+      "hint": "Expose online/offline + stale-data status for UI actions.",
+      "score": 19.0
+    },
+    {
+      "milestone": "V0.5 Offline Ops",
+      "key": "offline-sw-implementation",
+      "label": "Offline service worker implemented",
+      "target": "public/offline-sw.js",
+      "hint": "Add `public/offline-sw.js` and register from frontend bootstrap.",
+      "score": 19.0
+    }
+  ],
+  "blockers": [
+    "V0.5 Offline Ops: Offline cache layer implemented",
+    "V0.5 Offline Ops: Offline mode hook implemented",
+    "V0.5 Offline Ops: Offline service worker implemented",
+    "High readiness but large dirty worktree; isolate scope before release."
+  ],
+  "prompt_capsule": {
+    "goal": "Use this capsule as the only context primer, then request only missing file reads.",
+    "now": [
+      "V0.5 Offline Ops: Offline cache layer implemented",
+      "V0.5 Offline Ops: Offline mode hook implemented",
+      "V0.5 Offline Ops: Offline service worker implemented"
+    ],
+    "next": [
+      "Create IndexedDB/local cache adapter for key feeds.",
+      "Expose online/offline + stale-data status for UI actions.",
+      "Add `public/offline-sw.js` and register from frontend bootstrap."
+    ],
+    "scope_rule": "Work only in hotspot areas unless blocker requires cross-cutting change."
+  }
+}

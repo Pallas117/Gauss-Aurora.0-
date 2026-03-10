@@ -1,0 +1,134 @@
+{
+  "generated_at": "2026-03-01T14:05:35Z",
+  "root": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora",
+  "branch": "2026-02-10-2ybo",
+  "last_autonomous_run": null,
+  "readiness": {
+    "overall": 96,
+    "velocity_points_per_day": 0.442,
+    "next_incomplete_milestone": "V0.2 Audit Parity"
+  },
+  "worktree": {
+    "dirty": true,
+    "modified": 105,
+    "staged": 1,
+    "untracked": 186,
+    "conflicts": 0,
+    "hotspots": [
+      {
+        "area": "src",
+        "count": 118
+      },
+      {
+        "area": "backend",
+        "count": 73
+      },
+      {
+        "area": "docs",
+        "count": 42
+      },
+      {
+        "area": "tests",
+        "count": 10
+      },
+      {
+        "area": "scripts",
+        "count": 8
+      },
+      {
+        "area": "supabase",
+        "count": 6
+      },
+      {
+        "area": ".cursor",
+        "count": 3
+      },
+      {
+        "area": "ml",
+        "count": 3
+      }
+    ],
+    "sample_changed_files": [
+      "env.example",
+      ".github/workflows/ci-tests.yml",
+      ".gitignore",
+      "README.md",
+      "backend/adapters/mms-lasp.ts",
+      "backend/auth.ts",
+      "backend/cybertiger/daemon.test.ts",
+      "backend/ml-client/client.ts",
+      "backend/physics/mhd-nowcast.ts",
+      "backend/scripts/check-env.ts",
+      "backend/scripts/full-adherence-audit.ts",
+      "backend/scripts/rbac-bootstrap.ts",
+      "backend/scripts/rbac-smoke.ts",
+      "backend/scripts/security-compliance-check.ts",
+      "backend/server.ts",
+      "backend/state.test.ts",
+      "backend/state.ts",
+      "backend/supabase.ts",
+      "backend/types.ts",
+      "backend/worker/ingest-loop.test.ts"
+    ]
+  },
+  "routes": [
+    "/",
+    "/command",
+    "/sda",
+    "/systems",
+    "/intel",
+    "/heliophysics",
+    "/orbit",
+    "/dev-hud",
+    "/admin/users",
+    "/staff/portal",
+    "/signup",
+    "/portal",
+    "/landing",
+    "*"
+  ],
+  "critical_endpoints": [
+    "/api/auth/session",
+    "/api/feed/space-weather/5s",
+    "/api/feed/space-weather/latest",
+    "/api/feed/mms/reconnection",
+    "/api/feed/mms/reconnection/latest",
+    "/api/feed/aurora/map",
+    "/api/feed/sources/status",
+    "/api/feed/threats/latest",
+    "/api/feed/dashboard/latest",
+    "/api/ops/command/latest",
+    "/api/ops/command/log",
+    "/api/ops/pipeline/triad/latest",
+    "/api/ops/network/audit",
+    "/api/ops/audit/summary",
+    "/api/ops/turing/devices",
+    "/api/security/cybertiger/status"
+  ],
+  "backprop_actions": [
+    {
+      "milestone": "V0.2 Audit Parity",
+      "key": "requirements-audit-runtime-failures",
+      "label": "Runtime requirements audit currently failing",
+      "target": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/progress/requirements-audit.latest.json",
+      "hint": "Run `npm run audit:adherence` and fix failing gates.",
+      "score": 21.0
+    }
+  ],
+  "blockers": [
+    "V0.2 Audit Parity: Runtime requirements audit currently failing",
+    "High readiness but large dirty worktree; isolate scope before release."
+  ],
+  "prompt_capsule": {
+    "goal": "Use this capsule as the only context primer, then request only missing file reads.",
+    "now": [
+      "V0.2 Audit Parity: Runtime requirements audit currently failing",
+      "High readiness but large dirty worktree; isolate scope before release."
+    ],
+    "next": [
+      "Run `npm run audit:adherence` and fix failing gates."
+    ],
+    "scope_rule": "Work only in hotspot areas unless blocker requires cross-cutting change.",
+    "last_autonomous_run": null
+  }
+}

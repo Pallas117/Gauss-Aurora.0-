@@ -4,6 +4,8 @@
 
 This document outlines the comprehensive quality assurance strategy for the Space Weather Monitor application, covering functional, performance, security, and reliability testing.
 
+**Vision / Roadmap:** QA supports operator readiness and the M1/8GB constraint; tests align with first-customer and demo use. See [VISION_AND_ROADMAP.md](VISION_AND_ROADMAP.md) for product vision and roadmap.
+
 ---
 
 ## 1. Functional Tests
@@ -175,6 +177,15 @@ function measureFrame() {
 | REL-021 | Decay rate correct | Half-life ~5 minutes |
 | REL-022 | Decay stops at baseline | Values stabilize |
 
+### 4.4 Retention / cleanup (smoke)
+
+| Test ID | Description | Expected Result |
+|---------|-------------|-----------------|
+| REL-030 | Full-stack mission Phase 4 | Ingest and cleanup run without error |
+| REL-031 | Supabase raw tables after clean_raw_window | Row counts for `sw_raw_samples` (and related raw tables) stay within configured time window |
+
+**Procedure:** Run full-stack mission (e.g. `npm run test:fullstack` or equivalent Phase 4); inspect Supabase row counts for raw tables before and after. After `clean_raw_window`, counts should be bounded. See [DATA_ANALYSIS_MODELS.md](DATA_ANALYSIS_MODELS.md).
+
 ### Outage Simulation Procedure
 
 ```javascript
@@ -263,9 +274,9 @@ describe('useSpaceWeather', () => {
 ```typescript
 describe('Data Flow', () => {
   it('fetches and displays data', async () => {
-    render(<SpaceWeatherVisualization />);
+    render(<CommandPage />);
     await waitFor(() => {
-      expect(screen.getByText(/km\/s/)).toBeInTheDocument();
+      expect(screen.getByText(/Solar wind speed/i)).toBeInTheDocument();
     });
   });
 });
@@ -282,9 +293,79 @@ describe('Visual Regression', () => {
 });
 ```
 
+### 6.4 Test ID → automation mapping (coverage tracking)
+
+Map QA test IDs to automated specs where they exist. Gaps are tracked here so automation can be added over time.
+
+| Category | Test IDs | Automated spec / command | Coverage |
+|----------|----------|---------------------------|----------|
+| **Backend** | BE-001, BE-006 | `backend/contracts/*.test.ts` (mission-core, heliophysics, packet-ingest, source status contracts) | Partial: schema/validation |
+| **Backend** | BE-002–BE-005, BE-007 | `backend/offline-resilience.test.ts`, feed/state logic | Partial / manual |
+| **Frontend** | FE-001–FE-007 | — | Manual; granular suite covers routes, not 3D/HUD |
+| **Frontend routes** | (SDA, Command, Heliophysics, Intel, Systems) | `tests/e2e/ui-ux-granular.spec.ts` (`npm run test:ui` or `test:ui:granular`) | Route load + key headings |
+| **Auth/portal** | (login, staff portal) | `tests/e2e/auth-portal.spec.ts` | Auth and portal flows |
+| **Smoke** | (app load, nav) | `tests/e2e/ui-smoke.spec.ts` | High-level smoke |
+| **Performance** | PERF-001–PERF-032 | — | Manual |
+| **Security** | SEC-* | `npm run check:security-compliance` (NIST/CSF mapping) | Partial: compliance mapping; SEC-001–SEC-041 manual |
+| **Reliability** | REL-030, REL-031 | `npm run test:fullstack` (Phase 4 ingest + cleanup) | Full-stack mission |
+| **Reliability** | REL-001–REL-022 | — | Manual |
+| **RBAC** | (auth gates) | `npm run test:rbac` (requires RBAC_* env) | RBAC smoke |
+| **RLS** | (Supabase RLS) | `npm run test:supabase-rls` (requires env) | RLS smoke |
+
+**How to use:** Run `npm test` for backend; `npm run test:ui` for Playwright (granular + smoke + auth). Before release, run `npm run audit:adherence` and optional `npm run test:rbac` / `npm run test:supabase-rls` when credentials are set. Add new rows or spec paths as new tests are added.
+
 ---
 
-## 7. Test Schedule
+## 7. Backend, Supabase, and Orchestrator Test Matrix
+
+This section covers the test matrix for the Node backend, Supabase (auth, RLS, pipelines), and the gauss-orchestrator. See the **Backend and Supabase Testing Plan** (`.cursor/plans/` or project docs) for full implementation details.
+
+### 7.1 Backend tests
+
+| Command / Job | What it does |
+|---------------|----------------|
+| `npm test` | Node `node --test` for `backend/**/*.test.ts` (unit and contract tests). |
+| `npm run check:backend-env` | Validates required env (e.g. Supabase URL/keys). Run before or with backend tests in CI so missing env fails fast. |
+| `npm run check:security-compliance` | Optional security/compliance checks. |
+
+Backend auth uses Supabase JWT and optional `x-gauss-service-token` for orchestrator ingest. Feed routes use `getSupabaseAnonClient(accessToken)` for read-only access.
+
+### 7.2 Supabase tests
+
+| Command / Job | What it does |
+|---------------|----------------|
+| `npm run test:rbac` | RBAC smoke: viewer/operator/admin tokens, backend role gating, Supabase Auth. Requires `SUPABASE_*` and `RBAC_*` credentials. |
+| `npm run test:supabase-rls` | RLS smoke: as authenticated user, SELECT from published tables (expect OK), INSERT into raw table (expect denial). |
+| `npm run test:fullstack` | Full-stack mission: Phase 4 runs controlled Supabase write/cleanup (service_role `ingest_raw_sample`, verify rows). |
+
+Migrations live under `supabase/migrations/`. RLS is defined in `20260218234500_space_weather_rbac.sql`: service_role full access; authenticated read-only on `sw_nowcast_5s`, `mms_recon_vectors_5s`, `aurora_healpix_maps`, `source_health`; raw/clean tables service_role only. Use `supabase db reset` or `supabase migration up` to validate migrations.
+
+### 7.3 Orchestrator integration
+
+| Command / Job | What it does |
+|---------------|----------------|
+| `npm run test:orchestrator` | Rust orchestrator tests (CCSDS, XTCE, packet ingest contract vs mock backend). |
+| Full-stack Phase 4 (when `ORCHESTRATOR_INGEST_API_TOKEN` set) | E2E: POST `/api/ingest/telemetry/packets` with `x-gauss-service-token`; assert 200 and `accepted_count`/`rejected_count`. |
+| Full adherence audit (when `ORCHESTRATOR_INGEST_API_TOKEN` set) | Ingest E2E: POST one canonical packet; assert 200 and `accepted_count`/`rejected_count`. Live ingest: run orchestrator with `--process-file tests/fixtures/ccsds_valid.bin`; binary decodes and POSTs to backend (backend must be running). If token unset, audit reports WARN for both steps. |
+
+The orchestrator does not talk to Supabase directly; it calls the backend ingest API with a service token. Backend grants admin role when `ORCHESTRATOR_INGEST_API_TOKEN` matches.
+
+### 7.4 Supabase agent prompts (RLS policy generation)
+
+When using Supabase’s AI prompt for RLS policies (e.g. [Database: Create RLS policies](https://supabase.com/docs/guides/getting-started/ai-prompts/database-rls-policies)) or any agent that generates RLS:
+
+- **Schema context**: `public` schema; tables `sw_raw_samples`, `sw_clean_samples`, `sw_nowcast_5s`, `mms_raw_fgm`, `mms_raw_mec`, `mms_recon_vectors_5s`, `aurora_healpix_maps`, `source_health`. Backend uses **service_role** for ingestion and RPCs; **authenticated** for read-only consumers; **anon** must not read space-weather or telemetry.
+- **Suggested prompts** (paste into the Supabase agent):
+  1. *"For the public schema tables sw_nowcast_5s, mms_recon_vectors_5s, aurora_healpix_maps, and source_health: create RLS policies so that the authenticated role can only run SELECT. Use USING (true). Do not allow anon or any write. Prefer one policy per table, named descriptively (e.g. 'authenticated_read_sw_nowcast_5s')."*
+  2. *"For tables sw_raw_samples, sw_clean_samples, mms_raw_fgm, mms_raw_mec: ensure RLS is enabled and that only the service_role can SELECT, INSERT, UPDATE, DELETE. Do not create any policy that grants anon or authenticated access to these tables."*
+  3. *"We have RPCs: ingest_raw_sample(text, text, timestamptz, jsonb), clean_raw_window(timestamptz, timestamptz), generate_nowcast_5s, compute_mms_recon_vectors_5s, build_aurora_healpix_map. Only service_role should execute these. get_feed_5s and get_mms_recon_feed should be executable by authenticated and service_role. Generate the appropriate GRANT/REVOKE statements (no CREATE POLICY for functions)."*
+  4. *"When writing RLS policies for our Supabase project, always use (select auth.uid()) in USING/WITH CHECK where we need the current user, specify TO authenticated or anon explicitly, use separate policies for SELECT/INSERT/UPDATE/DELETE, and avoid FOR ALL. Prefer PERMISSIVE policies. Policy names should be short descriptive strings in double quotes."*
+
+After generating or changing policies, run full-stack Phase 4 and `test:rbac` (and optionally the orchestrator ingest E2E step) to validate.
+
+---
+
+## 8. Test Schedule
 
 | Phase | Tests | Trigger |
 |-------|-------|---------|
@@ -295,7 +376,7 @@ describe('Visual Regression', () => {
 
 ---
 
-## 8. Acceptance Criteria
+## 9. Acceptance Criteria
 
 ### Must Pass (Critical)
 - All BE-00x tests

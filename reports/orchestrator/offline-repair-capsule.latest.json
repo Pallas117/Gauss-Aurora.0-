@@ -1,0 +1,770 @@
+{
+  "generated_at": "2026-03-06T17:27:31.061Z",
+  "root": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora",
+  "profile": {
+    "offline_required": true,
+    "air_gap": true,
+    "strict_local_inference": true,
+    "local_engine_url": "http://127.0.0.1:8088/v1/chat/completions",
+    "model_endpoint_mode": "local",
+    "ingest_power_profile": "nominal",
+    "power_save_mode": false,
+    "battery_percent": 100,
+    "charging": true,
+    "min_safe_battery_percent": 10
+  },
+  "tech_debt_summary": {
+    "findings": [
+      {
+        "id": "hotspot-1",
+        "severity": "P2",
+        "category": "architecture",
+        "title": "backend/server.ts is still oversized",
+        "target": "backend/server.ts",
+        "evidence": "2819 lines in a single TypeScript surface.",
+        "recommendation": "Split planner, audit, and mission routes into mounted modules before giving DeepSeek patch authority.",
+        "offlineFixable": true
+      },
+      {
+        "id": "hotspot-2",
+        "severity": "P2",
+        "category": "architecture",
+        "title": "backend/routes/ops-control.ts is still oversized",
+        "target": "backend/routes/ops-control.ts",
+        "evidence": "1938 lines in a single TypeScript surface.",
+        "recommendation": "Reduce file scope before enabling autonomous patch application.",
+        "offlineFixable": true
+      },
+      {
+        "id": "hotspot-3",
+        "severity": "P2",
+        "category": "architecture",
+        "title": "backend/scripts/full-stack-mission.ts is still oversized",
+        "target": "backend/scripts/full-stack-mission.ts",
+        "evidence": "1091 lines in a single TypeScript surface.",
+        "recommendation": "Reduce file scope before enabling autonomous patch application.",
+        "offlineFixable": true
+      },
+      {
+        "id": "hotspot-4",
+        "severity": "P2",
+        "category": "architecture",
+        "title": "backend/worker/ingest-loop.ts is still oversized",
+        "target": "backend/worker/ingest-loop.ts",
+        "evidence": "925 lines in a single TypeScript surface.",
+        "recommendation": "Extract source policy, persistence, and cadence control into narrower worker modules.",
+        "offlineFixable": true
+      },
+      {
+        "id": "hotspot-5",
+        "severity": "P2",
+        "category": "architecture",
+        "title": "src/pages/HeliophysicsDashboard.tsx is still oversized",
+        "target": "src/pages/HeliophysicsDashboard.tsx",
+        "evidence": "901 lines in a single TypeScript surface.",
+        "recommendation": "Move source health, risk HUD, and heavy metrics cards into leaf components with explicit props.",
+        "offlineFixable": true
+      },
+      {
+        "id": "runtime-1",
+        "severity": "P2",
+        "category": "runtime",
+        "title": "Runtime Efficiency: Low free memory headroom overnight",
+        "target": "playwright.config.ts",
+        "evidence": "Backprop capsule blocker. Next milestone: V0.2 Audit Parity.",
+        "recommendation": "Constrain default Playwright worker count when free RAM is low to reduce swap and UI flake.",
+        "offlineFixable": true
+      },
+      {
+        "id": "runtime-2",
+        "severity": "P2",
+        "category": "runtime",
+        "title": "Runtime Efficiency: Burst CPU spikes in monitored processes",
+        "target": "src/pages/AutomationPage.tsx",
+        "evidence": "Backprop capsule blocker. Next milestone: V0.2 Audit Parity.",
+        "recommendation": "Replace fixed polling loops with adaptive cadence tied to power/profile constraints.",
+        "offlineFixable": true
+      },
+      {
+        "id": "runtime-3",
+        "severity": "P2",
+        "category": "runtime",
+        "title": "Runtime Efficiency: Burst GPU load windows",
+        "target": "src/pages/SDAPage.tsx",
+        "evidence": "Backprop capsule blocker. Next milestone: V0.2 Audit Parity.",
+        "recommendation": "Use lightweight SVG SDA fallback in low-power or compact viewport sessions.",
+        "offlineFixable": true
+      },
+      {
+        "id": "hotspot-6",
+        "severity": "P3",
+        "category": "architecture",
+        "title": "src/imports/gauss-ui/src/app/components/ui/sidebar.tsx is still oversized",
+        "target": "src/imports/gauss-ui/src/app/components/ui/sidebar.tsx",
+        "evidence": "727 lines in a single TypeScript surface.",
+        "recommendation": "Reduce file scope before enabling autonomous patch application.",
+        "offlineFixable": true
+      },
+      {
+        "id": "hotspot-7",
+        "severity": "P3",
+        "category": "architecture",
+        "title": "src/components/ui/sidebar.tsx is still oversized",
+        "target": "src/components/ui/sidebar.tsx",
+        "evidence": "638 lines in a single TypeScript surface.",
+        "recommendation": "Reduce file scope before enabling autonomous patch application.",
+        "offlineFixable": true
+      },
+      {
+        "id": "hotspot-8",
+        "severity": "P3",
+        "category": "architecture",
+        "title": "src/pages/CommandPage.tsx is still oversized",
+        "target": "src/pages/CommandPage.tsx",
+        "evidence": "607 lines in a single TypeScript surface.",
+        "recommendation": "Reduce file scope before enabling autonomous patch application.",
+        "offlineFixable": true
+      },
+      {
+        "id": "audit-1",
+        "severity": "P3",
+        "category": "audit",
+        "title": "RBAC Environment Preflight is SKIP",
+        "target": null,
+        "evidence": "Missing RBAC variables: RBAC_VIEWER_PASSWORD, RBAC_OPERATOR_PASSWORD. Run `npm run setup:rbac` and export credentials before runtime audit.",
+        "recommendation": "Treat this as an operator prerequisite or convert it into an automated local check.",
+        "offlineFixable": false
+      },
+      {
+        "id": "audit-2",
+        "severity": "P3",
+        "category": "audit",
+        "title": "RBAC Runtime Smoke Test is SKIP",
+        "target": null,
+        "evidence": "Skipped because RBAC preflight did not pass. Set RBAC_* variables to run runtime auth verification.",
+        "recommendation": "Treat this as an operator prerequisite or convert it into an automated local check.",
+        "offlineFixable": false
+      },
+      {
+        "id": "audit-3",
+        "severity": "P3",
+        "category": "audit",
+        "title": "Supabase RLS Smoke is SKIP",
+        "target": null,
+        "evidence": "Set SUPABASE_URL (or VITE_SUPABASE_URL), SUPABASE_ANON_KEY (or VITE_SUPABASE_PUBLISHABLE_KEY), and RBAC_VIEWER_TOKEN or RBAC_VIEWER_EMAIL/RBAC_VIEWER_PASSWORD to run RLS smoke.",
+        "recommendation": "Treat this as an operator prerequisite or convert it into an automated local check.",
+        "offlineFixable": false
+      }
+    ],
+    "total_findings": 14,
+    "offline_fixable_findings": 11
+  },
+  "system_flow": [
+    {
+      "stage": "Sense",
+      "purpose": "Collect only local evidence before DeepSeek plans any repair.",
+      "inputs": [
+        "reports/progress/requirements-audit.latest.json",
+        "reports/progress/backend-lint-issues.json",
+        "reports/context/latest-backprop.json",
+        "reports/orchestrator/work-queue.json"
+      ],
+      "outputs": [
+        "offline-repair-capsule.latest.json"
+      ],
+      "guardrails": [
+        "No network access.",
+        "No package installation.",
+        "No mutation during evidence collection."
+      ]
+    },
+    {
+      "stage": "Reduce",
+      "purpose": "Filter debt into small offline-fixable batches before the local model sees it.",
+      "inputs": [
+        "capsule findings",
+        "battery guard",
+        "power profile",
+        "air-gap state"
+      ],
+      "outputs": [
+        "repair_batches[0..N]"
+      ],
+      "guardrails": [
+        "Max 3 files per batch.",
+        "Max 180 changed lines per batch.",
+        "Skip env-only and credential-only blockers."
+      ]
+    },
+    {
+      "stage": "Pair",
+      "purpose": "Assign bounded reasoning to the model and bounded execution to the orchestrator before planning.",
+      "inputs": [
+        "repair batch",
+        "validatorSequence",
+        "allowed targets"
+      ],
+      "outputs": [
+        "pairing contract",
+        "handoff order"
+      ],
+      "guardrails": [
+        "Model does not run shell commands.",
+        "Orchestrator does not widen the batch scope.",
+        "Both lanes stay offline and local-only."
+      ]
+    },
+    {
+      "stage": "Plan",
+      "purpose": "Run DeepSeek locally against a bounded repair prompt.",
+      "inputs": [
+        "repair batch",
+        "pairing contract",
+        "prompt contract"
+      ],
+      "outputs": [
+        "patch proposal JSON",
+        "unified diff"
+      ],
+      "guardrails": [
+        "Local engine only.",
+        "No shell execution from planner output.",
+        "Planner may propose edits only inside batch targets."
+      ]
+    },
+    {
+      "stage": "Validate",
+      "purpose": "Verify the patch offline before any broader rollout.",
+      "inputs": [
+        "candidate patch",
+        "validatorSequence"
+      ],
+      "outputs": [
+        "pass/fail verdict",
+        "test logs",
+        "updated evaluation line"
+      ],
+      "guardrails": [
+        "Fail closed on lint/test/build errors.",
+        "Do not widen scope when validation fails.",
+        "Record the failure for the next capsule."
+      ]
+    },
+    {
+      "stage": "Record",
+      "purpose": "Feed the result back into the offline loop.",
+      "inputs": [
+        "validation verdict",
+        "autonomous evaluation",
+        "updated work queue"
+      ],
+      "outputs": [
+        "next backprop capsule",
+        "next repair capsule"
+      ],
+      "guardrails": [
+        "Append-only evaluation log.",
+        "Keep human approval for medium/high-risk apply.",
+        "Never auto-merge destructive changes."
+      ]
+    }
+  ],
+  "pairing_summary": {
+    "generatedFrom": [
+      "repair_batches",
+      "validatorSequence",
+      "bounded targets"
+    ],
+    "activeBatchId": "offline-batch-1",
+    "queueDepth": 3,
+    "queue": [
+      {
+        "batchId": "offline-batch-1",
+        "goal": "Reduce backend coupling before autonomous patch execution.",
+        "targets": [
+          "backend/server.ts",
+          "backend/routes/ops-control.ts",
+          "backend/scripts/full-stack-mission.ts"
+        ],
+        "validators": [
+          "npm run -s lint",
+          "npm test"
+        ],
+        "modelObjective": "Propose the smallest coupling reduction inside backend/server.ts, backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts while preserving current contracts.",
+        "orchestratorObjective": "Freeze scope to backend/server.ts, backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts, run npm run -s lint, npm test, and fail closed if the patch widens or breaks validation."
+      },
+      {
+        "batchId": "offline-batch-2",
+        "goal": "Trim page-level runtime surfaces before adding more autonomous UI behavior.",
+        "targets": [
+          "src/pages/HeliophysicsDashboard.tsx",
+          "src/pages/AutomationPage.tsx",
+          "src/pages/SDAPage.tsx"
+        ],
+        "validators": [
+          "npm run -s lint",
+          "npm run -s test:unit:ui",
+          "npm run -s build"
+        ],
+        "modelObjective": "Propose the smallest low-power runtime fix inside src/pages/HeliophysicsDashboard.tsx, src/pages/AutomationPage.tsx, src/pages/SDAPage.tsx without widening the surface area.",
+        "orchestratorObjective": "Freeze scope to src/pages/HeliophysicsDashboard.tsx, src/pages/AutomationPage.tsx, src/pages/SDAPage.tsx, run npm run -s lint, npm run -s test:unit:ui, npm run -s build, and fail closed if the patch widens or breaks validation."
+      },
+      {
+        "batchId": "offline-batch-3",
+        "goal": "Resolve locally fixable debt without network access.",
+        "targets": [
+          "playwright.config.ts"
+        ],
+        "validators": [
+          "npm run -s lint",
+          "npm run -s build"
+        ],
+        "modelObjective": "Propose the smallest low-power runtime fix inside playwright.config.ts without widening the surface area.",
+        "orchestratorObjective": "Freeze scope to playwright.config.ts, run npm run -s lint, npm run -s build, and fail closed if the patch widens or breaks validation."
+      }
+    ],
+    "operatorPolicy": [
+      "Model owns bounded patch reasoning only.",
+      "Orchestrator owns scope enforcement, validators, and recording.",
+      "Operator approval is still required before applying medium/high-risk patches."
+    ],
+    "nextStep": "Model plans offline-batch-1; orchestrator validates npm run -s lint, npm test before recording the next batch."
+  },
+  "repair_batches": [
+    {
+      "batchId": "offline-batch-1",
+      "goal": "Reduce backend coupling before autonomous patch execution.",
+      "rationale": "Keep DeepSeek in a narrow backend patch lane with local-only validation.",
+      "maxFilesChanged": 3,
+      "maxChangedLines": 180,
+      "allowedActions": [
+        "read-local-files",
+        "generate-unified-diff",
+        "run-targeted-tests",
+        "run-lint",
+        "run-build"
+      ],
+      "blockedActions": [
+        "network-access",
+        "dependency-install",
+        "destructive-git",
+        "broad-shell-exec",
+        "external-llm-calls"
+      ],
+      "validatorSequence": [
+        "npm run -s lint",
+        "npm test"
+      ],
+      "items": [
+        {
+          "id": "hotspot-1",
+          "severity": "P2",
+          "category": "architecture",
+          "title": "backend/server.ts is still oversized",
+          "target": "backend/server.ts",
+          "evidence": "2819 lines in a single TypeScript surface.",
+          "recommendation": "Split planner, audit, and mission routes into mounted modules before giving DeepSeek patch authority.",
+          "offlineFixable": true
+        },
+        {
+          "id": "hotspot-2",
+          "severity": "P2",
+          "category": "architecture",
+          "title": "backend/routes/ops-control.ts is still oversized",
+          "target": "backend/routes/ops-control.ts",
+          "evidence": "1938 lines in a single TypeScript surface.",
+          "recommendation": "Reduce file scope before enabling autonomous patch application.",
+          "offlineFixable": true
+        },
+        {
+          "id": "hotspot-3",
+          "severity": "P2",
+          "category": "architecture",
+          "title": "backend/scripts/full-stack-mission.ts is still oversized",
+          "target": "backend/scripts/full-stack-mission.ts",
+          "evidence": "1091 lines in a single TypeScript surface.",
+          "recommendation": "Reduce file scope before enabling autonomous patch application.",
+          "offlineFixable": true
+        }
+      ],
+      "pairing": {
+        "strategy": "bounded-dual-lane-repair",
+        "rationale": "Keep DeepSeek in a narrow backend patch lane with local-only validation. The model reasons inside the patch lane while the orchestrator owns scope, validation, and recording.",
+        "targets": [
+          "backend/server.ts",
+          "backend/routes/ops-control.ts",
+          "backend/scripts/full-stack-mission.ts"
+        ],
+        "model": {
+          "actor": "model",
+          "objective": "Propose the smallest coupling reduction inside backend/server.ts, backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts while preserving current contracts.",
+          "responsibilities": [
+            "Read only the bounded targets: backend/server.ts, backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts.",
+            "Return a unified diff that stays within 3 files and 180 changed lines.",
+            "Prefer extraction, simplification, and clearer boundaries over new abstractions or dependencies.",
+            "Use the validator sequence to shape the patch scope before proposing changes.",
+            "Preserve existing APIs while isolating the hotspot into smaller modules or helpers."
+          ],
+          "outputs": [
+            "repair summary JSON",
+            "unified diff",
+            "scope justification"
+          ],
+          "guardrails": [
+            "No shell execution.",
+            "No network access.",
+            "No edits outside bounded targets.",
+            "No new dependencies or long-running processes."
+          ]
+        },
+        "orchestrator": {
+          "actor": "orchestrator",
+          "objective": "Freeze scope to backend/server.ts, backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts, run npm run -s lint, npm test, and fail closed if the patch widens or breaks validation.",
+          "responsibilities": [
+            "Provide the batch, file previews, and allowed targets: backend/server.ts, backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts.",
+            "Reject any proposal that touches files outside the bounded target list.",
+            "Run validators in order: npm run -s lint, npm test.",
+            "Record the artifact, verdict, and failure reason for the next capsule regardless of outcome."
+          ],
+          "outputs": [
+            "validator results",
+            "artifact record",
+            "next-batch selection"
+          ],
+          "guardrails": [
+            "Fail closed on validator errors.",
+            "Do not widen file scope after the batch is frozen.",
+            "Require operator approval for medium/high-risk apply."
+          ]
+        },
+        "handoff": [
+          {
+            "step": "scope-freeze",
+            "actor": "orchestrator",
+            "description": "Freeze the batch targets, validator sequence, and file previews before planning begins.",
+            "successSignal": "Allowed targets and validators are fixed for the batch."
+          },
+          {
+            "step": "bounded-plan",
+            "actor": "model",
+            "description": "Generate the smallest patch proposal that addresses the batch goal inside the frozen scope.",
+            "successSignal": "Proposal stays inside bounded targets and returns structured diff output."
+          },
+          {
+            "step": "offline-validate",
+            "actor": "orchestrator",
+            "description": "Run offline validators and reject on the first failure.",
+            "successSignal": "Validator sequence passes or closes the batch with a bounded failure."
+          },
+          {
+            "step": "record-next",
+            "actor": "orchestrator",
+            "description": "Write the artifact, record the verdict, and hand the next debt batch to the pair.",
+            "successSignal": "Artifact and next-step state are persisted for the next repair cycle."
+          }
+        ],
+        "successMetrics": [
+          "Patch touches only the bounded batch files.",
+          "Validator sequence passes without widening scope.",
+          "Recorded artifact makes the next debt step explicit."
+        ],
+        "escalationTriggers": [
+          "Planner proposal touches files outside the allowed targets.",
+          "Patch exceeds the batch line or file budget.",
+          "Any validator fails.",
+          "Risk is medium or high."
+        ]
+      }
+    },
+    {
+      "batchId": "offline-batch-2",
+      "goal": "Trim page-level runtime surfaces before adding more autonomous UI behavior.",
+      "rationale": "Keep DeepSeek in a narrow frontend-pages patch lane with local-only validation.",
+      "maxFilesChanged": 3,
+      "maxChangedLines": 180,
+      "allowedActions": [
+        "read-local-files",
+        "generate-unified-diff",
+        "run-targeted-tests",
+        "run-lint",
+        "run-build"
+      ],
+      "blockedActions": [
+        "network-access",
+        "dependency-install",
+        "destructive-git",
+        "broad-shell-exec",
+        "external-llm-calls"
+      ],
+      "validatorSequence": [
+        "npm run -s lint",
+        "npm run -s test:unit:ui",
+        "npm run -s build"
+      ],
+      "items": [
+        {
+          "id": "hotspot-5",
+          "severity": "P2",
+          "category": "architecture",
+          "title": "src/pages/HeliophysicsDashboard.tsx is still oversized",
+          "target": "src/pages/HeliophysicsDashboard.tsx",
+          "evidence": "901 lines in a single TypeScript surface.",
+          "recommendation": "Move source health, risk HUD, and heavy metrics cards into leaf components with explicit props.",
+          "offlineFixable": true
+        },
+        {
+          "id": "runtime-2",
+          "severity": "P2",
+          "category": "runtime",
+          "title": "Runtime Efficiency: Burst CPU spikes in monitored processes",
+          "target": "src/pages/AutomationPage.tsx",
+          "evidence": "Backprop capsule blocker. Next milestone: V0.2 Audit Parity.",
+          "recommendation": "Replace fixed polling loops with adaptive cadence tied to power/profile constraints.",
+          "offlineFixable": true
+        },
+        {
+          "id": "runtime-3",
+          "severity": "P2",
+          "category": "runtime",
+          "title": "Runtime Efficiency: Burst GPU load windows",
+          "target": "src/pages/SDAPage.tsx",
+          "evidence": "Backprop capsule blocker. Next milestone: V0.2 Audit Parity.",
+          "recommendation": "Use lightweight SVG SDA fallback in low-power or compact viewport sessions.",
+          "offlineFixable": true
+        }
+      ],
+      "pairing": {
+        "strategy": "bounded-dual-lane-repair",
+        "rationale": "Keep DeepSeek in a narrow frontend-pages patch lane with local-only validation. The model reasons inside the patch lane while the orchestrator owns scope, validation, and recording.",
+        "targets": [
+          "src/pages/HeliophysicsDashboard.tsx",
+          "src/pages/AutomationPage.tsx",
+          "src/pages/SDAPage.tsx"
+        ],
+        "model": {
+          "actor": "model",
+          "objective": "Propose the smallest low-power runtime fix inside src/pages/HeliophysicsDashboard.tsx, src/pages/AutomationPage.tsx, src/pages/SDAPage.tsx without widening the surface area.",
+          "responsibilities": [
+            "Read only the bounded targets: src/pages/HeliophysicsDashboard.tsx, src/pages/AutomationPage.tsx, src/pages/SDAPage.tsx.",
+            "Return a unified diff that stays within 3 files and 180 changed lines.",
+            "Prefer extraction, simplification, and clearer boundaries over new abstractions or dependencies.",
+            "Use the validator sequence to shape the patch scope before proposing changes.",
+            "Prefer adaptive cadence, lighter defaults, and existing fallback paths over new runtime loops.",
+            "Preserve existing APIs while isolating the hotspot into smaller modules or helpers."
+          ],
+          "outputs": [
+            "repair summary JSON",
+            "unified diff",
+            "scope justification"
+          ],
+          "guardrails": [
+            "No shell execution.",
+            "No network access.",
+            "No edits outside bounded targets.",
+            "No new dependencies or long-running processes."
+          ]
+        },
+        "orchestrator": {
+          "actor": "orchestrator",
+          "objective": "Freeze scope to src/pages/HeliophysicsDashboard.tsx, src/pages/AutomationPage.tsx, src/pages/SDAPage.tsx, run npm run -s lint, npm run -s test:unit:ui, npm run -s build, and fail closed if the patch widens or breaks validation.",
+          "responsibilities": [
+            "Provide the batch, file previews, and allowed targets: src/pages/HeliophysicsDashboard.tsx, src/pages/AutomationPage.tsx, src/pages/SDAPage.tsx.",
+            "Reject any proposal that touches files outside the bounded target list.",
+            "Run validators in order: npm run -s lint, npm run -s test:unit:ui, npm run -s build.",
+            "Record the artifact, verdict, and failure reason for the next capsule regardless of outcome."
+          ],
+          "outputs": [
+            "validator results",
+            "artifact record",
+            "next-batch selection"
+          ],
+          "guardrails": [
+            "Fail closed on validator errors.",
+            "Do not widen file scope after the batch is frozen.",
+            "Require operator approval for medium/high-risk apply."
+          ]
+        },
+        "handoff": [
+          {
+            "step": "scope-freeze",
+            "actor": "orchestrator",
+            "description": "Freeze the batch targets, validator sequence, and file previews before planning begins.",
+            "successSignal": "Allowed targets and validators are fixed for the batch."
+          },
+          {
+            "step": "bounded-plan",
+            "actor": "model",
+            "description": "Generate the smallest patch proposal that addresses the batch goal inside the frozen scope.",
+            "successSignal": "Proposal stays inside bounded targets and returns structured diff output."
+          },
+          {
+            "step": "offline-validate",
+            "actor": "orchestrator",
+            "description": "Run offline validators and reject on the first failure.",
+            "successSignal": "Validator sequence passes or closes the batch with a bounded failure."
+          },
+          {
+            "step": "record-next",
+            "actor": "orchestrator",
+            "description": "Write the artifact, record the verdict, and hand the next debt batch to the pair.",
+            "successSignal": "Artifact and next-step state are persisted for the next repair cycle."
+          }
+        ],
+        "successMetrics": [
+          "Patch touches only the bounded batch files.",
+          "Validator sequence passes without widening scope.",
+          "Recorded artifact makes the next debt step explicit."
+        ],
+        "escalationTriggers": [
+          "Planner proposal touches files outside the allowed targets.",
+          "Patch exceeds the batch line or file budget.",
+          "Any validator fails.",
+          "Risk is medium or high."
+        ]
+      }
+    },
+    {
+      "batchId": "offline-batch-3",
+      "goal": "Resolve locally fixable debt without network access.",
+      "rationale": "Keep DeepSeek in a narrow runtime patch lane with local-only validation.",
+      "maxFilesChanged": 3,
+      "maxChangedLines": 180,
+      "allowedActions": [
+        "read-local-files",
+        "generate-unified-diff",
+        "run-targeted-tests",
+        "run-lint",
+        "run-build"
+      ],
+      "blockedActions": [
+        "network-access",
+        "dependency-install",
+        "destructive-git",
+        "broad-shell-exec",
+        "external-llm-calls"
+      ],
+      "validatorSequence": [
+        "npm run -s lint",
+        "npm run -s build"
+      ],
+      "items": [
+        {
+          "id": "runtime-1",
+          "severity": "P2",
+          "category": "runtime",
+          "title": "Runtime Efficiency: Low free memory headroom overnight",
+          "target": "playwright.config.ts",
+          "evidence": "Backprop capsule blocker. Next milestone: V0.2 Audit Parity.",
+          "recommendation": "Constrain default Playwright worker count when free RAM is low to reduce swap and UI flake.",
+          "offlineFixable": true
+        }
+      ],
+      "pairing": {
+        "strategy": "bounded-dual-lane-repair",
+        "rationale": "Keep DeepSeek in a narrow runtime patch lane with local-only validation. The model reasons inside the patch lane while the orchestrator owns scope, validation, and recording.",
+        "targets": [
+          "playwright.config.ts"
+        ],
+        "model": {
+          "actor": "model",
+          "objective": "Propose the smallest low-power runtime fix inside playwright.config.ts without widening the surface area.",
+          "responsibilities": [
+            "Read only the bounded targets: playwright.config.ts.",
+            "Return a unified diff that stays within 3 files and 180 changed lines.",
+            "Prefer extraction, simplification, and clearer boundaries over new abstractions or dependencies.",
+            "Use the validator sequence to shape the patch scope before proposing changes.",
+            "Prefer adaptive cadence, lighter defaults, and existing fallback paths over new runtime loops."
+          ],
+          "outputs": [
+            "repair summary JSON",
+            "unified diff",
+            "scope justification"
+          ],
+          "guardrails": [
+            "No shell execution.",
+            "No network access.",
+            "No edits outside bounded targets.",
+            "No new dependencies or long-running processes."
+          ]
+        },
+        "orchestrator": {
+          "actor": "orchestrator",
+          "objective": "Freeze scope to playwright.config.ts, run npm run -s lint, npm run -s build, and fail closed if the patch widens or breaks validation.",
+          "responsibilities": [
+            "Provide the batch, file previews, and allowed targets: playwright.config.ts.",
+            "Reject any proposal that touches files outside the bounded target list.",
+            "Run validators in order: npm run -s lint, npm run -s build.",
+            "Record the artifact, verdict, and failure reason for the next capsule regardless of outcome."
+          ],
+          "outputs": [
+            "validator results",
+            "artifact record",
+            "next-batch selection"
+          ],
+          "guardrails": [
+            "Fail closed on validator errors.",
+            "Do not widen file scope after the batch is frozen.",
+            "Require operator approval for medium/high-risk apply."
+          ]
+        },
+        "handoff": [
+          {
+            "step": "scope-freeze",
+            "actor": "orchestrator",
+            "description": "Freeze the batch targets, validator sequence, and file previews before planning begins.",
+            "successSignal": "Allowed targets and validators are fixed for the batch."
+          },
+          {
+            "step": "bounded-plan",
+            "actor": "model",
+            "description": "Generate the smallest patch proposal that addresses the batch goal inside the frozen scope.",
+            "successSignal": "Proposal stays inside bounded targets and returns structured diff output."
+          },
+          {
+            "step": "offline-validate",
+            "actor": "orchestrator",
+            "description": "Run offline validators and reject on the first failure.",
+            "successSignal": "Validator sequence passes or closes the batch with a bounded failure."
+          },
+          {
+            "step": "record-next",
+            "actor": "orchestrator",
+            "description": "Write the artifact, record the verdict, and hand the next debt batch to the pair.",
+            "successSignal": "Artifact and next-step state are persisted for the next repair cycle."
+          }
+        ],
+        "successMetrics": [
+          "Patch touches only the bounded batch files.",
+          "Validator sequence passes without widening scope.",
+          "Recorded artifact makes the next debt step explicit."
+        ],
+        "escalationTriggers": [
+          "Planner proposal touches files outside the allowed targets.",
+          "Patch exceeds the batch line or file budget.",
+          "Any validator fails.",
+          "Risk is medium or high."
+        ]
+      }
+    }
+  ],
+  "prompt_contract": {
+    "role": "You are DeepSeek running fully offline on Gauss. Produce the smallest safe patch that resolves only the current repair batch.",
+    "instructions": [
+      "Use only the files named in the repair batch.",
+      "Respect the model/orchestrator pairing contract and do not assume validator or shell authority.",
+      "Prefer extraction and simplification over new framework layers.",
+      "Do not introduce network calls, new dependencies, or long-running daemons.",
+      "If the batch cannot be fixed within limits, return a refusal with the blocking reason."
+    ],
+    "required_output": [
+      "JSON summary with risk, touched files, and validation plan.",
+      "Unified diff patch.",
+      "Short explanation of why the patch stays inside the batch scope."
+    ],
+    "validator_policy": [
+      "Run the listed validator sequence in order.",
+      "Reject the patch on the first failing validator.",
+      "If risk is medium/high, require operator approval before apply."
+    ]
+  }
+}

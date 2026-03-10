@@ -1,0 +1,19 @@
+{
+  "dictionary_id": "gauss-baseline-v1",
+  "apids": {
+    "900": {
+      "parameters": [
+        { "target": "solarWind.speed", "offset": 0, "type": "f32_be", "scale": 1.0 },
+        { "target": "solarWind.density", "offset": 4, "type": "f32_be", "scale": 1.0 },
+        { "target": "magneticField.z", "offset": 8, "type": "f32_be", "scale": 1.0 }
+      ]
+    },
+    "901": {
+      "parameters": [
+        { "target": "solarWind.speed", "offset": 0, "type": "f32_be", "scale": 1.0 },
+        { "target": "solarWind.density", "offset": 4, "type": "f32_be", "scale": 1.0 },
+        { "target": "magneticField.z", "offset": 8, "type": "f32_be", "scale": 1.0 }
+      ]
+    }
+  }
+}

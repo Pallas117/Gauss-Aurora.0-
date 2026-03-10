@@ -1,0 +1,12 @@
+{
+  "name": "gauss-mcp-model-ops",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server for Gauss model ops: rag_index, rag_status, evaluate_model, deploy_checkpoint, run_training_job",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --import tsx index.ts",
+    "dev": "node --import tsx index.ts"
+  }
+}

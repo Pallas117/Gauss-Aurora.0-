@@ -6,7 +6,11 @@ import {
   fetchMmsReconnectionLatest,
 } from "@/lib/api/heliophysics-proxy";
 import { readOfflineCache, writeOfflineCache } from "@/lib/offline/offline-cache";
-import { getAdaptivePollInterval } from "@/lib/power/polling";
+import {
+  appendTrendSample,
+  getTrendAwarePollInterval,
+  type TrendSample,
+} from "@/lib/power/polling";
 
 const POLL_INTERVAL_MS = 5000;
 const CACHE_KEY = "feed:mms-reconnection:PT2H:1440";
@@ -15,6 +19,26 @@ const HISTORY_LOOKBACK = "PT1H";
 const HISTORY_LIMIT = 720;
 const MAX_VECTORS = 1024;
 const CACHE_WRITE_INTERVAL_MS = 60 * 1000;
+
+function extractMmsTrendMetric(point: MMSReconVectorPoint): number {
+  return (
+    point.currentDensity.magnitude +
+    (point.probability?.reconnection ?? 0) * 100 +
+    (point.probability?.confidence ?? 0) * 25 +
+    (point.quality.divCurlRatio ?? 0) * 10
+  );
+}
+
+function seedMmsTrendSamples(points: MMSReconVectorPoint[]): TrendSample[] {
+  return points.slice(-8).reduce<TrendSample[]>((samples, point) => {
+    const timestampMs = Date.parse(point.timestamp);
+    const metric = extractMmsTrendMetric(point);
+    if (!Number.isFinite(timestampMs) || !Number.isFinite(metric)) {
+      return samples;
+    }
+    return appendTrendSample(samples, { timestampMs, value: metric });
+  }, []);
+}
 
 export type MMSReconnectionSource = "live" | "cache" | "none";
 
@@ -79,6 +103,7 @@ export function useMMSReconnection(options: UseMMSReconnectionOptions = {}): MMS
   const [source, setSource] = useState<MMSReconnectionSource>("none");
   const vectorsRef = useRef<MMSReconVectorPoint[]>([]);
   const lastCacheWriteAtRef = useRef(0);
+  const trendSamplesRef = useRef<TrendSample[]>([]);
 
   useEffect(() => {
     if (!enabled) {
@@ -86,6 +111,7 @@ export function useMMSReconnection(options: UseMMSReconnectionOptions = {}): MMS
       setError(null);
       setVectors([]);
       vectorsRef.current = [];
+      trendSamplesRef.current = [];
       setSource("none");
       return;
     }
@@ -112,6 +138,7 @@ export function useMMSReconnection(options: UseMMSReconnectionOptions = {}): MMS
           if (cached?.data && cached.data.length > 0 && navigator.onLine === false) {
             setVectors(cached.data);
             vectorsRef.current = cached.data;
+            trendSamplesRef.current = seedMmsTrendSamples(cached.data);
             setSource("cache");
             setError(
               `Offline mode: using cached MMS reconnection vectors (${Math.max(
@@ -124,6 +151,7 @@ export function useMMSReconnection(options: UseMMSReconnectionOptions = {}): MMS
           setError("Sign in to load protected MMS reconnection vectors.");
           setVectors([]);
           vectorsRef.current = [];
+          trendSamplesRef.current = [];
           setSource("none");
           return;
         }
@@ -134,6 +162,7 @@ export function useMMSReconnection(options: UseMMSReconnectionOptions = {}): MMS
           }
           setVectors(history);
           vectorsRef.current = history;
+          trendSamplesRef.current = seedMmsTrendSamples(history);
           maybeWriteCache(history);
         } else {
           const latestVector = await fetchMmsReconnectionLatest();
@@ -143,6 +172,14 @@ export function useMMSReconnection(options: UseMMSReconnectionOptions = {}): MMS
           setVectors((prev) => {
             const merged = mergeVector(prev, latestVector);
             vectorsRef.current = merged;
+            const timestampMs = Date.parse(latestVector.timestamp);
+            const metric = extractMmsTrendMetric(latestVector);
+            if (Number.isFinite(timestampMs) && Number.isFinite(metric)) {
+              trendSamplesRef.current = appendTrendSample(
+                trendSamplesRef.current,
+                { timestampMs, value: metric },
+              );
+            }
             maybeWriteCache(merged);
             return merged;
           });
@@ -158,6 +195,7 @@ export function useMMSReconnection(options: UseMMSReconnectionOptions = {}): MMS
         if (cached?.data && cached.data.length > 0) {
           setVectors(cached.data);
           vectorsRef.current = cached.data;
+          trendSamplesRef.current = seedMmsTrendSamples(cached.data);
           setSource("cache");
           setError(
             `${message}. Using cached MMS reconnection vectors (${Math.max(
@@ -182,7 +220,12 @@ export function useMMSReconnection(options: UseMMSReconnectionOptions = {}): MMS
       if (!mounted) {
         return;
       }
-      timer = window.setTimeout(run, getAdaptivePollInterval(POLL_INTERVAL_MS));
+      timer = window.setTimeout(
+        run,
+        getTrendAwarePollInterval(POLL_INTERVAL_MS, trendSamplesRef.current, {
+          maxMultiplier: 3.25,
+        }),
+      );
     };
     void run();
 

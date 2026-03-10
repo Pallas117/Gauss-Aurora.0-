@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-@import url("https://fonts.googleapis.com/css2?family=Raleway&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Space+Mono&display=swap");
+/* Mission control / Skunk Works HUD: high contrast in all light conditions */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
 
+@config "../tailwind.config.ts";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -40,7 +40,14 @@
     --input: 214 32% 91%;
     --ring: 240 60% 45%;
 
-    --radius: 0.5rem;
+    --radius: 0rem;
+
+    /* Gauss V1/MVP semantic tokens (Bridge: single switch for AR Morphism) */
+    --gauss-bg-base: #050505;
+    --gauss-panel-bg: rgba(255, 255, 255, 0.03);
+    --gauss-panel-opacity: 0.92;
+    --gauss-neon-primary: #CCFF00;
+    --gauss-neon-danger: #FF4D00;
 
     /* Light mode space theme colors - WCAG AA compliant */
     --space-deep: 240 30% 95%;
@@ -74,82 +81,139 @@
     --shadow-glow-cyan: 0 0 30px hsl(var(--primary) / 0.2);
     --shadow-glow-amber: 0 0 40px hsl(var(--accent) / 0.3);
 
+    /* HUD fallback for light mode */
+    --hud-text: 222 47% 11%;
+    --hud-value: 240 60% 45%;
+    --hud-border: 214 32% 91%;
+    --hud-glow: 240 60% 45% / 0.25;
+
     /* Fonts */
-    --font-display: 'Space Grotesk', system-ui, sans-serif;
-    --font-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-    --font-sans: Raleway, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+    --font-display: "Share Tech Mono", "JetBrains Mono", ui-monospace, monospace;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --font-sans: "JetBrains Mono", "Share Tech Mono", ui-sans-serif, monospace;
   }
 
   .dark {
-    /* Dark mode - WCAG 2.1 AA compliant colors */
-    --background: 0 0% 2%;
-    --foreground: 210 40% 96%;
+    /* Mission control HUD + black hole accretion disk: visible in all light conditions */
+    --background: 0 0% 1%;
+    --foreground: 45 20% 96%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 210 40% 96%;
+    --card: 0 0% 5%;
+    --card-foreground: 45 20% 96%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 210 40% 96%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 45 20% 96%;
 
-    /* Primary: Cyber lime */
-    --primary: 77 100% 50%;
+    /* Primary: accretion inner disk (warm amber/orange) */
+    --primary: 32 100% 55%;
     --primary-foreground: 0 0% 4%;
 
-    --secondary: 222 30% 12%;
-    --secondary-foreground: 210 40% 90%;
+    --secondary: 280 25% 10%;
+    --secondary-foreground: 45 20% 90%;
 
-    --muted: 222 30% 15%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 280 20% 12%;
+    --muted-foreground: 45 15% 62%;
 
-    /* Accent: Solar flare orange */
-    --accent: 16 100% 50%;
-    --accent-foreground: 0 0% 98%;
+    /* Accent: hot inner accretion (bright amber) */
+    --accent: 38 100% 55%;
+    --accent-foreground: 0 0% 4%;
 
-    /* Destructive: Bright red for alerts - WCAG AA compliant */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 100% / 0.14;
-    --input: 0 0% 100% / 0.16;
-    --ring: 77 100% 50%;
+    --border: 32 40% 40% / 0.22;
+    --input: 32 30% 35% / 0.2;
+    --ring: 32 100% 55%;
 
-    --radius: 0.5rem;
+    --radius: 0rem;
 
-    /* Dark mode space theme colors - radiation-themed blues and purples */
-    --space-deep: 0 0% 2%;
-    --space-nebula: 77 40% 8%;
-    
-    /* Van Allen Belt colors - NASA scientific palette */
-    --belt-low: 77 100% 50%;
-    --belt-mid: 54 100% 52%;
-    --belt-high: 16 100% 50%;
-    --belt-inner: 77 100% 50%;
-    --belt-outer: 95 100% 55%;
-    
-    /* Magnetosphere - bright cyan for dark mode */
-    --magnetosphere: 87 90% 58%;
-    --magnetosphere-glow: 77 100% 62%;
-    --field-line: 87 90% 58%;
-    
-    /* Status colors - bright for dark mode */
-    --aurora: 77 100% 50%;
+    /* Gauss V1/MVP semantic tokens */
+    --gauss-bg-base: #050505;
+    --gauss-panel-bg: rgba(255, 255, 255, 0.03);
+    --gauss-panel-opacity: 0.92;
+    --gauss-neon-primary: #CCFF00;
+    --gauss-neon-danger: #FF4D00;
+
+    /* HUD: high-contrast for projectors and all lighting */
+    --hud-text: 45 25% 92%;
+    --hud-value: 32 100% 58%;
+    --hud-border: 32 50% 45% / 0.35;
+    --hud-glow: 32 100% 55% / 0.4;
+
+    --space-deep: 0 0% 1%;
+    --space-nebula: 280 30% 6%;
+
+    --belt-low: 142 60% 45%;
+    --belt-mid: 45 90% 52%;
+    --belt-high: 16 90% 50%;
+    --belt-inner: 32 100% 55%;
+    --belt-outer: 280 60% 45%;
+
+    --magnetosphere: 195 70% 52%;
+    --magnetosphere-glow: 32 100% 58%;
+    --field-line: 195 70% 52%;
+
+    --aurora: 32 100% 55%;
     --solar-wind: 16 100% 50%;
-    --data-green: 77 100% 50%;
-    --data-yellow: 54 100% 52%;
-    --data-red: 16 100% 50%;
+    --data-green: 142 55% 48%;
+    --data-yellow: 45 95% 52%;
+    --data-red: 0 70% 52%;
 
-    /* Gradients */
-    --gradient-space: radial-gradient(120% 140% at 50% 0%, hsl(77 48% 9%) 0%, hsl(0 0% 2%) 46%, hsl(0 0% 2%) 100%);
-    --gradient-belt: radial-gradient(ellipse at center, hsl(var(--belt-inner) / 0.6) 0%, transparent 70%);
-    --gradient-hud: linear-gradient(180deg, hsl(var(--card) / 0.95) 0%, hsl(var(--card) / 0.8) 100%);
+    /* Accretion gradient: inner hot, outer cool */
+    --gradient-space: radial-gradient(140% 120% at 50% 50%, hsl(280 40% 8%) 0%, hsl(0 0% 1%) 50%, hsl(0 0% 1%) 100%);
+    --gradient-belt: radial-gradient(ellipse at center, hsl(var(--belt-inner) / 0.5) 0%, transparent 70%);
+    --gradient-hud: linear-gradient(180deg, hsl(var(--card) / 0.92) 0%, hsl(var(--card) / 0.78) 100%);
 
-    /* Shadows */
-    --shadow-glow-cyan: 0 0 28px hsl(var(--primary) / 0.28);
-    --shadow-glow-amber: 0 0 34px hsl(var(--accent) / 0.35);
+    --shadow-glow-cyan: 0 0 24px hsl(var(--primary) / 0.3);
+    --shadow-glow-amber: 0 0 32px hsl(var(--accent) / 0.35);
 
-    /* Fonts */
-    --font-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
-    --font-sans: Raleway, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+    --font-display: "Share Tech Mono", "JetBrains Mono", ui-monospace, monospace;
+    --font-mono: "JetBrains Mono", "Share Tech Mono", ui-monospace, monospace;
+    --font-sans: "JetBrains Mono", "Share Tech Mono", ui-sans-serif, monospace;
+  }
+
+  /* Accent variant: phosphor (classic HUD green) */
+  .dark[data-accent="phosphor"] {
+    --primary: 142 70% 48%;
+    --primary-foreground: 0 0% 4%;
+    --accent: 142 70% 48%;
+    --accent-foreground: 0 0% 4%;
+    --ring: 142 70% 48%;
+    --hud-value: 142 70% 52%;
+    --hud-border: 142 50% 45% / 0.35;
+    --hud-glow: 142 70% 48% / 0.4;
+    --magnetosphere-glow: 142 70% 52%;
+    --aurora: 142 70% 48%;
+  }
+
+  /* Accent variant: tactical cyan */
+  .dark[data-accent="tactical"] {
+    --primary: 195 90% 52%;
+    --primary-foreground: 0 0% 4%;
+    --accent: 187 85% 55%;
+    --accent-foreground: 0 0% 4%;
+    --ring: 195 90% 52%;
+    --hud-value: 195 90% 56%;
+    --hud-border: 195 60% 45% / 0.35;
+    --hud-glow: 195 90% 52% / 0.4;
+    --magnetosphere-glow: 195 90% 56%;
+    --aurora: 195 90% 52%;
+  }
+
+  /* Glow intensity: visible in all light conditions */
+  .dark[data-glow="low"] {
+    --shadow-glow-cyan: 0 0 12px hsl(var(--primary) / 0.2);
+    --shadow-glow-amber: 0 0 14px hsl(var(--accent) / 0.25);
+  }
+  .dark[data-glow="high"] {
+    --shadow-glow-cyan: 0 0 36px hsl(var(--primary) / 0.4);
+    --shadow-glow-amber: 0 0 40px hsl(var(--accent) / 0.45);
+  }
+
+  /* MVP / AR Morphism: projection-safe black + glass panels (set data-gauss-ui="mvp" on html) */
+  [data-gauss-ui="mvp"] {
+    --gauss-bg-base: #000000;
+    --gauss-panel-opacity: 0.1;
   }
 }
 
@@ -163,30 +227,32 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: var(--font-display);
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
     background: var(--gradient-space);
   }
 }
 
 @layer components {
   .hud-panel {
-    @apply backdrop-blur-xl rounded-2xl;
-    border: 1px solid hsl(0 0% 100% / 0.1);
-    background: linear-gradient(180deg, hsl(var(--card) / 0.72) 0%, hsl(var(--card) / 0.58) 100%);
+    @apply backdrop-blur-xl rounded-none;
+    border: 1px solid hsl(var(--hud-border));
+    background: rgba(0, 0, 0, var(--gauss-panel-opacity));
     box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.08),
-      0 8px 28px hsl(0 0% 0% / 0.45),
-      0 0 0 1px hsl(var(--primary) / 0.06);
+      inset 0 1px 0 hsl(var(--hud-text) / 0.06),
+      0 8px 28px hsl(0 0% 0% / 0.5),
+      0 0 0 1px hsl(var(--primary) / 0.08);
   }
 
   .hud-value {
-    @apply font-mono text-lg tracking-wider;
-    text-shadow: 0 0 10px currentColor;
+    font-family: var(--font-mono);
+    @apply text-lg tracking-wider;
+    color: hsl(var(--hud-value));
+    text-shadow: 0 0 12px hsl(var(--hud-glow));
   }
 
   .glow-text {
-    text-shadow: 0 0 20px hsl(var(--primary) / 0.6);
+    text-shadow: 0 0 20px hsl(var(--hud-glow));
   }
 
   .toggle-button {
@@ -208,7 +274,7 @@
   }
 
   .scanline {
-    @apply pointer-events-none absolute inset-0 overflow-hidden opacity-[0.02];
+    @apply pointer-events-none absolute inset-0 overflow-hidden opacity-[0.05];
     background: repeating-linear-gradient(
       0deg,
       transparent,
@@ -219,14 +285,47 @@
   }
 
   .spaceops-badge {
-    @apply inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest;
+    @apply inline-flex items-center gap-2 rounded-none px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest;
     background: hsl(var(--primary) / 0.1);
     border: 1px solid hsl(var(--primary) / 0.22);
     color: hsl(var(--primary));
   }
 
+  .btn-tactile {
+    @apply inline-flex items-center justify-center rounded-none border border-white/20 bg-muted/80 px-3 py-2 text-sm font-medium transition-shadow;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  .btn-tactile:active {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .data-grid {
+    display: grid;
+    gap: 0;
+    border: 1px solid hsl(var(--hud-border));
+    background: hsl(var(--card) / 0.5);
+  }
+  .data-grid > * {
+    border-bottom: 1px solid hsl(var(--hud-border));
+    border-right: 1px solid hsl(var(--hud-border));
+    padding: 0.35rem 0.5rem;
+    font-family: var(--font-mono);
+  }
+  .data-grid > *.data-grid-header {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .holographic-affordance {
+    box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.4);
+  }
+
   .spaceops-dot {
-    @apply h-1.5 w-1.5 rounded-full animate-pulse;
+    @apply h-1.5 w-1.5 rounded-none animate-pulse;
     background: hsl(var(--primary));
   }
 }

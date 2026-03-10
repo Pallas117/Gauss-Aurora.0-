@@ -1,0 +1,8 @@
+{
+  "objects": [
+    { "id": "debris-1", "position": [7010.0, 1.2, -0.5] },
+    { "id": "debris-2", "position": [6985.0, -2.1, 1.8] },
+    { "id": "debris-3", "position": [7024.0, 0.7, 0.3] }
+  ],
+  "density": 0.03
+}

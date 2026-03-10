@@ -1,0 +1,653 @@
+{
+  "config": {
+    "configFile": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/playwright.config.ts",
+    "rootDir": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "reports/progress/ui-ux-granular.latest.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev -- --host 127.0.0.1 --port 4173",
+      "url": "http://127.0.0.1:4173",
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "ui-ux-granular.spec.ts",
+      "file": "ui-ux-granular.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Command",
+          "file": "ui-ux-granular.spec.ts",
+          "line": 16,
+          "column": 6,
+          "specs": [
+            {
+              "title": "loads command shell and shows snapshot, telemetry, source health, nav links",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3954,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:22:36.124Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-2949f59a5dc381f8ebc1",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 17,
+              "column": 3
+            },
+            {
+              "title": "feedback input and send button are usable",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2026,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:22:41.158Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-32124977e3d6a66286ab",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 30,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "SDA",
+          "file": "ui-ux-granular.spec.ts",
+          "line": 43,
+          "column": 6,
+          "specs": [
+            {
+              "title": "loads SDA page and shows visualization heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1916,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:22:43.206Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-50a7a7a756e08f386509",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 44,
+              "column": 3
+            },
+            {
+              "title": "shows HUD and Metrics tabs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2810,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:22:45.143Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-335622a755da9c091011",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 50,
+              "column": 3
+            },
+            {
+              "title": "visualizes debris and satellite catalog data on SDA",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6471,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [
+                        {
+                          "text": "BROWSER_ERROR: THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Google Inc. (Google), GL_RENDERER = ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver-5.0.0), GL_VERSION = 5.0.0, Sandboxed = no, Optimus = no, AMD switchable = no, Reset notification strategy = 0x8252, ErrorMessage = BindToCurrentSequence failed: .\n"
+                        },
+                        {
+                          "text": "BROWSER_ERROR: THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Google Inc. (Google), GL_RENDERER = ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver-5.0.0), GL_VERSION = 5.0.0, Sandboxed = no, Optimus = no, AMD switchable = no, Reset notification strategy = 0x8252, ErrorMessage = BindToCurrentSequence failed: .\n"
+                        },
+                        {
+                          "text": "BROWSER_ERROR: THREE.WebGLRenderer: Error creating WebGL context.\n"
+                        },
+                        {
+                          "text": "PAGE_ERROR: Error creating WebGL context.\n"
+                        },
+                        {
+                          "text": "BROWSER_ERROR: The above error occurred in the <ForwardRef(Canvas)> component:\n\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at FiberProvider (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-DVRELE7I.js?v=3fcc3b6a:17719:21)\n    at CanvasWrapper\n    at SceneErrorBoundary (http://127.0.0.1:4173/src/components/scene/SpaceScene.tsx:90:9)\n    at div\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at Suspense\n    at div\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at div\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at div\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at div\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at SDAPageContent (http://127.0.0.1:4173/src/pages/SDAPage.tsx:161:23)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at SDAPage\n    at Suspense\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at main\n    at div\n    at div\n    at div\n    at Layout (http://127.0.0.1:4173/src/app/Layout.tsx:66:21)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at RenderErrorBoundary (http://127.0.0.1:4173/node_modules/.vite/deps/react-router-dom.js?v=3fcc3b6a:6191:5)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at RouterProvider2\n    at Suspense\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at z (http://127.0.0.1:4173/node_modules/.vite/deps/next-themes.js?v=3fcc3b6a:21:18)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at ErrorBoundary (http://127.0.0.1:4173/src/components/ErrorBoundary.tsx:69:9)\n    at App\n\nReact will try to recreate this component tree from scratch using the error boundary you provided, SceneErrorBoundary.\n"
+                        },
+                        {
+                          "text": "BROWSER_ERROR: [SpaceScene] render error: Error: Error creating WebGL context.\n    at new WebGLRenderer (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-HKEIX5WE.js?v=3fcc3b6a:17588:19)\n    at createRendererInstance (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-DVRELE7I.js?v=3fcc3b6a:17060:15)\n    at Object.configure (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-DVRELE7I.js?v=3fcc3b6a:17160:18)\n    at http://127.0.0.1:4173/node_modules/.vite/deps/chunk-DVRELE7I.js?v=3fcc3b6a:17831:20\n    at commitHookEffectListMount (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:16963:34)\n    at commitLayoutEffectOnFiber (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:17050:23)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18030:17)\n    at commitLayoutEffects_begin (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18019:15)\n    at commitLayoutEffects_begin (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18000:19)\n    at commitLayoutEffects_begin (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18000:19) \n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at FiberProvider (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-DVRELE7I.js?v=3fcc3b6a:17719:21)\n    at CanvasWrapper\n    at SceneErrorBoundary (http://127.0.0.1:4173/src/components/scene/SpaceScene.tsx:90:9)\n    at div\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at Suspense\n    at div\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at div\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at div\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at div\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at SDAPageContent (http://127.0.0.1:4173/src/pages/SDAPage.tsx:161:23)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at SDAPage\n    at Suspense\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at main\n    at div\n    at div\n    at div\n    at Layout (http://127.0.0.1:4173/src/app/Layout.tsx:66:21)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at RenderErrorBoundary (http://127.0.0.1:4173/node_modules/.vite/deps/react-router-dom.js?v=3fcc3b6a:6191:5)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at RouterProvider2\n    at Suspense\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at z (http://127.0.0.1:4173/node_modules/.vite/deps/next-themes.js?v=3fcc3b6a:21:18)\n    at commitLayoutMountEffects_complete (http://127.0.0.1:4173/node_modules/.vite/deps/chunk-F45TH26S.js?v=3fcc3b6a:18032:17)\n    at ErrorBoundary (http://127.0.0.1:4173/src/components/ErrorBoundary.tsx:69:9)\n    at App\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:22:47.976Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-8fe89d66a0134a39c015",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 56,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Heliophysics",
+          "file": "ui-ux-granular.spec.ts",
+          "line": 85,
+          "column": 6,
+          "specs": [
+            {
+              "title": "loads mission console and shows main heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3700,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:22:54.467Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-fceb72097be528e61572",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 86,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Intel",
+          "file": "ui-ux-granular.spec.ts",
+          "line": 95,
+          "column": 6,
+          "specs": [
+            {
+              "title": "loads intel page and shows RAG + Threat Intelligence",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2188,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:22:58.199Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-c93dbda985bd68ed617a",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 96,
+              "column": 3
+            },
+            {
+              "title": "shows Mission Access card",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2298,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:23:00.410Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-3766693c9ba0d8672638",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 104,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Systems",
+          "file": "ui-ux-granular.spec.ts",
+          "line": 110,
+          "column": 6,
+          "specs": [
+            {
+              "title": "loads systems overview and shows main heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1967,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:23:02.724Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-dffcbd71e122ae7961ff",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 111,
+              "column": 3
+            },
+            {
+              "title": "shows Automation, Chronos, Turing tabs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1842,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:23:04.712Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-11ecdf22509f9eb38780",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 120,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Orbit",
+          "file": "ui-ux-granular.spec.ts",
+          "line": 129,
+          "column": 6,
+          "specs": [
+            {
+              "title": "loads orbit page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2008,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:23:06.576Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-67b6c74b226f14dfe738",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 130,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Staff portal",
+          "file": "ui-ux-granular.spec.ts",
+          "line": 139,
+          "column": 6,
+          "specs": [
+            {
+              "title": "loads staff portal and shows roadmap content for operator session",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1798,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:23:08.602Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-f2d51476049870c051cd",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 159,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Auth / session",
+          "file": "ui-ux-granular.spec.ts",
+          "line": 172,
+          "column": 6,
+          "specs": [
+            {
+              "title": "login portal opens and shows password and SSO controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3381,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:23:10.414Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-809860b24f983d7475ff",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 173,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Boot flow",
+          "file": "ui-ux-granular.spec.ts",
+          "line": 187,
+          "column": 6,
+          "specs": [
+            {
+              "title": "app shell becomes visible after boot",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2383,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-03-04T17:23:13.813Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "fb77ccd43ad3662c7a50-5956c8e8ec529df7f9d5",
+              "file": "ui-ux-granular.spec.ts",
+              "line": 188,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-04T17:22:33.305Z",
+    "duration": 43097.138,
+    "expected": 14,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

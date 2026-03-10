@@ -1,0 +1,22 @@
+Overnight Resource Monitor Summary
+label: smoke-overnight-2
+jsonl: reports/monitoring/smoke-overnight-2.jsonl
+processes: reports/monitoring/smoke-overnight-2.processes.log
+interval_sec: 5
+requested_duration_hours: 0.003
+samples_captured: 2
+elapsed_hours: 0.00
+battery_start_percent: 13
+battery_end_percent: 13
+battery_drain_percent_per_hour: n/a
+
+metric,avg,min,max,samples
+load_avg_1m,3.97,3.68,4.27,2
+gpu_device_util_pct,71.00,70.00,72.00,2
+gpu_renderer_util_pct,71.00,70.00,72.00,2
+cpu_idle_pct,35.01,33.33,36.69,2
+gpu_tiler_util_pct,47.50,47.00,48.00,2
+cpu_sys_pct,13.79,13.14,14.44,2
+gauss_cpu_pct,32.55,0.10,65.00,2
+gauss_rss_mb,316.45,315.90,317.00,2
+cpu_user_pct,51.18,48.85,53.51,2

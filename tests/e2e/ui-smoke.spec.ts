@@ -5,86 +5,50 @@ test.beforeEach(async ({ page }) => {
   await mockUiApis(page);
 });
 
-test("smoke: control rail and centered LLM chat interactions", async ({ page }) => {
-  await page.goto("/?e2e=1");
+test("smoke: command shell routes, auth modal, and feedback actions", async ({ page }) => {
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/command$/);
 
-  await expect(
-    page.getByRole("heading", { name: /gauss aurora/i }),
-  ).toBeVisible();
-  await expect(page.getByRole("heading", { name: /logic engine/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /command snapshot/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /live 5s telemetry stream/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^sda/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^systems/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^intel/i })).toBeVisible();
 
-  const layerNames = [
-    /earth layer/i,
-    /van allen belts layer/i,
-    /magnetopause layer/i,
-    /field lines layer/i,
-    /mhd waves layer/i,
-    /mms reconnection layer/i,
-  ];
+  await page.goto("/sda");
+  await expect(page).toHaveURL(/\/sda$/);
+  await expect(page.getByRole("heading", { name: /sda visualization/i })).toBeVisible();
 
-  for (const layerName of layerNames) {
-    const button = page.getByRole("button", { name: layerName });
-    const before = await button.getAttribute("aria-pressed");
-    await button.click();
-    const expectedAfter = before === "true" ? "false" : "true";
-    await expect(button).toHaveAttribute("aria-pressed", expectedAfter);
-  }
+  await page.goto("/systems");
+  await expect(page).toHaveURL(/\/systems$/);
+  await expect(page.getByRole("heading", { name: /systems overview/i })).toBeVisible();
 
-  const colorEncodingButton = page.getByRole("button", {
-    name: /use color encoding for radiation flux/i,
-  });
-  const sizeEncodingButton = page.getByRole("button", {
-    name: /use particle size encoding for radiation flux/i,
-  });
-  const bothEncodingButton = page.getByRole("button", {
-    name: /use both color and size encoding for radiation flux/i,
-  });
+  await page.goto("/intel");
+  await expect(page).toHaveURL(/\/intel$/);
+  await expect(page.getByRole("heading", { name: /rag \+ threat intelligence/i })).toBeVisible();
 
-  await sizeEncodingButton.click();
-  await expect(sizeEncodingButton).toHaveAttribute("aria-pressed", "true");
-  await bothEncodingButton.click();
-  await expect(bothEncodingButton).toHaveAttribute("aria-pressed", "true");
-  await colorEncodingButton.click();
-  await expect(colorEncodingButton).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: /manage session|open login portal/i }).click();
+  await expect(page.getByRole("heading", { name: /mission access portal/i })).toBeVisible();
+  const signOutButton = page.getByRole("button", { name: /sign out/i });
+  const googleSsoButton = page.getByRole("button", { name: /google sso/i });
+  await expect(signOutButton.or(googleSsoButton)).toBeVisible();
+  await page.keyboard.press("Escape");
 
-  const themeTrigger = page.getByRole("button", { name: /current theme:/i });
-  await themeTrigger.click();
-  await page.getByRole("menuitem", { name: /dark/i }).click();
-  await expect
-    .poll(async () =>
-      page.evaluate(() => document.documentElement.classList.contains("dark")),
-    )
-    .toBe(true);
+  await page.goto("/systems?tab=chronos");
+  await expect(page).toHaveURL(/\/systems\?tab=chronos$/);
+  await expect(page.getByRole("heading", { name: /runtime diagnostics/i })).toBeVisible();
 
-  await themeTrigger.click();
-  await page.getByRole("menuitem", { name: /light/i }).click();
-  await expect
-    .poll(async () =>
-      page.evaluate(() => document.documentElement.classList.contains("dark")),
-    )
-    .toBe(false);
+  await page.goto("/heliophysics");
+  await expect(page).toHaveURL(/\/heliophysics$/);
+  await expect(page.getByRole("heading", { name: /gauss aurora mission console/i })).toBeVisible();
 
-  const screenshotButton = page.getByRole("button", { name: /^export$/i });
-  const downloadPromise = page
-    .waitForEvent("download", { timeout: 5_000 })
-    .catch(() => null);
-
-  await screenshotButton.click();
-  const download = await downloadPromise;
-  if (download) {
-    expect(download.suggestedFilename()).toMatch(/^space-weather-\d+\.png$/);
-  }
-
-  await expect(page.getByText(/42 knowledge chunks/i)).toBeVisible();
-
-  await page.getByRole("button", { name: /index lightbound/i }).click();
-  await expect(page.getByText(/42 knowledge chunks/i)).toBeVisible();
-
-  await page
-    .getByPlaceholder(/ask gauss about mission concepts, threats, or documents/i)
-    .fill("What is the synthetic status?");
-  await page.getByRole("button", { name: /ask gauss rag/i }).click();
-
-  await expect(page.getByText(/synthetic answer from playwright mock/i)).toBeVisible();
-  await expect(page.getByText(/\/tmp\/mock-source\.pdf/i)).toBeVisible();
+  await page.goto("/command");
+  const feedbackMessage = page.getByPlaceholder(
+    /describe the issue, desired behavior, or workflow friction/i,
+  );
+  await feedbackMessage.fill("Command shell navigation and cards are responsive.");
+  const sendFeedback = page.getByRole("button", { name: /send feedback/i }).first();
+  await expect(sendFeedback).toBeEnabled();
+  await sendFeedback.click();
+  await expect(page.getByText(/feedback received/i).first()).toBeVisible();
 });

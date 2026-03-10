@@ -1,0 +1,8 @@
+{
+  "profile": "low-power",
+  "battery": 25,
+  "minSafeBattery": 10,
+  "failures": [],
+  "failuresCount": 0,
+  "completedAt": "2026-03-02T16:09:16.403Z"
+}

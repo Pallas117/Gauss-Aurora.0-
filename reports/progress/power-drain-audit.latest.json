@@ -1,0 +1,61 @@
+{
+  "generated_at": "2026-03-09T08:16:37.267Z",
+  "backend_cadence_pass": true,
+  "env": {
+    "POWER_SAVE_MODE": "false",
+    "INGEST_POWER_PROFILE": "nominal",
+    "VITE_POWER_PROFILE": "auto",
+    "VITE_POLL_INTERVAL_MULTIPLIER": "1",
+    "BATTERY_PERCENT": 100
+  },
+  "work_queue_min_safe_battery_percent": 10,
+  "backend_intervals": [],
+  "frontend_intervals": {
+    "setInterval": [
+      {
+        "file": "src/imports/gauss-ui/src/app/layout.tsx",
+        "line": 27,
+        "kind": "setInterval",
+        "ms": 1000
+      },
+      {
+        "file": "src/imports/gauss-ui/src/app/pages/SDAPage.tsx",
+        "line": 54,
+        "kind": "setInterval",
+        "ms": 1000
+      }
+    ],
+    "setTimeout": [
+      {
+        "file": "src/hooks/useCommandState.ts",
+        "line": 124,
+        "kind": "setTimeout",
+        "ms": 12
+      },
+      {
+        "file": "src/hooks/useCommandState.ts",
+        "line": 152,
+        "kind": "setTimeout",
+        "ms": 1
+      },
+      {
+        "file": "src/hooks/useCommandState.ts",
+        "line": 157,
+        "kind": "setTimeout",
+        "ms": 1
+      },
+      {
+        "file": "src/imports/gauss-ui/src/app/pages/ChronosPage.tsx",
+        "line": 68,
+        "kind": "setTimeout",
+        "ms": 500
+      },
+      {
+        "file": "src/imports/gauss-ui/src/app/pages/ChronosPage.tsx",
+        "line": 83,
+        "kind": "setTimeout",
+        "ms": 5000
+      }
+    ]
+  }
+}

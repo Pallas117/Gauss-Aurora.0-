@@ -1,0 +1,59 @@
+{
+  "generated_at": "2026-02-25T08:37:30.876Z",
+  "totals": {
+    "pass": 7,
+    "warn": 0,
+    "fail": 0
+  },
+  "checks": [
+    {
+      "name": "Python directive (GC + lazy load)",
+      "command": "python3 backend/scripts/check-directive-python.py",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "check-directive-python: PASS (lazy load + GC cleanup)"
+    },
+    {
+      "name": "mlx_lm cache limit (--cache-limit-gb 2.5)",
+      "command": "grep mlx",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "No mlx_lm launch in package.json; when added, must use --cache-limit-gb 2.5."
+    },
+    {
+      "name": "Backend polling cadence (>= 1000 ms)",
+      "command": "node --import tsx --test backend/power-polling.test.ts",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "✔ backend has no setInterval with literal ms below MIN_CADENCE_MS unless allowlisted (20.256291ms)\nℹ tests 1\nℹ suites 0\nℹ pass 1\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 256.131708"
+    },
+    {
+      "name": "Probability gate (LLM only after 3-sigma)",
+      "command": "node --import tsx --test backend/ml-client/probability-gate.test.ts",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "✔ GaussProbabilityEngine marks high flux as urgent (1.310875ms)\n✔ GaussProbabilityEngine marks nominal flux as non-urgent (0.19775ms)\n✔ inference urgency returns non-urgent for calm telemetry (10.698167ms)\n✔ inference urgency forces trigger on severe storm tier (0.712292ms)\n✔ inference urgency tolerates malformed sequence members (0.310541ms)\n✔ directive: below-threshold telemetry yields LOG_AND_SLEEP (LLM not triggered) (0.60075ms)\nℹ tests 6\nℹ suites 0\nℹ pass 6\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 330.75375"
+    },
+    {
+      "name": "RAG checksum before LLM (SEU resilience)",
+      "command": "python3 -m pytest ml/rag/test_rag_checksum_directive.py",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "============================= test session starts ==============================\nplatform darwin -- Python 3.14.3, pytest-8.4.2, pluggy-1.6.0 -- /Library/Frameworks/Python.framework/Versions/3.14/bin/python3\ncachedir: .pytest_cache\nrootdir: /Users/josh/Documents/lightbound/Gauss/Gauss Aurora\nconfigfile: pytest.ini\nplugins: anyio-4.12.1, mock-3.15.1, galileo-core-3.96.0\ncollecting ... collected 1 item\n\nml/rag/test_rag_checksum_directive.py::TestRagChecksumDirective::test_server_verifies_checksum_before_llm_flow PASSED [100%]\n\n============================== 1 passed in 0.04s ====================\n..."
+    },
+    {
+      "name": "Air-gapped (no cloud API in core)",
+      "command": "grep aws/openai in backend ml",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "No aws/openai references in backend/ml."
+    },
+    {
+      "name": "React telemetry log cap (<= 50)",
+      "command": "grep setLogs/setTasks .slice(0,N)",
+      "status": "PASS",
+      "exitCode": 0,
+      "detail": "All log/task state caps <= 50."
+    }
+  ]
+}

@@ -6,7 +6,9 @@ import {
   getMmsLaspStatus,
   isBurstModeAt,
 } from "../adapters/mms-lasp.js";
+import { execSync } from "node:child_process";
 import { fetchNoaaReadout, getNoaaStatus, type NOAAReadout } from "../adapters/noaa-swpc.js";
+import os from "node:os";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildAuroraGrid } from "../physics/healpix.js";
 import {
@@ -22,6 +24,7 @@ import {
 } from "../physics/reconnection.js";
 import { getSupabaseAdminClient } from "../supabase.js";
 import {
+  getSourceStatus,
   pushCanonical,
   pushMms,
   setAuroraMap,
@@ -30,16 +33,24 @@ import {
   setSourceStatus,
 } from "../state.js";
 import { fetchPrivateerRiskZones } from "../adapters/privateer.js";
+import { buildPersistedSourceHealthRows } from "../source-health-store.js";
 import { fetchRiskZones, fetchSatelliteObjects } from "../ssa/open-catalog-client.js";
-import { isMemoryOverCeiling } from "../memory-check.js";
+import { getRuntimeMemoryPressureSnapshot } from "../runtime/memory-pressure.js";
 import type {
   CanonicalSpaceWeatherPoint,
   IngestionTickResult,
   MMSReconVectorPoint,
+  DataSource,
   SourceStatus,
 } from "../types.js";
+import {
+  decorateSourceStatusWithPolicies,
+  resolveSourcePowerPolicies,
+  type SourcePowerPolicy,
+} from "./source-power-policy.js";
 
 type WorkerPowerProfile = "nominal" | "low-power";
+type ChargingFlowMode = "recharge-first" | "balanced" | "performance";
 
 type WorkerCadenceConfig = {
   tickMs: number;
@@ -54,6 +65,23 @@ type WorkerCadenceConfig = {
   auroraNside: number;
 };
 
+type PowerSource = "ac" | "battery" | "unknown";
+
+type DevicePowerState = {
+  percent: number | null;
+  charging: boolean | null;
+  powerSource: PowerSource;
+  status: string | null;
+};
+
+type SourceRuntimeMetrics = {
+  sampleCount: number;
+  avgFetchDurationMs: number;
+  avgCpuMs: number;
+  avgPayloadKb: number;
+  observedCostScore: number;
+};
+
 type IngestionWorkerOptions = {
   cadence?: Partial<WorkerCadenceConfig>;
   powerProfile?: WorkerPowerProfile;
@@ -62,6 +90,7 @@ type IngestionWorkerOptions = {
 };
 
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+const POWER_FLOW_SAMPLE_MS_DEFAULT = 60_000;
 
 const NOMINAL_CADENCE: WorkerCadenceConfig = {
   tickMs: 5000,
@@ -89,6 +118,203 @@ const LOW_POWER_CADENCE: WorkerCadenceConfig = {
   auroraNside: 32,
 };
 
+function parsePercent(raw: string | null | undefined): number | null {
+  if (raw == null || raw === "") return null;
+  const n = parseInt(raw, 10);
+  if (Number.isNaN(n) || n < 0 || n > 100) return null;
+  return n;
+}
+
+function parsePowerSource(raw: string | null | undefined): PowerSource {
+  const normalized = (raw ?? "").trim().toLowerCase();
+  if (normalized.includes("ac") || normalized.includes("mains") || normalized.includes("adapter")) {
+    return "ac";
+  }
+  if (normalized.includes("battery")) {
+    return "battery";
+  }
+  return "unknown";
+}
+
+function parseCharging(raw: string | null | undefined): boolean | null {
+  const normalized = (raw ?? "").trim().toLowerCase();
+  if (!normalized) return null;
+  if (["1", "true", "yes", "on", "charging", "charged"].includes(normalized)) return true;
+  if (["0", "false", "no", "off", "discharging", "not_charging", "not-charging"].includes(normalized)) {
+    return false;
+  }
+  return null;
+}
+
+function parsePmsetPowerState(out: string): DevicePowerState {
+  const percentMatch = out.match(/(\d+)%/);
+  const sourceMatch = out.match(/Now drawing from '([^']+)'/i);
+  const statusMatch = out.match(/\d+%;\s*([^;]+);/i);
+  const powerSource = parsePowerSource(sourceMatch?.[1] ?? null);
+  const status = statusMatch?.[1]?.trim().toLowerCase() ?? null;
+  let charging = parseCharging(status);
+  if (charging === null && powerSource === "ac") {
+    charging = true;
+  }
+  return {
+    percent: parsePercent(percentMatch?.[1] ?? null),
+    charging,
+    powerSource,
+    status,
+  };
+}
+
+function readDevicePowerState(): DevicePowerState {
+  const envPercent = parsePercent(process.env.BATTERY_PERCENT ?? null);
+  const envCharging = parseCharging(process.env.BATTERY_CHARGING ?? null);
+  const envPowerSource = parsePowerSource(process.env.BATTERY_POWER_SOURCE ?? null);
+
+  let pmsetState: DevicePowerState | null = null;
+  if (os.platform() === "darwin") {
+    try {
+      const out = execSync("pmset -g batt", {
+        encoding: "utf8",
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+      pmsetState = parsePmsetPowerState(out);
+    } catch {
+      // pmset unavailable or parse failed
+    }
+  }
+
+  return {
+    percent: envPercent ?? pmsetState?.percent ?? null,
+    charging: envCharging ?? pmsetState?.charging ?? null,
+    powerSource: envPowerSource !== "unknown" ? envPowerSource : pmsetState?.powerSource ?? "unknown",
+    status: pmsetState?.status ?? null,
+  };
+}
+
+function parseEnvBool(name: string, fallback: boolean): boolean {
+  const raw = process.env[name];
+  if (raw == null || raw.trim() === "") return fallback;
+  const normalized = raw.trim().toLowerCase();
+  return !["0", "false", "off", "no", "disabled"].includes(normalized);
+}
+
+function parseEnvPositiveInt(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (raw == null || raw.trim() === "") return fallback;
+  const parsed = parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return parsed;
+}
+
+function parseChargingFlowMode(
+  raw: string | undefined,
+  fallback: ChargingFlowMode = "balanced",
+): ChargingFlowMode {
+  const normalized = (raw ?? "").trim().toLowerCase();
+  if (["recharge-first", "recharge", "max-recharge", "eco", "battery"].includes(normalized)) {
+    return "recharge-first";
+  }
+  if (["performance", "throughput", "max-performance"].includes(normalized)) {
+    return "performance";
+  }
+  if (["balanced", "default", "auto"].includes(normalized)) {
+    return "balanced";
+  }
+  return fallback;
+}
+
+export function resolveChargingFlowMultiplier(
+  state: DevicePowerState | null,
+  mode: ChargingFlowMode = "balanced",
+): number {
+  if (!state) return 1;
+
+  const level = state.percent;
+  const discharging = state.charging === false || (state.charging === null && state.powerSource === "battery");
+  if (mode === "recharge-first") {
+    if (discharging) {
+      if (level != null) {
+        if (level < 25) return 5;
+        if (level < 35) return 4;
+        if (level < 45) return 3;
+        if (level < 60) return 2.5;
+      }
+      return 2;
+    }
+
+    if (state.charging === true) {
+      if (level != null && level < 50) return 2;
+      if (level != null && level < 70) return 1.5;
+      return 1;
+    }
+
+    if (state.powerSource === "ac") return 1;
+    return 1.5;
+  }
+
+  if (mode === "performance") {
+    if (discharging) {
+      if (level != null) {
+        if (level < 25) return 3;
+        if (level < 35) return 2.5;
+        if (level < 45) return 2;
+        if (level < 60) return 1.5;
+      }
+      return 1.25;
+    }
+
+    if (state.charging === true) {
+      if (level != null && level < 50) return 1.2;
+      return 1;
+    }
+
+    if (state.powerSource === "ac") return 1;
+    return 1.1;
+  }
+
+  if (discharging) {
+    if (level != null) {
+      if (level < 25) return 4;
+      if (level < 35) return 3;
+      if (level < 45) return 2.5;
+      if (level < 60) return 2;
+    }
+    return 1.5;
+  }
+
+  if (state.charging === true) {
+    // Keep mild backoff when under 50% to maximize net recharge.
+    if (level != null && level < 50) return 1.5;
+    return 1;
+  }
+
+  if (state.powerSource === "ac") return 1;
+
+  return 1.25;
+}
+
+export function scaleCadenceForChargingFlow(
+  cadence: WorkerCadenceConfig,
+  multiplier: number,
+): WorkerCadenceConfig {
+  const m = Math.max(1, multiplier);
+  const scale = (ms: number) => Math.max(ms, Math.round(ms * m));
+  const auroraNside =
+    m >= 3 ? Math.min(cadence.auroraNside, 16) : m >= 2 ? Math.min(cadence.auroraNside, 32) : cadence.auroraNside;
+
+  return {
+    tickMs: scale(cadence.tickMs),
+    noaaMs: scale(cadence.noaaMs),
+    esaMs: scale(cadence.esaMs),
+    jaxaMs: scale(cadence.jaxaMs),
+    mmsMs: scale(cadence.mmsMs),
+    laspMs: scale(cadence.laspMs),
+    sourceHealthMs: scale(cadence.sourceHealthMs),
+    cleanupMs: scale(cadence.cleanupMs),
+    debrisMs: scale(cadence.debrisMs),
+    auroraNside,
+  };
+}
+
 function normalizePowerProfile(value: string | undefined): WorkerPowerProfile {
   const normalized = (value ?? "").trim().toLowerCase();
   if (normalized === "low" || normalized === "low-power" || normalized === "lowpower") {
@@ -107,6 +333,37 @@ function resolveCadenceConfig(options?: IngestionWorkerOptions): WorkerCadenceCo
     ...base,
     ...(options?.cadence ?? {}),
   };
+}
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
+
+function roundMetric(value: number, digits = 3): number {
+  const factor = 10 ** digits;
+  return Math.round(value * factor) / factor;
+}
+
+function estimatePayloadKilobytes(payload: unknown): number {
+  if (payload == null) {
+    return 0;
+  }
+  try {
+    return Buffer.byteLength(JSON.stringify(payload), "utf8") / 1024;
+  } catch {
+    return 0;
+  }
+}
+
+function computeObservedCostScore(
+  durationMs: number,
+  cpuMs: number,
+  payloadKb: number,
+): number {
+  const durationNorm = clamp01(durationMs / 9_000);
+  const cpuNorm = clamp01(cpuMs / 200);
+  const payloadNorm = clamp01(payloadKb / 256);
+  return roundMetric(durationNorm * 0.45 + cpuNorm * 0.35 + payloadNorm * 0.2, 3);
 }
 
 function isAirGapped(): boolean {
@@ -129,19 +386,39 @@ export class IngestionWorker {
   private latestCanonical: CanonicalSpaceWeatherPoint | null = null;
   private latestMms: MMSReconVectorPoint | null = null;
   private readonly cadence: WorkerCadenceConfig;
+  private activeCadence: WorkerCadenceConfig;
+  private readonly adaptiveChargingFlow: boolean;
+  private readonly chargingFlowMode: ChargingFlowMode;
+  private readonly powerFlowSampleMs: number;
+  private lastPowerFlowSampleAt = 0;
   private readonly skipMemoryCeiling: boolean;
+  private readonly powerProfile: WorkerPowerProfile;
+  private readonly sourceRuntimeMetrics = new Map<DataSource, SourceRuntimeMetrics>();
 
   constructor(
     private onTick?: (result: IngestionTickResult) => void,
     options: IngestionWorkerOptions = {},
   ) {
+    const powerSave = (process.env.POWER_SAVE_MODE ?? "false").trim().toLowerCase() === "true";
+    this.powerProfile = options.powerProfile ?? (powerSave ? "low-power" : normalizePowerProfile(process.env.INGEST_POWER_PROFILE));
     this.cadence = resolveCadenceConfig(options);
+    this.activeCadence = this.cadence;
+    this.adaptiveChargingFlow = parseEnvBool("INGEST_ADAPTIVE_CHARGING_FLOW", true);
+    this.chargingFlowMode = parseChargingFlowMode(
+      process.env.INGEST_CHARGING_FLOW_MODE,
+      "balanced",
+    );
+    this.powerFlowSampleMs = Math.max(
+      5_000,
+      parseEnvPositiveInt("INGEST_POWER_FLOW_SAMPLE_MS", POWER_FLOW_SAMPLE_MS_DEFAULT),
+    );
     this.skipMemoryCeiling = options.skipMemoryCeiling === true;
   }
 
   start(): void {
     if (this.running) return;
     this.running = true;
+    this.refreshAdaptiveCadence(Date.now());
     this.scheduleNextTick(0);
   }
 
@@ -158,7 +435,7 @@ export class IngestionWorker {
     }
   }
 
-  private scheduleNextTick(delayMs: number = this.cadence.tickMs): void {
+  private scheduleNextTick(delayMs: number = this.activeCadence.tickMs): void {
     if (!this.running) {
       return;
     }
@@ -181,9 +458,25 @@ export class IngestionWorker {
     } finally {
       this.tickInFlight = false;
       if (this.running) {
-        this.scheduleNextTick(this.cadence.tickMs);
+        this.scheduleNextTick(this.activeCadence.tickMs);
       }
     }
+  }
+
+  private refreshAdaptiveCadence(nowMs: number): void {
+    if (!this.adaptiveChargingFlow) {
+      this.activeCadence = this.cadence;
+      return;
+    }
+
+    if (this.lastPowerFlowSampleAt > 0 && nowMs - this.lastPowerFlowSampleAt < this.powerFlowSampleMs) {
+      return;
+    }
+
+    const powerState = readDevicePowerState();
+    const multiplier = resolveChargingFlowMultiplier(powerState, this.chargingFlowMode);
+    this.activeCadence = scaleCadenceForChargingFlow(this.cadence, multiplier);
+    this.lastPowerFlowSampleAt = nowMs;
   }
 
   getLatestCanonical(): CanonicalSpaceWeatherPoint | null {
@@ -202,6 +495,10 @@ export class IngestionWorker {
       return true;
     }
     return false;
+  }
+
+  private shouldFetchByPolicy(key: string, policy: SourcePowerPolicy): boolean {
+    return policy.targetCadenceMs != null && this.shouldFetch(key, policy.targetCadenceMs);
   }
 
   private blendInputs(timestamp: string): MhdInput {
@@ -237,21 +534,124 @@ export class IngestionWorker {
   }
 
   private sourceStatus(): SourceStatus[] {
+    const persistedBySource = new Map(getSourceStatus().map((entry) => [entry.source, entry]));
     const status = [
       getNoaaStatus(),
       getEsaStatus(),
       getJaxaStatus(),
       getMmsCdawebStatus(),
       getMmsLaspStatus(),
-    ];
+    ].map((entry) => {
+      const persisted = persistedBySource.get(entry.source);
+      if (!persisted) {
+        return entry;
+      }
+      return {
+        ...persisted,
+        ...entry,
+        overrideDecision: persisted.overrideDecision ?? null,
+        overrideTargetCadenceMs: persisted.overrideTargetCadenceMs ?? null,
+        overrideReason: persisted.overrideReason ?? null,
+        overrideUpdatedAt: persisted.overrideUpdatedAt ?? null,
+        overrideUpdatedBy: persisted.overrideUpdatedBy ?? null,
+      };
+    });
     if (!isAirGapped()) {
-      return status;
+      return status.map((entry) => this.attachRuntimeMetrics(entry));
     }
     return status.map((s) => ({
-      ...s,
+      ...this.attachRuntimeMetrics(s),
       healthy: false,
       message: "disabled: air-gapped",
     }));
+  }
+
+  private attachRuntimeMetrics(status: SourceStatus): SourceStatus {
+    const metrics = this.sourceRuntimeMetrics.get(status.source);
+    if (!metrics) {
+      return status;
+    }
+    return {
+      ...status,
+      sampleCount: metrics.sampleCount,
+      avgFetchDurationMs: metrics.avgFetchDurationMs,
+      avgCpuMs: metrics.avgCpuMs,
+      avgPayloadKb: metrics.avgPayloadKb,
+      observedCostScore: metrics.observedCostScore,
+    };
+  }
+
+  private recordSourceObservation(source: DataSource, payload: unknown, durationMs: number, cpuMs: number): void {
+    const payloadKb = estimatePayloadKilobytes(payload);
+    const observedCostScore = computeObservedCostScore(durationMs, cpuMs, payloadKb);
+    const previous = this.sourceRuntimeMetrics.get(source);
+    if (!previous) {
+      this.sourceRuntimeMetrics.set(source, {
+        sampleCount: 1,
+        avgFetchDurationMs: roundMetric(durationMs, 2),
+        avgCpuMs: roundMetric(cpuMs, 2),
+        avgPayloadKb: roundMetric(payloadKb, 2),
+        observedCostScore,
+      });
+      return;
+    }
+
+    const nextSampleCount = previous.sampleCount + 1;
+    const alpha = 0.3;
+    const smooth = (current: number, incoming: number, digits = 2) =>
+      roundMetric(current * (1 - alpha) + incoming * alpha, digits);
+
+    this.sourceRuntimeMetrics.set(source, {
+      sampleCount: nextSampleCount,
+      avgFetchDurationMs: smooth(previous.avgFetchDurationMs, durationMs),
+      avgCpuMs: smooth(previous.avgCpuMs, cpuMs),
+      avgPayloadKb: smooth(previous.avgPayloadKb, payloadKb),
+      observedCostScore: smooth(previous.observedCostScore, observedCostScore, 3),
+    });
+  }
+
+  private async runSourceFetch<T>(
+    source: DataSource,
+    fetcher: () => Promise<T>,
+  ): Promise<T> {
+    const startedAt = process.hrtime.bigint();
+    const cpuStart = process.cpuUsage();
+    const result = await fetcher();
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+    const cpuUsage = process.cpuUsage(cpuStart);
+    const cpuMs = (cpuUsage.user + cpuUsage.system) / 1_000;
+    this.recordSourceObservation(source, result, durationMs, cpuMs);
+    return result;
+  }
+
+  private currentCadenceScale(): number {
+    if (this.cadence.tickMs <= 0) {
+      return 1;
+    }
+    return Math.max(1, this.activeCadence.tickMs / this.cadence.tickMs);
+  }
+
+  private resolveSourcePolicies(
+    nowIso: string,
+    memoryPressure: "nominal" | "constrained" | "critical" = "nominal",
+  ): Record<DataSource, SourcePowerPolicy> {
+    return resolveSourcePowerPolicies({
+      activeCadenceMsBySource: {
+        "noaa-swpc": this.activeCadence.noaaMs,
+        "esa-hapi": this.activeCadence.esaMs,
+        "jaxa-erg": this.activeCadence.jaxaMs,
+        "mms-cdaweb": this.activeCadence.mmsMs,
+        "mms-lasp": this.activeCadence.laspMs,
+        "model-nowcast": this.activeCadence.cleanupMs,
+      },
+      latestCanonical: this.latestCanonical,
+      sourceStatus: this.sourceStatus(),
+      powerProfile: this.powerProfile,
+      cadenceScale: this.currentCadenceScale(),
+      airGapped: isAirGapped(),
+      burstMode: isBurstModeAt(nowIso),
+      memoryPressure,
+    });
   }
 
   private static supabaseSkipLogged = false;
@@ -333,9 +733,9 @@ export class IngestionWorker {
 
   private async invokeAuroraMapRpcCompat(supabase: SupabaseClient, nowIso: string): Promise<void> {
     const candidatePayloads: Array<Record<string, unknown>> = [
-      { ts: nowIso, nside: this.cadence.auroraNside },
-      { p_ts: nowIso, p_nside: this.cadence.auroraNside },
-      { p_nside: this.cadence.auroraNside, p_ts: nowIso },
+      { ts: nowIso, nside: this.activeCadence.auroraNside },
+      { p_ts: nowIso, p_nside: this.activeCadence.auroraNside },
+      { p_nside: this.activeCadence.auroraNside, p_ts: nowIso },
     ];
 
     let lastError: unknown = null;
@@ -359,22 +759,20 @@ export class IngestionWorker {
     if (!supabase || status.length === 0) {
       return;
     }
-    const rows = status.map((item) => ({
-      source: item.source,
-      last_seen: item.lastSeen,
-      latency_seconds: item.latencySeconds,
-      healthy: item.healthy,
-      message: item.message ?? null,
-      updated_at: new Date().toISOString(),
-    }));
+    const rows = buildPersistedSourceHealthRows(status);
     await supabase.from("source_health").upsert(rows).throwOnError();
   }
 
   async tick(): Promise<IngestionTickResult> {
-    const nowIso = new Date().toISOString();
+    const nowMs = Date.now();
+    this.refreshAdaptiveCadence(nowMs);
+    const cadence = this.activeCadence;
+    const nowIso = new Date(nowMs).toISOString();
     const airGapped = isAirGapped();
+    const memoryPressure = getRuntimeMemoryPressureSnapshot();
+    const sourcePolicies = this.resolveSourcePolicies(nowIso, memoryPressure.level);
 
-    if (!this.skipMemoryCeiling && isMemoryOverCeiling()) {
+    if (!this.skipMemoryCeiling && memoryPressure.ceiling.overCeiling) {
       console.warn("[IngestionWorker] PM: memory over 5.8GB ceiling, dropping ingest tick");
       return {
         canonicalPoint: null,
@@ -385,22 +783,22 @@ export class IngestionWorker {
     }
 
     if (!airGapped) {
-      if (this.shouldFetch("noaa", this.cadence.noaaMs)) {
-        this.noaa = await fetchNoaaReadout();
+      if (this.shouldFetchByPolicy("noaa", sourcePolicies["noaa-swpc"])) {
+        this.noaa = await this.runSourceFetch("noaa-swpc", () => fetchNoaaReadout());
       }
-      if (this.shouldFetch("esa", this.cadence.esaMs)) {
-        this.esa = await fetchEsaReadout();
+      if (this.shouldFetchByPolicy("esa", sourcePolicies["esa-hapi"])) {
+        this.esa = await this.runSourceFetch("esa-hapi", () => fetchEsaReadout());
       }
-      if (this.shouldFetch("jaxa", this.cadence.jaxaMs)) {
-        this.jaxa = await fetchJaxaReadout();
+      if (this.shouldFetchByPolicy("jaxa", sourcePolicies["jaxa-erg"])) {
+        this.jaxa = await this.runSourceFetch("jaxa-erg", () => fetchJaxaReadout());
       }
     }
 
     let measuredMmsVector: MMSReconVectorPoint | null = null;
     let mmsSamples: MMSSpacecraftSample[] = [];
     if (!airGapped) {
-      if (this.shouldFetch("mms", this.cadence.mmsMs)) {
-        mmsSamples = await fetchMmsCdawebSamples();
+      if (this.shouldFetchByPolicy("mms", sourcePolicies["mms-cdaweb"])) {
+        mmsSamples = await this.runSourceFetch("mms-cdaweb", () => fetchMmsCdawebSamples());
         if (mmsSamples.length >= 4 && withinSkewWindow(mmsSamples, 1.5)) {
           measuredMmsVector = computeMMSReconnectionVector(mmsSamples);
         }
@@ -408,12 +806,13 @@ export class IngestionWorker {
     }
 
     if (!airGapped) {
-      if (this.shouldFetch("lasp", this.cadence.laspMs)) {
-        await fetchMmsBurstWindows();
+      if (this.shouldFetchByPolicy("lasp", sourcePolicies["mms-lasp"])) {
+        await this.runSourceFetch("mms-lasp", () => fetchMmsBurstWindows());
       }
-      if (this.shouldFetch("debris", this.cadence.debrisMs)) {
+      if (this.shouldFetch("debris", cadence.debrisMs)) {
         try {
           const usePrivateer =
+            parseEnvBool("PRIVATEER_ENABLED", false) &&
             typeof process.env.PRIVATEER_API_URL === "string" && process.env.PRIVATEER_API_URL.trim().length > 0;
           const zones = usePrivateer
             ? await fetchPrivateerRiskZones({ orbitTypes: ["MEO", "GEO"] })
@@ -472,10 +871,10 @@ export class IngestionWorker {
     this.couplingWindow.push(point.coupling.newell);
     this.trimCouplingWindow();
 
-    const { grid, harmonics } = buildAuroraGrid(point, this.cadence.auroraNside);
+    const { grid, harmonics } = buildAuroraGrid(point, cadence.auroraNside);
     const auroraMap = {
       timestamp: point.timestamp,
-      nside: this.cadence.auroraNside,
+      nside: cadence.auroraNside,
       grid,
       harmonics,
     };
@@ -488,7 +887,10 @@ export class IngestionWorker {
     }
     this.latestCanonical = point;
 
-    const status = this.sourceStatus();
+    const status = decorateSourceStatusWithPolicies(
+      this.sourceStatus(),
+      this.resolveSourcePolicies(point.timestamp, memoryPressure.level),
+    );
     setSourceStatus(status);
 
     try {
@@ -502,10 +904,10 @@ export class IngestionWorker {
         sampleCount: auroraMap.grid.length,
         harmonics: auroraMap.harmonics,
       });
-      if (this.shouldFetch("source-health-write", this.cadence.sourceHealthMs)) {
+      if (this.shouldFetch("source-health-write", cadence.sourceHealthMs)) {
         await this.writeSourceHealth(status);
       }
-      if (this.shouldFetch("cleanup-rpc", this.cadence.cleanupMs)) {
+      if (this.shouldFetch("cleanup-rpc", cadence.cleanupMs)) {
         await this.invokeCleanupRpc(point.timestamp);
       }
     } catch (error) {

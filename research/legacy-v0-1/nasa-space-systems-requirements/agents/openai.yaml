@@ -1,0 +1,4 @@
+interface:
+  display_name: "NASA Space Systems Requirements"
+  short_description: "Requirements and V&V for debris and logistics automation"
+  default_prompt: "Use $nasa-space-systems-requirements to build a traceable requirements and V&V package for this space debris mitigation or autonomous logistics mission."

@@ -2,8 +2,23 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_URL = (typeof import_meta !== 'undefined' ? import_meta?.env?.VITE_SUPABASE_URL : typeof process !== 'undefined' ? process.env?.VITE_SUPABASE_URL : undefined) || "http://localhost:54321";
+const SUPABASE_PUBLISHABLE_KEY = (typeof import_meta !== 'undefined' ? import_meta?.env?.VITE_SUPABASE_PUBLISHABLE_KEY : typeof process !== 'undefined' ? process.env?.VITE_SUPABASE_PUBLISHABLE_KEY : undefined) || "dummy-key";
+
+if ((typeof import_meta !== 'undefined' ? import_meta?.env?.DEV : typeof process !== 'undefined' ? process.env?.DEV : undefined)) {
+  const url = typeof SUPABASE_URL === 'string' ? SUPABASE_URL : '';
+  const key = typeof SUPABASE_PUBLISHABLE_KEY === 'string' ? SUPABASE_PUBLISHABLE_KEY : '';
+  const isPlaceholder =
+    !url ||
+    !key ||
+    /your-project\.supabase\.co/i.test(url) ||
+    /your-anon-key/i.test(key);
+  if (isPlaceholder) {
+    console.warn(
+      '[Supabase] Auth may not work: VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY is missing or still a placeholder. See .env.example and docs/AUTH_TROUBLESHOOTING.md.',
+    );
+  }
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

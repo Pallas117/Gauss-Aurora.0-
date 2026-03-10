@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="gauss-baseline-v1" xmlns="http://www.omg.org/spec/XTCE/20180204">
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <FloatParameterType name="f32_be">
+        <UnitSet>
+          <Unit>SI</Unit>
+        </UnitSet>
+      </FloatParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter name="solarWind.speed" parameterTypeRef="f32_be" />
+      <Parameter name="solarWind.density" parameterTypeRef="f32_be" />
+      <Parameter name="magneticField.z" parameterTypeRef="f32_be" />
+    </ParameterSet>
+    <ContainerSet>
+      <SequenceContainer name="APID_900_CONTAINER" />
+      <SequenceContainer name="APID_901_CONTAINER" />
+    </ContainerSet>
+  </TelemetryMetaData>
+</SpaceSystem>

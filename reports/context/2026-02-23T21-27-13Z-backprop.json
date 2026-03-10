@@ -1,0 +1,111 @@
+{
+  "generated_at": "2026-02-23T21:27:13Z",
+  "root": "/Users/josh/Documents/lightbound/Gauss/Gauss Aurora",
+  "branch": "2026-02-10-2ybo",
+  "readiness": {
+    "overall": 100,
+    "velocity_points_per_day": 6.41,
+    "next_incomplete_milestone": null
+  },
+  "worktree": {
+    "dirty": true,
+    "modified": 46,
+    "staged": 1,
+    "untracked": 82,
+    "conflicts": 0,
+    "hotspots": [
+      {
+        "area": "src",
+        "count": 48
+      },
+      {
+        "area": "backend",
+        "count": 34
+      },
+      {
+        "area": "tests",
+        "count": 10
+      },
+      {
+        "area": "docs",
+        "count": 5
+      },
+      {
+        "area": "scripts",
+        "count": 5
+      },
+      {
+        "area": "supabase",
+        "count": 5
+      },
+      {
+        "area": ".detoxrc.js",
+        "count": 1
+      },
+      {
+        "area": ".github",
+        "count": 1
+      }
+    ],
+    "sample_changed_files": [
+      "env.example",
+      ".github/workflows/ci-tests.yml",
+      ".gitignore",
+      "README.md",
+      "backend/adapters/mms-lasp.ts",
+      "backend/auth.ts",
+      "backend/ml-client/client.ts",
+      "backend/physics/mhd-nowcast.ts",
+      "backend/scripts/check-env.ts",
+      "backend/scripts/full-adherence-audit.ts",
+      "backend/scripts/rbac-bootstrap.ts",
+      "backend/scripts/rbac-smoke.ts",
+      "backend/server.ts",
+      "backend/supabase.ts",
+      "backend/types.ts",
+      "backend/worker/ingest-loop.test.ts",
+      "backend/worker/ingest-loop.ts",
+      "package-lock.json",
+      "package.json",
+      "scripts/tailscale/dev-mobile.sh"
+    ]
+  },
+  "routes": [
+    "/",
+    "/sda",
+    "/automation",
+    "/intel",
+    "/chronos",
+    "/heliophysics",
+    "/orbit",
+    "/dev-hud",
+    "/signup",
+    "/portal",
+    "*"
+  ],
+  "critical_endpoints": [
+    "/api/auth/session",
+    "/api/feed/space-weather/5s",
+    "/api/feed/space-weather/latest",
+    "/api/feed/mms/reconnection",
+    "/api/feed/mms/reconnection/latest",
+    "/api/feed/aurora/map",
+    "/api/feed/sources/status",
+    "/api/feed/threats/latest",
+    "/api/feed/dashboard/latest",
+    "/api/ops/command/latest",
+    "/api/security/cybertiger/status"
+  ],
+  "backprop_actions": [],
+  "blockers": [
+    "High readiness but large dirty worktree; isolate scope before release."
+  ],
+  "prompt_capsule": {
+    "goal": "Use this capsule as the only context primer, then request only missing file reads.",
+    "now": [
+      "High readiness but large dirty worktree; isolate scope before release."
+    ],
+    "next": [],
+    "scope_rule": "Work only in hotspot areas unless blocker requires cross-cutting change."
+  }
+}

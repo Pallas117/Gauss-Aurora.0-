@@ -18,7 +18,8 @@ Pre-release builds:
    - release from `main`.
    - working tree clean (no unstaged/untracked release artifacts).
 2. Quality gates:
-   - `npm run audit:adherence`
+   - `npm run audit:adherence` (includes test steps 2, 4, 5, 6, 7; see [AUDIT_STEPS.md](AUDIT_STEPS.md)).
+   - Optional: run frontend E2E and scenarios from [QA_TEST_PLAN.md](QA_TEST_PLAN.md) (e.g. `npm run test:ui`).
 3. Security gates:
    - `npm run check:security-compliance`
    - optional runtime RBAC check:

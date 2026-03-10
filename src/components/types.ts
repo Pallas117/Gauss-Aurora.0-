@@ -1,6 +1,6 @@
 /**
  * Shared type definitions for Space Weather visualization components.
- * Single source of truth — imported by GaussGlobe, Nav, SpaceWeatherVisualization, etc.
+ * Single source of truth for cockpit/scene layer toggles.
  */
 
 export interface LayerVisibility {
@@ -10,6 +10,8 @@ export interface LayerVisibility {
   fieldLines: boolean;
   mhdWaves: boolean;
   mmsReconnection: boolean;
+  /** Radiation / debris overlay (risk zones when VITE_FEATURE_DEBRIS_3D) */
+  radiationData?: boolean;
 }
 
 export type EncodingMode = 'color' | 'size' | 'both';

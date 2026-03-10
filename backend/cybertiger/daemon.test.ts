@@ -83,3 +83,32 @@ test("auth failure threshold auto-blocks IP", () => {
   assert.equal(later.allowed, false);
   assert.equal(later.status, 429);
 });
+
+test("stored events never exceed maxEvents cap", () => {
+  const maxEvents = 100;
+  const daemon = new CyberTigerDaemon({
+    enabled: true,
+    rateLimitWindowMs: 60_000,
+    rateLimitMax: 10_000,
+    authFailureWindowMs: 60_000,
+    authFailureThreshold: 100,
+    autoBlockSeconds: 60,
+    maxEvents,
+  });
+
+  for (let i = 0; i < 150; i += 1) {
+    daemon.recordResponse({
+      requestId: `req-${i}`,
+      ip: `10.0.0.${i % 255}`,
+      method: "GET",
+      path: "/api/feed/sources/status",
+      status: 401,
+    });
+  }
+
+  const status = daemon.getStatus();
+  assert.ok(
+    status.counters.storedEvents <= maxEvents,
+    `storedEvents (${status.counters.storedEvents}) should be <= maxEvents (${maxEvents})`,
+  );
+});

@@ -84,6 +84,14 @@ function shueStandoffDistanceRe(dynamicPressure: number, bzNt: number): number {
   return clamp(r0, 4, 25);
 }
 
+function alfvenSpeedKmS(btNt: number, densityCm3: number): number {
+  const densityM3 = Math.max(densityCm3, 0.01) * 1e6;
+  const rhoKgM3 = densityM3 * 1.67262192369e-27;
+  const btTesla = toTeslasFromNt(Math.max(btNt, 0.01));
+  const vaMs = btTesla / Math.sqrt(Math.max(MU0 * rhoKgM3, 1e-18));
+  return clamp(vaMs / 1000, 1, 5000);
+}
+
 function stormTier(
   bzNt: number,
   kp: number,
@@ -237,6 +245,11 @@ export function computeCanonicalPoint(
   // Include Shue standoff as hidden diagnostics in reason text for lightweight compatibility.
   const r0 = shueStandoffDistanceRe(pdyn, state.magneticField.z);
   point.alerts.reason = `${point.alerts.reason}; r0=${r0.toFixed(2)} Re`;
+  point.diagnostics = {
+    shueR0Re: r0,
+    alfvenSpeedKmS: alfvenSpeedKmS(bt, state.rho),
+    clockAngleRad: Math.atan2(state.magneticField.y, state.magneticField.z),
+  };
 
   return { point, state };
 }

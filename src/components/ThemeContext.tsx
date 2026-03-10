@@ -2,12 +2,46 @@
  * ThemeContext — Gauss-domain design tokens layered on top of next-themes.
  *
  * Provides app-specific colours, intensities, and semantic labels so that
- * child components never hard-code visual values.  The existing ThemeProvider
- * (next-themes wrapper) remains untouched; this context augments it.
+ * child components never hard-code visual values. Supports mission-control HUD
+ * styling with accretion-disk branding and display customization (accent, glow).
  */
 
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTheme } from 'next-themes';
+
+const DISPLAY_STORAGE_KEY = 'gauss-aurora-display';
+
+export type AccentStyle = 'accretion' | 'phosphor' | 'tactical';
+export type GlowLevel = 'low' | 'medium' | 'high';
+
+export interface DisplayPreferences {
+    accentStyle: AccentStyle;
+    glowLevel: GlowLevel;
+}
+
+function loadDisplayPreferences(): DisplayPreferences {
+    try {
+        const raw = localStorage.getItem(DISPLAY_STORAGE_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw) as Partial<DisplayPreferences>;
+            if (parsed.accentStyle && ['accretion', 'phosphor', 'tactical'].includes(parsed.accentStyle) &&
+                parsed.glowLevel && ['low', 'medium', 'high'].includes(parsed.glowLevel)) {
+                return { accentStyle: parsed.accentStyle, glowLevel: parsed.glowLevel };
+            }
+        }
+    } catch {
+        /* ignore */
+    }
+    return { accentStyle: 'accretion', glowLevel: 'medium' };
+}
+
+function saveDisplayPreferences(prefs: DisplayPreferences): void {
+    try {
+        localStorage.setItem(DISPLAY_STORAGE_KEY, JSON.stringify(prefs));
+    } catch {
+        /* ignore */
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Token shape
@@ -26,6 +60,12 @@ export interface GaussThemeTokens {
     glowIntensity: number;
     /** Whether the resolved theme is dark */
     isDark: boolean;
+    /** Display customization: accent style (accretion / phosphor / tactical) */
+    accentStyle: AccentStyle;
+    /** Display customization: HUD glow level */
+    glowLevel: GlowLevel;
+    /** Update display preferences (persisted to localStorage) */
+    setDisplayPreferences: (prefs: Partial<DisplayPreferences>) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -45,21 +85,35 @@ interface GaussThemeProviderProps {
 export function GaussThemeProvider({ children }: GaussThemeProviderProps) {
     const { theme, resolvedTheme } = useTheme();
     const isDark = resolvedTheme === 'dark';
+    const [displayPrefs, setDisplayPrefs] = useState<DisplayPreferences>(() => loadDisplayPreferences());
+
+    useEffect(() => {
+        const root = document.documentElement;
+        root.setAttribute('data-accent', displayPrefs.accentStyle);
+        root.setAttribute('data-glow', displayPrefs.glowLevel);
+    }, [displayPrefs]);
+
+    const setDisplayPreferences = useCallback((next: Partial<DisplayPreferences>) => {
+        setDisplayPrefs((prev) => {
+            const updated = { ...prev, ...next };
+            saveDisplayPreferences(updated);
+            return updated;
+        });
+    }, []);
 
     const tokens = useMemo<GaussThemeTokens>(
         () => ({
             mode: theme,
-            accentPrimary: isDark
-                ? 'hsl(var(--primary))'
-                : 'hsl(var(--primary))',
-            hudBorderColor: isDark
-                ? 'hsl(var(--border) / 0.45)'
-                : 'hsl(var(--border) / 0.25)',
+            accentPrimary: isDark ? 'hsl(var(--primary))' : 'hsl(var(--primary))',
+            hudBorderColor: isDark ? 'hsl(var(--hud-border))' : 'hsl(var(--border) / 0.25)',
             scanlineOpacity: isDark ? 0.06 : 0.03,
-            glowIntensity: isDark ? 1.0 : 0.5,
+            glowIntensity: displayPrefs.glowLevel === 'high' ? 1.25 : displayPrefs.glowLevel === 'low' ? 0.6 : 1.0,
             isDark,
+            accentStyle: displayPrefs.accentStyle,
+            glowLevel: displayPrefs.glowLevel,
+            setDisplayPreferences,
         }),
-        [theme, isDark],
+        [theme, isDark, displayPrefs, setDisplayPreferences],
     );
 
     return (

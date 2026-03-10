@@ -1,0 +1,24 @@
+.crt-overlay {
+  background:
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.015), rgba(0, 0, 255, 0.05));
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+}
+
+.text-glow {
+  text-shadow: 0 0 5px currentColor;
+}
+
+@keyframes flicker {
+  0% { opacity: 0.98; }
+  8% { opacity: 0.92; }
+  14% { opacity: 0.96; }
+  55% { opacity: 0.93; }
+  70% { opacity: 0.99; }
+  100% { opacity: 0.97; }
+}
+
+.animate-flicker {
+  animation: flicker 0.18s infinite;
+}

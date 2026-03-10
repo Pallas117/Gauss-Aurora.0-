@@ -11,6 +11,12 @@ import {
 } from "react";
 import { fetchAuthSession, fetchDashboardLatest } from "@/lib/api/heliophysics-proxy";
 import { readOfflineCache, writeOfflineCache } from "@/lib/offline/offline-cache";
+import {
+  appendTrendSample,
+  getAdaptivePollInterval,
+  getTrendAwarePollInterval,
+  type TrendSample,
+} from "@/lib/power/polling";
 import type { AuthSessionState, DashboardLatestResponse } from "@/lib/types/space-weather";
 
 const BASE_POLL_INTERVAL_MS = 5000;
@@ -20,25 +26,26 @@ const SNAPSHOT_CACHE_KEY = "mission:dashboard-latest";
 const SESSION_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const SNAPSHOT_CACHE_TTL_MS = 45 * 60 * 1000;
 
-function adaptiveCadenceMultiplier(): number {
-  if (typeof document !== "undefined" && document.visibilityState !== "visible") {
-    return 4;
-  }
+function extractDashboardTrendMetric(snapshot: DashboardLatestResponse): number {
+  const canonical = snapshot.canonicalLatest;
+  const topThreat = snapshot.threatSummary.summary.top_threat_score;
+  const reconnectionProbability = snapshot.mmsLatest?.probability?.reconnection ?? 0;
 
-  const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
-  if (nav.connection?.saveData) {
-    return 2;
-  }
-
-  return 1;
+  return (
+    canonical.solarWind.speed * 0.01 +
+    canonical.indices.kp * 6 +
+    Math.abs(canonical.magneticField.z) * 3 +
+    topThreat * 0.2 +
+    reconnectionProbability * 20
+  );
 }
 
-function resolvePollIntervalMs(): number {
-  return BASE_POLL_INTERVAL_MS * adaptiveCadenceMultiplier();
+function resolvePollIntervalMs(samples: TrendSample[]): number {
+  return getTrendAwarePollInterval(BASE_POLL_INTERVAL_MS, samples, { maxMultiplier: 3.25 });
 }
 
 function resolveSessionRefreshMs(): number {
-  return BASE_SESSION_REFRESH_MS * adaptiveCadenceMultiplier();
+  return getAdaptivePollInterval(BASE_SESSION_REFRESH_MS);
 }
 
 const DEFAULT_SESSION: AuthSessionState = {
@@ -107,6 +114,7 @@ function useMissionSnapshotController(
   const [lastSuccessfulSyncAt, setLastSuccessfulSyncAt] = useState<number | null>(null);
   const sessionRef = useRef<AuthSessionState | null>(null);
   const lastSuccessfulSyncRef = useRef<number | null>(null);
+  const trendSamplesRef = useRef<TrendSample[]>([]);
 
   useEffect(() => {
     sessionRef.current = session;
@@ -125,6 +133,14 @@ function useMissionSnapshotController(
       setSnapshot(cached.data);
       setUsingCachedData(true);
       setCachedAt(cached.cachedAt);
+      const timestampMs = Date.parse(cached.data.timestamp);
+      const metric = extractDashboardTrendMetric(cached.data);
+      if (Number.isFinite(timestampMs) && Number.isFinite(metric)) {
+        trendSamplesRef.current = appendTrendSample(trendSamplesRef.current, {
+          timestampMs,
+          value: metric,
+        });
+      }
       if (lastSuccessfulSyncRef.current == null) {
         setLastSuccessfulSyncAt(cached.cachedAt);
         lastSuccessfulSyncRef.current = cached.cachedAt;
@@ -195,6 +211,14 @@ function useMissionSnapshotController(
       setSnapshot(latest);
       setUsingCachedData(false);
       setCachedAt(null);
+      const timestampMs = Date.parse(latest.timestamp);
+      const metric = extractDashboardTrendMetric(latest);
+      if (Number.isFinite(timestampMs) && Number.isFinite(metric)) {
+        trendSamplesRef.current = appendTrendSample(trendSamplesRef.current, {
+          timestampMs,
+          value: metric,
+        });
+      }
       const syncedAt = Date.now();
       setLastSuccessfulSyncAt(syncedAt);
       lastSuccessfulSyncRef.current = syncedAt;
@@ -244,6 +268,14 @@ function useMissionSnapshotController(
         setCachedAt(cachedSnapshot.cachedAt);
         setLastSuccessfulSyncAt(cachedSnapshot.cachedAt);
         lastSuccessfulSyncRef.current = cachedSnapshot.cachedAt;
+        const timestampMs = Date.parse(cachedSnapshot.data.timestamp);
+        const metric = extractDashboardTrendMetric(cachedSnapshot.data);
+        if (Number.isFinite(timestampMs) && Number.isFinite(metric)) {
+          trendSamplesRef.current = appendTrendSample(trendSamplesRef.current, {
+            timestampMs,
+            value: metric,
+          });
+        }
       }
 
       const nextSession = await refreshSession();
@@ -298,7 +330,7 @@ function useMissionSnapshotController(
       if (!active) {
         return;
       }
-      timer = window.setTimeout(runPoll, resolvePollIntervalMs());
+      timer = window.setTimeout(runPoll, resolvePollIntervalMs(trendSamplesRef.current));
     };
 
     void runPoll();
@@ -310,6 +342,27 @@ function useMissionSnapshotController(
       }
     };
   }, [canPoll, refresh]);
+
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined") {
+      return;
+    }
+
+    const handleOnline = () => {
+      void refreshSession().then((nextSession) => refresh(nextSession));
+    };
+
+    const handleOffline = () => {
+      void refresh(sessionRef.current ?? DEFAULT_SESSION);
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [enabled, refresh, refreshSession]);
 
   return {
     session,

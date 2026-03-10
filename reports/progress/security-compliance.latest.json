@@ -1,0 +1,66 @@
+{
+  "generated_at": "2026-03-10T18:47:08.854Z",
+  "totals": {
+    "pass": 8,
+    "warn": 0,
+    "fail": 0
+  },
+  "controls": [
+    {
+      "id": "NIST-AC-3",
+      "framework": "NIST SP 800-53 Rev.5",
+      "title": "Access enforcement with authenticated API boundary",
+      "status": "pass",
+      "details": "AUTH_REQUIRED is enabled by default."
+    },
+    {
+      "id": "NIST-CSF-PR.AA",
+      "framework": "NIST CSF 2.0",
+      "title": "Role-based authorization control",
+      "status": "pass",
+      "details": "Role gate calls found in backend routes."
+    },
+    {
+      "id": "ISO-A.8.15",
+      "framework": "ISO/IEC 27001:2022",
+      "title": "Logging and security event traceability",
+      "status": "pass",
+      "details": "CyberTiger event generation patterns detected."
+    },
+    {
+      "id": "NIST-SC-7",
+      "framework": "NIST SP 800-53 Rev.5",
+      "title": "Boundary protection and request throttling",
+      "status": "pass",
+      "details": "Rate-limiting controls present in daemon implementation."
+    },
+    {
+      "id": "NIST-SI-4",
+      "framework": "NIST SP 800-53 Rev.5",
+      "title": "Security monitoring and anomaly detection",
+      "status": "pass",
+      "details": "Signature-based detection controls present."
+    },
+    {
+      "id": "SPACE-NISTIR-8401",
+      "framework": "NISTIR 8401 / Satellite Ground Segment",
+      "title": "Documented mapping to satellite cybersecurity guidance",
+      "status": "pass",
+      "details": "Compliance baseline document present."
+    },
+    {
+      "id": "SPACE-DTN-1",
+      "framework": "DTN/ISL Operations Baseline",
+      "title": "DTN + ISL network-management audit control exists",
+      "status": "pass",
+      "details": "Network-management audit script is present."
+    },
+    {
+      "id": "SPACE-DTN-2",
+      "framework": "DTN/ISL Operations Baseline",
+      "title": "API-first network route planning and audit endpoints",
+      "status": "pass",
+      "details": "Pass API exposes network audit and route planning routes."
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 /**
  * Theme Switcher Component
- * Allows users to switch between light, dark, and system themes
+ * Dark mode is locked globally for visual consistency across devices.
  */
 
 import { Moon, Sun, Monitor } from 'lucide-react';
@@ -15,8 +15,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function ThemeSwitcher() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, forcedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const isDarkLocked = forcedTheme === 'dark';
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -26,7 +27,20 @@ export function ThemeSwitcher() {
   if (!mounted) {
     return (
       <Button variant="outline" size="icon" aria-label="Theme switcher">
-        <Sun className="h-4 w-4" />
+        <Moon className="h-4 w-4" />
+      </Button>
+    );
+  }
+
+  if (isDarkLocked) {
+    return (
+      <Button
+        variant="outline"
+        size="icon"
+        disabled
+        aria-label="Current theme: dark. Theme is locked."
+      >
+        <Moon className="h-4 w-4" aria-hidden="true" />
       </Button>
     );
   }
@@ -74,4 +88,3 @@ export function ThemeSwitcher() {
     </DropdownMenu>
   );
 }
-

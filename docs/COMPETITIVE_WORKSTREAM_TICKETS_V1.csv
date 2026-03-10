@@ -1,0 +1,15 @@
+ticket_id,title,workstream,priority,status,effort_days,dependencies,objective
+GAUSS-COMP-001,Telemetry ingest abstraction,Protocol Parity,P0,DONE,3,,Unify ingest interface and decoder registry while preserving CSV adapters
+GAUSS-COMP-002,CCSDS packet decoder,Protocol Parity,P0,DONE,5,GAUSS-COMP-001,Decode CCSDS packets with validation and quality flags
+GAUSS-COMP-003,XTCE dictionary loader and mapper,Protocol Parity,P0,DONE,5,GAUSS-COMP-001,Load XTCE XML dictionaries and map payload params to canonical schema
+GAUSS-COMP-004,Protocol conformance harness,Protocol Parity,P0,DONE,3,"GAUSS-COMP-002;GAUSS-COMP-003",Add parser regression and conformance tests in CI
+GAUSS-COMP-101,Rust pass API scaffold,Pass Orchestration,P0,DONE,3,,Add API-first pass planning and scheduling endpoints
+GAUSS-COMP-102,Pass scheduler model,Pass Orchestration,P0,DONE,5,GAUSS-COMP-101,Implement pass window/conflict model with deterministic scheduling
+GAUSS-COMP-103,Antenna pointing adapter,Pass Orchestration,P0,DONE,4,GAUSS-COMP-101,Create adapter interface for slew/track/stop command automation
+GAUSS-COMP-104,Pass orchestration RBAC and audit,Pass Orchestration,P0,DONE,3,"GAUSS-COMP-101;GAUSS-COMP-102;GAUSS-COMP-103",Enforce role-based command control and signed audit trail
+GAUSS-COMP-201,Optical and RF sensor schema,SSA Automation,P0,DONE,4,,Define canonical multi-sensor measurement schema with covariance
+GAUSS-COMP-202,Multi-sensor track association,SSA Automation,P0,DONE,6,GAUSS-COMP-201,Associate heterogeneous measurements into confidence-scored tracks
+GAUSS-COMP-203,Uncertainty propagation and explainability,SSA Automation,P1,DONE,4,GAUSS-COMP-202,Propagate uncertainty to threat cards with source rationale
+GAUSS-COMP-301,Operator timeline and action rail,Visualization Depth,P1,DONE,4,"GAUSS-COMP-101;GAUSS-COMP-102",Add mission timeline and role-aware operator action rail
+GAUSS-COMP-302,3D pass impact overlays,Visualization Depth,P1,DONE,4,"GAUSS-COMP-201;GAUSS-COMP-301",Render pass arcs footprints and risk overlays with fallback behavior
+GAUSS-COMP-303,One-screen decision cards,Visualization Depth,P1,DONE,3,GAUSS-COMP-203,Surface top actions and confidence rationale in operator-first format

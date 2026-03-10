@@ -84,3 +84,31 @@ test("mms recon feed keeps a fixed-size ring buffer", () => {
   assert.equal(feed[0]?.timestamp, mmsPoint(40).timestamp);
   assert.equal(feed[feed.length - 1]?.timestamp, mmsPoint(5_039).timestamp);
 });
+
+test("canonical and mms feed caps respect CANONICAL_FEED_MAX and MMS_FEED_MAX env", () => {
+  const prevCanonical = process.env.CANONICAL_FEED_MAX;
+  const prevMms = process.env.MMS_FEED_MAX;
+  try {
+    process.env.CANONICAL_FEED_MAX = "500";
+    process.env.MMS_FEED_MAX = "200";
+    const canonicalFeed = getCanonicalFeed();
+    const mmsFeed = getMmsFeed();
+    canonicalFeed.length = 0;
+    mmsFeed.length = 0;
+
+    for (let i = 0; i < 600; i += 1) {
+      pushCanonical(canonicalPoint(i));
+    }
+    for (let i = 0; i < 250; i += 1) {
+      pushMms(mmsPoint(i));
+    }
+
+    assert.equal(canonicalFeed.length, 500);
+    assert.equal(mmsFeed.length, 200);
+  } finally {
+    if (prevCanonical !== undefined) process.env.CANONICAL_FEED_MAX = prevCanonical;
+    else delete process.env.CANONICAL_FEED_MAX;
+    if (prevMms !== undefined) process.env.MMS_FEED_MAX = prevMms;
+    else delete process.env.MMS_FEED_MAX;
+  }
+});

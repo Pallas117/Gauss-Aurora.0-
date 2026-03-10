@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Database, Search, Terminal as TerminalIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { resolveHostAwareBaseUrl } from '@/lib/api/base-url';
 
 type RagStatus = {
   ok: boolean;
@@ -15,12 +17,23 @@ type RagQueryResponse = {
 };
 
 const RAG_BASE =
-  import.meta.env.VITE_GAUSS_RAG_URL || 'http://localhost:3001';
+  resolveHostAwareBaseUrl(
+    (typeof import_meta !== 'undefined'
+      ? import_meta?.env?.VITE_GAUSS_RAG_URL
+      : typeof process !== 'undefined'
+        ? process.env?.VITE_GAUSS_RAG_URL
+        : undefined) ?? null,
+    3002,
+  );
 
 const DEFAULT_INDEX_DIR =
-  import.meta.env.VITE_GAUSS_RAG_INDEX_DIR || '/Users/josh/Documents/lightbound';
+  (typeof import_meta !== 'undefined' ? import_meta?.env?.VITE_GAUSS_RAG_INDEX_DIR : typeof process !== 'undefined' ? process.env?.VITE_GAUSS_RAG_INDEX_DIR : undefined) || 'research/documentation-rag';
 
-export function GaussRagPanel() {
+interface GaussRagPanelProps {
+  className?: string;
+}
+
+export function GaussRagPanel({ className }: GaussRagPanelProps) {
   const [status, setStatus] = useState<RagStatus | null>(null);
   const [indexing, setIndexing] = useState(false);
   const [question, setQuestion] = useState('');
@@ -98,7 +111,12 @@ export function GaussRagPanel() {
       : 'No index yet';
 
   return (
-    <div className="hud-panel p-4 w-[min(92vw,440px)] pointer-events-auto animate-fade-in-up space-y-3">
+    <div
+      className={cn(
+        "hud-panel p-4 w-full pointer-events-auto animate-fade-in-up space-y-3",
+        className,
+      )}
+    >
       <div className="scanline" />
       <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-2">
         <div>
@@ -114,10 +132,10 @@ export function GaussRagPanel() {
           type="button"
           onClick={handleIndex}
           disabled={indexing}
-          className="text-[11px] px-3 py-1.5 border rounded-full border-primary/35 hover:bg-primary/15 hover:text-primary disabled:opacity-50 font-semibold tracking-wide inline-flex items-center gap-2"
+          className="text-[11px] px-3 py-1.5 border  border-primary/35 hover:bg-primary/15 hover:text-primary disabled:opacity-50 font-semibold tracking-wide inline-flex items-center gap-2"
         >
           <Database size={12} />
-          {indexing ? 'Indexing…' : 'Index lightbound'}
+          {indexing ? 'Indexing…' : 'Index docs'}
         </button>
       </div>
 
@@ -131,13 +149,13 @@ export function GaussRagPanel() {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Ask Gauss about mission concepts, threats, or documents…"
-          className="w-full h-24 text-xs bg-background/75 border border-border/80 rounded-xl px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+          className="w-full h-24 text-xs bg-background/75 border border-border/80  px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
         <button
           type="button"
           onClick={handleAsk}
           disabled={asking || !question.trim()}
-          className="w-full text-[11px] px-3 py-2 border rounded-xl border-primary/35 hover:bg-primary hover:text-primary-foreground disabled:opacity-50 font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2"
+          className="w-full text-[11px] px-3 py-2 border  border-primary/35 hover:bg-primary hover:text-primary-foreground disabled:opacity-50 font-bold uppercase tracking-wider inline-flex items-center justify-center gap-2"
         >
           <Search size={12} />
           {asking ? 'Consulting Gauss RAG…' : 'Ask Gauss RAG'}
@@ -150,33 +168,39 @@ export function GaussRagPanel() {
         </p>
       )}
 
-      {answer && (
-        <div className="mt-2 space-y-2">
-          <p className="text-[11px] font-semibold text-muted-foreground uppercase">
-            Answer
-          </p>
-          <p className="text-[11px] text-foreground/90 whitespace-pre-wrap text-left">
-            {answer}
-          </p>
-        </div>
-      )}
-
-      {sources.length > 0 && (
-        <div className="mt-1 space-y-1">
-          <p className="text-[11px] font-semibold text-muted-foreground uppercase">
-            Sources
-          </p>
-          <ul className="space-y-0.5 max-h-20 overflow-y-auto text-left">
-            {sources.map((s, i) => (
-              <li
-                key={`${s.filePath}-${i}`}
-                className="text-[10px] text-muted-foreground/80 truncate"
-                title={s.filePath}
-              >
-                {s.filePath}
-              </li>
-            ))}
-          </ul>
+      {(answer || sources.length > 0) && (
+        <div className="reasoning-feed relative mt-2 rounded border border-white/10 bg-black/40 p-3 shadow-[inset_0_0_20px_rgba(0,0,0,0.3)]">
+          <div className="crt-overlay absolute inset-0 rounded pointer-events-none" aria-hidden />
+          <div className="relative space-y-2">
+            {answer && (
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold text-gauss-neon/80 uppercase font-mono">
+                  Answer
+                </p>
+                <p className="text-[11px] font-mono text-gauss-neon whitespace-pre-wrap text-left text-glow animate-flicker">
+                  {answer}
+                </p>
+              </div>
+            )}
+            {sources.length > 0 && (
+              <div className="mt-1 space-y-1">
+                <p className="text-[11px] font-semibold text-gauss-neon/80 uppercase font-mono">
+                  Sources
+                </p>
+                <ul className="space-y-0.5 max-h-20 overflow-y-auto text-left font-mono">
+                  {sources.map((s, i) => (
+                    <li
+                      key={`${s.filePath}-${i}`}
+                      className="text-[10px] text-gauss-neon/70 truncate"
+                      title={s.filePath}
+                    >
+                      {s.filePath}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

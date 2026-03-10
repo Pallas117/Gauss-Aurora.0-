@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gauss OpenMCT Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/openmct@4.1.0/dist/openmct.css" />
+</head>
+<body>
+  <div id="openmct-container"></div>
+  <script src="https://unpkg.com/openmct@4.1.0/dist/openmct.js"></script>
+  <script src="gauss-adapter.js"></script>
+  <script>
+    var API_BASE = window.GAUSS_API_BASE;
+    if (API_BASE == null || API_BASE === "") {
+      API_BASE = ""; // same origin (backend serves /openmct and /api)
+    }
+    openmct.setAssetPath("https://unpkg.com/openmct@4.1.0/dist");
+    openmct.install(openmct.plugins.GaussTelemetry(API_BASE));
+    openmct.start();
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Gauss RAG service: local embeddings + LanceDB (M1-safe, air-gapped)
+lancedb>=0.4.0
+sentence-transformers>=2.2.0
+pymupdf>=1.23.0
+beautifulsoup4>=4.12.0
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+httpx>=0.26.0

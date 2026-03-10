@@ -1,0 +1,14 @@
+---
+description: When planning work or coordinating subagents, read the orchestrator work queue and delegate via agents-project-manager.
+alwaysApply: false
+---
+
+# Orchestrator–Subagent Synergy
+
+When **planning work** or **coordinating subagents**:
+
+1. **Read** the latest orchestrator work queue from **`reports/orchestrator/work-queue.json`** if the file exists.
+2. **Use it to seed the plan**: prioritize by `severity`/`priority` and `recommended_agent`. Use **`estimated_minutes`** (per item), **`total_estimated_minutes`**, **`scheduling_buffer_minutes`**, and **`min_safe_battery_percent`** (default 25). Propose a timeline using **reserved block = total_estimated_minutes + scheduling_buffer_minutes**; never schedule heavy work when device battery is below `min_safe_battery_percent` (treat devices as high-value satellites for stakeholder demo).
+3. **When delegating**, invoke **agents-project-manager** with context that references this artifact (e.g. "Read `reports/orchestrator/work-queue.json` and coordinate subagents accordingly"). Include a one-line **Conservative total: X min** and **Reserved block: Y min (with buffer)**; note the 25% battery floor so the user can meet clients and keep devices safe.
+
+The project-manager subagent is responsible for mapping queue items to subagents (explore, shell, cyber-devops, ui-ux, ada-health) and proposing an ordered execution plan with time estimates. The file path is the single handoff point between the gauss-orchestrator (Rust) and Cursor coordination.

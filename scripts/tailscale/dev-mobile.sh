@@ -28,6 +28,11 @@ detect_tailscale_ip_fallback() {
     }'
 }
 
+is_loopback_host() {
+  local host="${1:-}"
+  [[ "${host}" == "localhost" || "${host}" == "127.0.0.1" || "${host}" == "::1" || "${host}" == "[::1]" ]]
+}
+
 port_in_use() {
   local port="$1"
   lsof -nP -iTCP:"${port}" -sTCP:LISTEN >/dev/null 2>&1
@@ -79,6 +84,21 @@ PROXY_PORT="${PROXY_PORT:-3001}"
 FRONTEND_HOST="${FRONTEND_HOST:-${TS_IP}}"
 PROXY_HOST="${PROXY_HOST:-${TS_IP}}"
 
+if [[ "${FRONTEND_HOST}" == "0.0.0.0" ]]; then
+  echo "[dev:tailscale] refusing insecure FRONTEND_HOST=0.0.0.0." >&2
+  exit 1
+fi
+
+if is_loopback_host "${FRONTEND_HOST}"; then
+  echo "[dev:tailscale] FRONTEND_HOST=${FRONTEND_HOST} is not reachable from mobile devices. Using ${TS_IP}." >&2
+  FRONTEND_HOST="${TS_IP}"
+fi
+
+if is_loopback_host "${PROXY_HOST}"; then
+  echo "[dev:tailscale] PROXY_HOST=${PROXY_HOST} blocks mobile access. Using ${TS_IP} for secure tailnet access." >&2
+  PROXY_HOST="${TS_IP}"
+fi
+
 if port_in_use "${PROXY_PORT}"; then
   echo "[dev:tailscale] port ${PROXY_PORT} is already in use." >&2
   echo "[dev:tailscale] run: npm run dev:tailscale:doctor:fix" >&2
@@ -110,6 +130,14 @@ if [[ -n "${RAW_ORIGINS_CSV}" ]]; then
     trimmed="${raw#"${raw%%[![:space:]]*}"}"
     trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"
     if [[ -n "${trimmed}" ]]; then
+      if [[ "${trimmed}" == *"*"* ]]; then
+        echo "[dev:tailscale] skipping wildcard origin '${trimmed}' for safety." >&2
+        continue
+      fi
+      if [[ "${trimmed}" =~ ^https?://0\.0\.0\.0(:[0-9]+)?$ ]]; then
+        echo "[dev:tailscale] skipping origin '${trimmed}' because 0.0.0.0 is unsafe." >&2
+        continue
+      fi
       ORIGIN_LINES="${ORIGIN_LINES}"$'\n'"${trimmed}"
     fi
   done

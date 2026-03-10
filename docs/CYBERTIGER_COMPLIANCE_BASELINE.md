@@ -70,9 +70,9 @@ Formal conformity requires organizational policy, governance evidence, independe
 
 ## Evidence Pointers
 
-- `/Users/josh/Documents/lightbound/Gauss/Gauss Aurora V0.1/backend/cybertiger/daemon.ts`
-- `/Users/josh/Documents/lightbound/Gauss/Gauss Aurora V0.1/backend/server.ts`
-- `/Users/josh/Documents/lightbound/Gauss/Gauss Aurora V0.1/backend/scripts/security-compliance-check.ts`
+- `/Users/josh/Documents/lightbound/Gauss/Gauss Aurora/backend/cybertiger/daemon.ts`
+- `/Users/josh/Documents/lightbound/Gauss/Gauss Aurora/backend/server.ts`
+- `/Users/josh/Documents/lightbound/Gauss/Gauss Aurora/backend/scripts/security-compliance-check.ts`
 
 ## Reference Sources
 

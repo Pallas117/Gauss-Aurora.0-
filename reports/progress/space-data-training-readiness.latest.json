@@ -1,0 +1,44 @@
+{
+  "generatedAt": "2026-03-06T17:20:07.152Z",
+  "readiness": "blocked",
+  "score": 62,
+  "registryPath": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/ml/models/registry.json",
+  "latestReadyModel": {
+    "version": "unet-baseline-v1",
+    "trainedAt": "2026-02-19T16:30:26.847182+00:00",
+    "samples": 0,
+    "status": "ready",
+    "datasetPath": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/ml/data/train_dataset.jsonl"
+  },
+  "dataset": {
+    "path": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/ml/data/train_dataset.jsonl",
+    "exists": false,
+    "rowCount": 0,
+    "validRows": 0,
+    "invalidRows": 0,
+    "uniqueTimestamps": 0,
+    "inputSteps": null,
+    "featureWidth": null,
+    "targetWidth": null,
+    "coverageHours": null,
+    "holdoutPath": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/ml/data/train_dataset.holdout.jsonl",
+    "holdoutExists": false
+  },
+  "offloadPolicy": {
+    "required": true,
+    "runbookPath": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/docs/SURYA_FINETUNING_OFFLOAD.md",
+    "runbookPresent": true
+  },
+  "blockers": [
+    "Training dataset is missing."
+  ],
+  "warnings": [
+    "Latest ready model still reports zero learned samples."
+  ],
+  "nextActions": [
+    "Generate a canonical training dataset from real space-weather history.",
+    "Create a holdout split before retraining.",
+    "Keep any fine-tuning off the 8 GB M1 and use the offload runbook.",
+    "Retrain only after the registry can report non-zero samples and valid metrics."
+  ]
+}

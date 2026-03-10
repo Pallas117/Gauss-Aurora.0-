@@ -8,6 +8,8 @@ export interface MMSBurstWindow {
   mode: "brst" | "srvy";
 }
 
+let latestBurstWindows: MMSBurstWindow[] = [];
+
 let latestStatus: SourceStatus = {
   source: SOURCE,
   lastSeen: null,
@@ -49,6 +51,8 @@ export async function fetchMmsBurstWindows(): Promise<MMSBurstWindow[]> {
           .filter((window) => window.start && window.end)
       : [];
 
+    latestBurstWindows = windows;
+
     latestStatus = {
       source: SOURCE,
       lastSeen: new Date().toISOString(),
@@ -59,6 +63,7 @@ export async function fetchMmsBurstWindows(): Promise<MMSBurstWindow[]> {
 
     return windows;
   } catch (error) {
+    latestBurstWindows = [];
     latestStatus = {
       source: SOURCE,
       lastSeen: latestStatus.lastSeen,
@@ -72,4 +77,23 @@ export async function fetchMmsBurstWindows(): Promise<MMSBurstWindow[]> {
 
 export function getMmsLaspStatus(): SourceStatus {
   return latestStatus;
+}
+
+export function getLatestMmsBurstWindows(): MMSBurstWindow[] {
+  return latestBurstWindows;
+}
+
+export function isBurstModeAt(timestampIso: string): boolean {
+  const ts = Date.parse(timestampIso);
+  if (!Number.isFinite(ts)) {
+    return false;
+  }
+  return latestBurstWindows.some((window) => {
+    const start = Date.parse(window.start);
+    const end = Date.parse(window.end);
+    if (!Number.isFinite(start) || !Number.isFinite(end)) {
+      return false;
+    }
+    return ts >= start && ts <= end;
+  });
 }

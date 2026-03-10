@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 type AppRole = "viewer" | "operator" | "admin";
+type AppClearance = "public" | "mission" | "restricted";
 
 type RoleSpec = {
   role: AppRole;
@@ -64,6 +65,12 @@ function truncateId(value: string): string {
   return value.length <= 10 ? value : `${value.slice(0, 8)}...`;
 }
 
+function defaultClearanceForRole(role: AppRole): AppClearance {
+  if (role === "admin") return "restricted";
+  if (role === "operator") return "mission";
+  return "public";
+}
+
 async function findUserByEmail(
   supabase: ReturnType<typeof createClient>,
   email: string,
@@ -103,11 +110,17 @@ async function ensureRoleUser(
   const existing = await findUserByEmail(supabase, email);
 
   if (!existing) {
+    const clearance = defaultClearanceForRole(roleSpec.role);
     const { data, error } = await supabase.auth.admin.createUser({
       email,
       password,
       email_confirm: emailConfirmed,
-      app_metadata: { role: roleSpec.role },
+      app_metadata: {
+        role: roleSpec.role,
+        roles: [roleSpec.role],
+        clearance,
+        clearances: [clearance],
+      },
     });
     if (error || !data.user) {
       throw new Error(`createUser failed for ${email}: ${error?.message ?? "unknown error"}`);
@@ -121,6 +134,9 @@ async function ensureRoleUser(
   const nextMetadata = {
     ...(existing.app_metadata ?? {}),
     role: roleSpec.role,
+    roles: [roleSpec.role],
+    clearance: defaultClearanceForRole(roleSpec.role),
+    clearances: [defaultClearanceForRole(roleSpec.role)],
   };
 
   const updatePayload: {

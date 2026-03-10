@@ -1,0 +1,22 @@
+{
+    "window.commandCenter": true,
+    "editor.accessibilitySupport": "on",
+    "files.autoSave": "onFocusChange",
+    "cursor.composer.textSizeScale": 1.15,
+    "cursor.composer.shouldShowMarkdownHoverParticipantActions2": true,
+    "cursor.composer.suggestNextPrompt": true,
+    "workbench.activityBar.location": "top",
+    "workbench.colorCustomizations": {
+        "[Abyss]": {}
+    },
+    "workbench.colorTheme": "Abyss",
+    "workbench.preferredDarkColorTheme": "Abyss",
+    "workbench.preferredHighContrastLightColorTheme": "Red",
+    "workbench.preferredLightColorTheme": "Solarized Light",
+    "workbench.fontAliasing": "auto",
+    "window.newWindowDimensions": "default",
+    "terminal.integrated.enableMultiLinePasteWarning": "never",
+    "editor.renderWhitespace": "all",
+    "editor.wordWrap": "on",
+    "update.releaseTrack": "prerelease"
+}

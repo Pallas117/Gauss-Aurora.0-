@@ -66,7 +66,7 @@ export const PerformanceMonitor = ({ visible = true }: PerformanceMonitorProps) 
   const fpsColor = stats.fps >= 55 ? 'text-green-400' : stats.fps >= 30 ? 'text-yellow-400' : 'text-red-400';
 
   return (
-    <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-sm border border-white/10 rounded-lg px-3 py-2 font-mono text-xs">
+    <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-sm border border-white/10  px-3 py-2 font-mono text-xs">
       <div className="flex flex-col gap-1">
         <div className="flex justify-between gap-4">
           <span className="text-white/60">FPS</span>

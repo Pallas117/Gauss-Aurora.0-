@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, isDemoMode } from '@/integrations/supabase/client';
 import {
   EMAInterpolator,
   InterpolatedData,
@@ -70,8 +70,18 @@ export const useSpaceWeather = (): UseSpaceWeatherReturn => {
   // ============================================================================
 
   const fetchData = useCallback(async () => {
+    // In demo mode, use mock data immediately
+    if (isDemoMode) {
+      interpolatorRef.current.setTarget(generateMockData());
+      setError(null);
+      setLastUpdate(new Date());
+      return;
+    }
+
     try {
-      console.log('[SpaceWeather] Fetching data from edge function...');
+      if (import.meta.env.DEV) {
+        console.log('[SpaceWeather] Fetching data from edge function...');
+      }
       
       const { data: responseData, error: fetchError } = await supabase.functions.invoke(
         'spaceweather',
@@ -96,21 +106,28 @@ export const useSpaceWeather = (): UseSpaceWeatherReturn => {
       setLastUpdate(new Date());
       setError(null);
       
-      console.log('[SpaceWeather] Data updated:', {
-        source: validated.flags.source,
-        stale: validated.flags.stale,
-        solarWind: transformed.solarWind.speed.toFixed(0) + ' km/s',
-        bz: transformed.imfBz.toFixed(1) + ' nT',
-        kp: transformed.kpIndex,
-      });
+      if (import.meta.env.DEV) {
+        console.log('[SpaceWeather] Data updated:', {
+          source: validated.flags.source,
+          stale: validated.flags.stale,
+          solarWind: transformed.solarWind.speed.toFixed(0) + ' km/s',
+          bz: transformed.imfBz.toFixed(1) + ' nT',
+          kp: transformed.kpIndex,
+        });
+      }
 
     } catch (err) {
       failureCountRef.current++;
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
-      console.error('[SpaceWeather] Fetch error:', errorMsg);
+      
+      if (import.meta.env.DEV) {
+        console.error('[SpaceWeather] Fetch error:', errorMsg);
+      }
       
       if (failureCountRef.current >= FALLBACK_TO_MOCK_AFTER) {
-        console.log('[SpaceWeather] Switching to mock data mode');
+        if (import.meta.env.DEV) {
+          console.log('[SpaceWeather] Switching to mock data mode');
+        }
         interpolatorRef.current.setTarget(generateMockData());
         setError('Using simulated data (API unavailable)');
       } else {

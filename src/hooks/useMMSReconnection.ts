@@ -44,7 +44,12 @@ export function useMMSReconnection(): MMSReconnectionState {
         if (!mounted) {
           return;
         }
-        setError(err instanceof Error ? err.message : "Failed to fetch MMS vectors");
+        const errorMsg = err instanceof Error ? err.message : "Failed to fetch MMS vectors";
+        setError(errorMsg);
+        // In demo mode, gracefully handle errors
+        if (errorMsg.includes('fetch') || errorMsg.includes('HTTP')) {
+          setVectors([]);
+        }
       } finally {
         if (mounted) {
           setLoading(false);

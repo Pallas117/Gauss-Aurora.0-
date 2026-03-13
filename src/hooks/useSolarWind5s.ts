@@ -47,7 +47,12 @@ export function useSolarWind5s(): SolarWind5sState {
         if (!mounted) {
           return;
         }
-        setError(err instanceof Error ? err.message : "Failed to fetch feed");
+        const errorMsg = err instanceof Error ? err.message : "Failed to fetch feed";
+        setError(errorMsg);
+        // In demo mode, gracefully handle errors by using empty data
+        if (errorMsg.includes('fetch') || errorMsg.includes('HTTP')) {
+          setPoints([]);
+        }
       } finally {
         if (mounted) {
           setLoading(false);

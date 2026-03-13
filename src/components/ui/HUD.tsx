@@ -1,4 +1,5 @@
 import { InterpolatedData } from '@/hooks/useSpaceWeather';
+import { isDemoMode } from '@/integrations/supabase/client';
 
 interface HUDProps {
   data: InterpolatedData;
@@ -66,11 +67,18 @@ export const HUD = ({ data, isStale }: HUDProps) => {
         <h2 className="text-sm font-semibold tracking-wider text-primary glow-text">
           SPACE WEATHER
         </h2>
-        {isStale && (
-          <span className="text-xs text-data-yellow animate-pulse" aria-label="Data is stale">
-            STALE
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {isDemoMode && (
+            <span className="text-xs text-blue-400" aria-label="Demo mode active">
+              DEMO
+            </span>
+          )}
+          {isStale && (
+            <span className="text-xs text-data-yellow animate-pulse" aria-label="Data is stale">
+              STALE
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="space-y-4">

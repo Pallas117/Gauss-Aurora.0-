@@ -40,7 +40,12 @@ export function useAuroraMap(): AuroraMapState {
         if (!mounted) {
           return;
         }
-        setError(err instanceof Error ? err.message : "Failed to fetch aurora map");
+        const errorMsg = err instanceof Error ? err.message : "Failed to fetch aurora map";
+        setError(errorMsg);
+        // In demo mode, gracefully handle errors
+        if (errorMsg.includes('fetch') || errorMsg.includes('HTTP')) {
+          setMap(null);
+        }
       } finally {
         if (mounted) {
           setLoading(false);

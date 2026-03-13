@@ -72,6 +72,24 @@ To connect a domain, navigate to Project > Settings > Domains and click Connect 
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
 
+## Demo Mode
+
+Gauss Aurora includes built-in demo mode that works without backend services.
+Perfect for presentations, development, and showcasing the UI.
+
+**Quick Start (No Configuration Required):**
+
+```sh
+npm install
+npm run dev
+```
+
+The application will automatically run in demo mode with simulated space weather data.
+
+For detailed information, see:
+
+- `docs/DEMO_MODE.md`
+
 ## Worktree Workflow
 
 For branch-isolated development with Git worktrees, see:

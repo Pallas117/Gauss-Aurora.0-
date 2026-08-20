@@ -25,7 +25,11 @@ fn summarize_work_queue(content: &str) -> String {
         Ok(v) => v,
         Err(_) => return "(work queue unreadable)".to_string(),
     };
-    let items = parsed.get("items").and_then(|v| v.as_array()).map(|a| a.len()).unwrap_or(0);
+    let items = parsed
+        .get("items")
+        .and_then(|v| v.as_array())
+        .map(|a| a.len())
+        .unwrap_or(0);
     let total_min = parsed
         .get("total_estimated_minutes")
         .and_then(|v| v.as_u64())
@@ -34,7 +38,10 @@ fn summarize_work_queue(content: &str) -> String {
         .get("min_safe_battery_percent")
         .and_then(|v| v.as_u64())
         .unwrap_or(25);
-    let ts = parsed.get("timestamp").and_then(|v| v.as_str()).unwrap_or("—");
+    let ts = parsed
+        .get("timestamp")
+        .and_then(|v| v.as_str())
+        .unwrap_or("—");
     format!(
         "Work queue: {} items, {} min estimated, min_safe_battery={}%, timestamp={}",
         items, total_min, min_batt, ts
@@ -107,7 +114,10 @@ pub fn gather_recap_context(workspace_root: &Path) -> Result<RecapContext, Strin
         if let Ok(content) = std::fs::read_to_string(workspace_root.join(rel_path)) {
             let take = content.len().min(docs_max_bytes / 2);
             let snippet = if take < content.len() {
-                format!("{}... (truncated)", content.chars().take(take).collect::<String>())
+                format!(
+                    "{}... (truncated)",
+                    content.chars().take(take).collect::<String>()
+                )
             } else {
                 content
             };
@@ -192,10 +202,15 @@ pub async fn request_recap_from_local(
         .map_err(|e| format!("recap response read failed: {}", e))?;
 
     if !status.is_success() {
-        return Err(format!("local engine returned {}: {}", status, body.chars().take(300).collect::<String>()));
+        return Err(format!(
+            "local engine returned {}: {}",
+            status,
+            body.chars().take(300).collect::<String>()
+        ));
     }
 
-    let parsed: serde_json::Value = serde_json::from_str(&body).map_err(|e| format!("recap JSON parse failed: {}", e))?;
+    let parsed: serde_json::Value =
+        serde_json::from_str(&body).map_err(|e| format!("recap JSON parse failed: {}", e))?;
     let content = parsed
         .get("choices")
         .and_then(|v| v.as_array())
@@ -281,8 +296,8 @@ pub async fn request_fix_recommendation(
         ));
     }
 
-    let parsed: serde_json::Value =
-        serde_json::from_str(&body).map_err(|e| format!("fix recommendation JSON parse failed: {}", e))?;
+    let parsed: serde_json::Value = serde_json::from_str(&body)
+        .map_err(|e| format!("fix recommendation JSON parse failed: {}", e))?;
     let content = parsed
         .get("choices")
         .and_then(|v| v.as_array())
@@ -292,7 +307,8 @@ pub async fn request_fix_recommendation(
         .and_then(|c| c.as_str())
         .map(|s| s.trim().to_string());
 
-    content.ok_or_else(|| "fix recommendation response missing choices[0].message.content".to_string())
+    content
+        .ok_or_else(|| "fix recommendation response missing choices[0].message.content".to_string())
 }
 
 /// Optional: get battery percent from env or macOS pmset. Returns None if unknown or not darwin.
@@ -307,12 +323,22 @@ pub fn battery_percent() -> Option<u8> {
     }
     #[cfg(target_os = "macos")]
     {
-        let output = std::process::Command::new("pmset").args(["-g", "batt"]).output().ok()?;
+        let output = std::process::Command::new("pmset")
+            .args(["-g", "batt"])
+            .output()
+            .ok()?;
         let stdout = String::from_utf8_lossy(&output.stdout);
         let needle = "%";
         if let Some(idx) = stdout.rfind(needle) {
             let before = &stdout[..idx];
-            let digits: String = before.chars().rev().take_while(|c| c.is_ascii_digit()).collect::<String>().chars().rev().collect();
+            let digits: String = before
+                .chars()
+                .rev()
+                .take_while(|c| c.is_ascii_digit())
+                .collect::<String>()
+                .chars()
+                .rev()
+                .collect();
             if !digits.is_empty() {
                 if let Ok(n) = digits.parse::<u8>() {
                     return Some(n.min(100));

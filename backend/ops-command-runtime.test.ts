@@ -32,6 +32,8 @@ test("resolvePlannerModelProfile picks low-power model when constrained", () => 
       charging: false,
       powerSource: "battery",
       thermalPressure: "nominal",
+      powerFlow: "recovery",
+      surplusPowerAvailable: false,
       constrained: true,
       reason: "battery low",
     },
@@ -43,6 +45,45 @@ test("resolvePlannerModelProfile picks low-power model when constrained", () => 
   assert.equal(profile.profile, "low-power");
   assert.equal(profile.model, "low-power-model");
   assert.equal(profile.maxTokens, 96);
+});
+
+test("resolvePlannerPowerState promotes surplus external power without marking constrained", () => {
+  const state = resolvePlannerPowerState(
+    {
+      power: {
+        batteryPercent: 82,
+        charging: true,
+        powerSource: "ac",
+      },
+    },
+    {} as NodeJS.ProcessEnv,
+  );
+  assert.equal(state.constrained, false);
+  assert.equal(state.powerFlow, "surplus");
+  assert.equal(state.surplusPowerAvailable, true);
+});
+
+test("resolvePlannerModelProfile picks performance only in surplus power flow", () => {
+  const profile = resolvePlannerModelProfile(
+    "base-model",
+    {
+      batteryPercent: 82,
+      charging: true,
+      powerSource: "ac",
+      thermalPressure: "nominal",
+      powerFlow: "surplus",
+      surplusPowerAvailable: true,
+      constrained: false,
+      reason: "surplus-power",
+    },
+    {
+      ORCHESTRATOR_CHAT_MODEL_PERFORMANCE: "performance-model",
+      ORCHESTRATOR_CHAT_MAX_TOKENS_PERFORMANCE: "512",
+    } as NodeJS.ProcessEnv,
+  );
+  assert.equal(profile.profile, "performance");
+  assert.equal(profile.model, "performance-model");
+  assert.equal(profile.maxTokens, 512);
 });
 
 test("OpsCommandRuntime dedupes jobs with the same idempotency key", async () => {

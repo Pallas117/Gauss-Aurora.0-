@@ -34,6 +34,19 @@ def _checksum_verified_before_llm_in_server_code() -> bool:
     return True
 
 
+def _offline_policy_guards_present() -> bool:
+    from pathlib import Path
+    text = (Path(__file__).resolve().parent / "server.py").read_text(encoding="utf-8", errors="replace")
+    required_markers = [
+        "def _air_gap_enabled()",
+        "def _is_allowed_host(",
+        "def _ensure_allowed_endpoint(",
+        "def _allowed_index_roots()",
+        "Directory outside approved RAG roots",
+    ]
+    return all(marker in text for marker in required_markers)
+
+
 class TestRagChecksumDirective(unittest.TestCase):
     """SEU resilience: vector DB data must be checksum-verified before being passed to the LLM."""
 
@@ -41,6 +54,12 @@ class TestRagChecksumDirective(unittest.TestCase):
         self.assertTrue(
             _checksum_verified_before_llm_in_server_code(),
             "server.py must verify ingest.checksum_text(text) == stored_cs before adding to context and before LLM call",
+        )
+
+    def test_server_enforces_offline_endpoint_and_index_root_guards(self) -> None:
+        self.assertTrue(
+            _offline_policy_guards_present(),
+            "server.py must include offline endpoint allowlist and approved indexing roots guards",
         )
 
 

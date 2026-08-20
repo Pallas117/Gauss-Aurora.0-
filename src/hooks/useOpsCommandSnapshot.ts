@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { fetchOpsCommandLatest } from "@/lib/api/heliophysics-proxy";
-import type { OpsCommandSnapshotResponse } from "@/lib/types/space-weather";
+import type { BackendMemoryPressureLevel, OpsCommandSnapshotResponse } from "@/lib/types/space-weather";
 import { useRealtimeFeed } from "@/hooks/useRealtimeFeed";
 
 const POLL_INTERVAL_MS = 5000;
@@ -12,7 +12,10 @@ export interface OpsCommandSnapshotState {
   refresh: () => Promise<void>;
 }
 
-export function useOpsCommandSnapshot(enabled = true): OpsCommandSnapshotState {
+export function useOpsCommandSnapshot(
+  enabled = true,
+  governorLevel?: BackendMemoryPressureLevel,
+): OpsCommandSnapshotState {
   const fetcher = useCallback(async () => fetchOpsCommandLatest(), []);
 
   const feed = useRealtimeFeed<OpsCommandSnapshotResponse | null>({
@@ -20,6 +23,13 @@ export function useOpsCommandSnapshot(enabled = true): OpsCommandSnapshotState {
     initialData: null,
     intervalMs: POLL_INTERVAL_MS,
     enabled,
+    governor: {
+      level: governorLevel,
+      nominalMs: 10_000,
+      constrainedMs: 20_000,
+      criticalMs: 30_000,
+      hiddenMs: 30_000,
+    },
   });
 
   return {

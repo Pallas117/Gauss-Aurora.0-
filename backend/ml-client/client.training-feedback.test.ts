@@ -72,11 +72,15 @@ test("train_unet output updates nowcast inference behavior via model registry", 
   const originalInferUrl = process.env.LOCAL_INFER_URL;
   const originalGate = process.env.GAUSS_PREINFERENCE_GATE_ENABLED;
   const originalRegistryPath = process.env.NOWCAST_MODEL_REGISTRY_PATH;
+  const originalNominalMin = process.env.MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB;
+  const originalCriticalMax = process.env.MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB;
 
   try {
     delete process.env.LOCAL_INFER_URL;
     process.env.GAUSS_PREINFERENCE_GATE_ENABLED = "true";
     delete process.env.NOWCAST_MODEL_REGISTRY_PATH;
+    process.env.MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB = "0";
+    process.env.MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB = "0";
 
     const sequence = [point("2026-03-05T00:00:00.000Z")];
     const baseline = await inferNowcast(req(sequence));
@@ -122,7 +126,8 @@ test("train_unet output updates nowcast inference behavior via model registry", 
     process.env.LOCAL_INFER_URL = originalInferUrl;
     process.env.GAUSS_PREINFERENCE_GATE_ENABLED = originalGate;
     process.env.NOWCAST_MODEL_REGISTRY_PATH = originalRegistryPath;
+    process.env.MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB = originalNominalMin;
+    process.env.MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB = originalCriticalMax;
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
-

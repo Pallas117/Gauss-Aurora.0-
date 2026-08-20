@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gauss cFS Integration and Low-Level Optimization"
+  short_description: "Verify target-specific cFS optimizations with size, cycle, ABI, and flight evidence"
+  default_prompt: "Use $gauss-cfs-integration to inspect a cFS boundary, establish the target ABI, and produce a bounded optimization evidence plan before proposing assembly or machine code."

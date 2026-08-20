@@ -200,28 +200,14 @@ impl NetworkManager {
             .iter()
             .filter_map(|link| oriented_hop_from(link, &req.source))
             .filter(|hop| hop.dtn_enabled)
-            .filter(|hop| {
-                hop_usable(
-                    hop,
-                    req.payload_bytes,
-                    req.requires_encryption,
-                    None,
-                )
-            })
+            .filter(|hop| hop_usable(hop, req.payload_bytes, req.requires_encryption, None))
         {
             for second in links
                 .iter()
                 .filter_map(|link| oriented_hop_to(link, &req.destination))
                 .filter(|hop| hop.from_node == first.to_node)
                 .filter(|hop| hop.dtn_enabled)
-                .filter(|hop| {
-                    hop_usable(
-                        hop,
-                        req.payload_bytes,
-                        req.requires_encryption,
-                        None,
-                    )
-                })
+                .filter(|hop| hop_usable(hop, req.payload_bytes, req.requires_encryption, None))
             {
                 let total_latency = u64::from(first.latency_ms) + u64::from(second.latency_ms);
                 if let Some(max_latency) = req.max_latency_ms {
@@ -252,7 +238,7 @@ impl NetworkManager {
                 estimated_delivery_ms: total_latency + queue_penalty_ms,
                 hops: vec![first, second],
                 warnings: vec![
-                    "Direct link unavailable; using DTN store-and-forward path.".to_string(),
+                    "Direct link unavailable; using DTN store-and-forward path.".to_string()
                 ],
             });
         }

@@ -1,4 +1,6 @@
 import { getBatteryDrainMultiplier, isBatteryLowAndDischarging } from "./battery";
+import { getViteEnv } from "@/lib/heliophysics-utils";
+import type { BackendMemoryPressureLevel } from "@/lib/types/space-weather";
 
 type NetworkHints = {
   saveData?: boolean;
@@ -172,6 +174,31 @@ export function getTrendAwarePollInterval(
   return getAdaptivePollInterval(Math.round(baseMs * analysis.recommendedMultiplier));
 }
 
+export function getGovernorAwarePollInterval(
+  baseMs: number,
+  governor?: {
+    level?: BackendMemoryPressureLevel;
+    nominalMs?: number;
+    constrainedMs?: number;
+    criticalMs?: number;
+    hiddenMs?: number;
+  },
+): number {
+  if (typeof document !== "undefined" && document.visibilityState !== "visible") {
+    return Math.max(baseMs, governor?.hiddenMs ?? 30_000);
+  }
+
+  const level = governor?.level ?? "nominal";
+  const resolvedBase =
+    level === "critical"
+      ? governor?.criticalMs ?? baseMs
+      : level === "constrained"
+        ? governor?.constrainedMs ?? baseMs
+        : governor?.nominalMs ?? baseMs;
+
+  return Math.max(1_000, resolvedBase);
+}
+
 /**
  * Resolve adaptive polling interval for battery/network constrained sessions.
  * Enforces 25% rule: when battery is below 25% and not charging, backs off to preserve device (high-value / stakeholder demo).
@@ -201,7 +228,7 @@ export function getAdaptivePollInterval(baseMs: number): number {
     multiplier = Math.max(multiplier, 4);
   }
 
-  const profile = parsePowerProfile((typeof import.meta !== 'undefined' ? import.meta?.env?.VITE_POWER_PROFILE : typeof process !== 'undefined' ? process.env?.VITE_POWER_PROFILE : undefined));
+  const profile = parsePowerProfile(getViteEnv("VITE_POWER_PROFILE"));
   if (profile === "low-power") {
     multiplier = Math.max(multiplier, 3);
   }
@@ -211,8 +238,14 @@ export function getAdaptivePollInterval(baseMs: number): number {
     multiplier = Math.max(multiplier, 3);
   }
 
-  multiplier = Math.max(multiplier, getBatteryDrainMultiplier());
+  const batteryMultiplier = getBatteryDrainMultiplier();
+  if (batteryMultiplier > 1) {
+    multiplier = Math.max(multiplier, batteryMultiplier);
+  } else if (multiplier === 1) {
+    // Only accelerate when no stronger conservation signal is already active.
+    multiplier = batteryMultiplier;
+  }
 
-  multiplier *= parseEnvMultiplier((typeof import.meta !== 'undefined' ? import.meta?.env?.VITE_POLL_INTERVAL_MULTIPLIER : typeof process !== 'undefined' ? process.env?.VITE_POLL_INTERVAL_MULTIPLIER : undefined));
+  multiplier *= parseEnvMultiplier(getViteEnv("VITE_POLL_INTERVAL_MULTIPLIER"));
   return Math.max(minimumMs, Math.round(safeBase * multiplier));
 }

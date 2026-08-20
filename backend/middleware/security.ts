@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import type { AuthenticatedRequest } from "../auth.js";
 import type { CyberTigerDaemon } from "../cybertiger/daemon.js";
+import { recordOperationalLimitContext } from "../runtime/limit-context-recorder.js";
 
 /**
  * Middleware to set security-related HTTP headers.
@@ -57,9 +58,38 @@ export function createCyberTigerMiddleware(cyberTiger: CyberTigerDaemon) {
                 userId: tracked.auth?.userId,
                 latencyMs: Date.now() - detail.startedAtMs,
             });
+            if (res.statusCode === 401 || res.statusCode === 403) {
+                const latestEvent = cyberTiger.getEvents(1)[0];
+                if (latestEvent?.type === "auth.failure" || latestEvent?.type === "auth.failure_threshold") {
+                    recordOperationalLimitContext({
+                        kind: "security",
+                        source: "cybertiger-response",
+                        detail: {
+                            eventType: latestEvent.type,
+                            status: res.statusCode,
+                            method: detail.method,
+                            path: detail.path,
+                            requestId: detail.requestId,
+                            ip: detail.ip,
+                        },
+                    });
+                }
+            }
         });
 
         if (!decision.allowed) {
+            recordOperationalLimitContext({
+                kind: "security",
+                source: "cybertiger-block",
+                detail: {
+                    status: decision.status ?? 429,
+                    message: decision.message ?? "Blocked by CyberTiger",
+                    method: req.method,
+                    path: req.originalUrl ?? req.url,
+                    requestId: decision.requestId,
+                    ip: decision.ip,
+                },
+            });
             res.status(decision.status ?? 429).json({
                 error: decision.message ?? "Blocked by CyberTiger",
                 requestId: decision.requestId,

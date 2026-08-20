@@ -11,24 +11,20 @@ test.beforeEach(async ({ page }) => {
 
 test("mobile: command shell controls remain usable at 390x844", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveURL(/\/command$/);
+  await expect(page).toHaveURL(/\/sda$/);
 
   const viewport = page.viewportSize();
   if (!viewport) throw new Error("Viewport not available");
 
-  const commandHeading = page.getByRole("heading", { name: /command snapshot/i });
-  const telemetryHeading = page.getByRole("heading", { name: /live 5s telemetry stream/i });
-  const sourceHealth = page.getByRole("heading", { name: /source health/i });
-  const sdaLink = page.getByRole("link", { name: /^sda/i });
-  const sendFeedback = page.getByRole("button", { name: /send feedback/i }).first();
+  const sdaHeading = page.getByRole("heading", { name: /sda visualization/i });
+  const metricsTab = page.getByRole("tab", { name: /metrics & science/i });
+  const missionControlButton = page.getByRole("button", { name: /login for mission control|open mission control/i });
 
-  await expect(commandHeading).toBeVisible();
-  await expect(telemetryHeading).toBeVisible();
-  await expect(sourceHealth).toBeVisible();
-  await expect(sdaLink).toBeVisible();
-  await expect(sendFeedback).toBeVisible();
+  await expect(sdaHeading).toBeVisible();
+  await expect(metricsTab).toBeVisible();
+  await expect(missionControlButton).toBeVisible();
 
-  const criticalLocators = [commandHeading, telemetryHeading, sourceHealth, sdaLink, sendFeedback];
+  const criticalLocators = [sdaHeading, metricsTab, missionControlButton];
 
   for (const locator of criticalLocators) {
     await locator.scrollIntoViewIfNeeded();
@@ -41,10 +37,9 @@ test("mobile: command shell controls remain usable at 390x844", async ({ page })
     expect(box.height).toBeGreaterThan(0);
   }
 
-  await sdaLink.click();
-  await expect(page).toHaveURL(/\/sda$/);
-  await expect(page.getByRole("heading", { name: /sda visualization/i })).toBeVisible();
-
-  await page.getByRole("link", { name: /^command/i }).click();
+  await missionControlButton.click();
   await expect(page).toHaveURL(/\/command$/);
+  const primaryNav = page.getByRole("navigation", { name: /primary/i });
+  const commandLink = primaryNav.getByRole("link", { name: "Command C2", exact: true });
+  await expect(commandLink).toBeVisible();
 });

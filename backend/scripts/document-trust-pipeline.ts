@@ -60,7 +60,18 @@ type OverridesFile = {
   documents?: Record<string, DocumentOverride>;
 };
 
-const SUPPORTED_DOC_EXTENSIONS = new Set([".md", ".markdown", ".html", ".htm", ".pdf"]);
+const SUPPORTED_DOC_EXTENSIONS = new Set([
+  ".md",
+  ".markdown",
+  ".html",
+  ".htm",
+  ".pdf",
+  ".json",
+  ".jsonl",
+  ".csv",
+  ".tsv",
+  ".pptx",
+]);
 const SKIP_ARTIFACT_EXTENSIONS = new Set([
   ".png",
   ".jpg",
@@ -71,7 +82,6 @@ const SKIP_ARTIFACT_EXTENSIONS = new Set([
   ".tiff",
   ".js",
   ".css",
-  ".json",
   ".map",
 ]);
 const SENSITIVE_NAME_PATTERNS = [

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gauss Mission Integration"
+  short_description: "Evolve Gauss services and contracts safely"
+  default_prompt: "Use $gauss-mission-integration to evolve a Gauss service or API contract safely."

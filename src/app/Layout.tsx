@@ -1,5 +1,5 @@
 import { NavLink, Outlet, Link, useLocation } from "react-router-dom";
-import { Activity, Bot, ClipboardList, Cpu, Globe2, Radio, Server, Shield, Timer, Users, Zap } from "lucide-react";
+import { Activity, Bot, ClipboardList, Cpu, Globe2, Radio, Server, Shield, Timer, Users, Zap, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useMissionSnapshot } from "@/hooks/useMissionSnapshot";
 import { useOfflineMode } from "@/hooks/useOfflineMode";
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { getSupabaseEnvStatus } from "@/lib/auth-env-check";
 
 const NAV_ITEMS = [
+  { to: "/platform", label: "Platform", icon: Sparkles, hint: "HOME" },
   { to: "/command", label: "Command", icon: Activity, hint: "C2" },
   { to: "/sda", label: "SDA", icon: Globe2, hint: "HUD" },
   { to: "/systems", label: "Systems", icon: Server, hint: "Infra" },
@@ -35,10 +36,13 @@ export function Layout() {
   const authEnv = getSupabaseEnvStatus();
   const location = useLocation();
   const isLanding = location.pathname === "/";
+  const isPublicSdaSurface = location.pathname === "/sda" || location.pathname === "/space/sda";
   const presentation =
     location.pathname === "/sda" && new URLSearchParams(location.search).get("presentation") === "1";
   const stormTier = mission.snapshot?.canonicalLatest.alerts.stormTier ?? "unknown";
   const degradedSources = (mission.snapshot?.sourceStatus ?? []).filter((source) => !source.healthy).length;
+  const publicLaneActive = isPublicSdaSurface && !mission.session?.authenticated;
+  const feedOperational = publicLaneActive || !mission.pollingPaused;
 
   if (isLanding) {
     return <Outlet />;
@@ -108,8 +112,8 @@ export function Layout() {
           <div className="gauss-shell__nav-footer">
             <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Security posture</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              <Badge variant={statusTone(!mission.pollingPaused)}>
-                feed {mission.pollingPaused ? "paused" : "active"}
+              <Badge variant={statusTone(feedOperational)}>
+                {publicLaneActive ? "public active" : `feed ${mission.pollingPaused ? "paused" : "active"}`}
               </Badge>
               {offline.isOffline && (
                 <Badge variant="destructive">offline</Badge>

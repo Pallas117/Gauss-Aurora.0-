@@ -9,8 +9,12 @@ import * as path from "node:path";
 
 const MIN_SAFE_BATTERY_DEFAULT = 25;
 const DISCHARGING_MIN_SAFE_BATTERY_DEFAULT = 45;
+const RECOVERY_MIN_BATTERY_DEFAULT = 50;
+const SURPLUS_POWER_MIN_BATTERY_DEFAULT = 70;
+const BATTERY_CARE_CAP_DEFAULT = 90;
 
 type BatteryPowerSource = "ac" | "battery" | "unknown";
+export type BatteryPowerFlow = "recovery" | "balanced" | "surplus";
 
 export type BatterySnapshot = {
   percent: number | null;
@@ -24,9 +28,14 @@ export type BatteryGuard = {
   charging: boolean | null;
   powerSource: BatteryPowerSource;
   status: string | null;
+  powerFlow: BatteryPowerFlow;
+  surplusPowerAvailable: boolean;
   baseMinSafeBatteryPercent: number;
   effectiveMinSafeBatteryPercent: number;
   dischargingMinSafeBatteryPercent: number;
+  recoveryMinBatteryPercent: number;
+  surplusMinBatteryPercent: number;
+  batteryCareCapPercent: number;
   isLowBattery: boolean;
 };
 
@@ -149,22 +158,65 @@ export function getDischargingMinSafeBatteryPercent(
   return Math.max(base, configured);
 }
 
+function getRecoveryMinBatteryPercent(baseMinSafeBatteryPercent: number): number {
+  const configured = parsePercentConfig(
+    process.env.ORCHESTRATOR_RECOVERY_MIN_BATTERY_PERCENT,
+    RECOVERY_MIN_BATTERY_DEFAULT
+  );
+  return Math.max(baseMinSafeBatteryPercent, configured);
+}
+
+function getSurplusMinBatteryPercent(): number {
+  return parsePercentConfig(
+    process.env.ORCHESTRATOR_SURPLUS_POWER_MIN_BATTERY_PERCENT,
+    SURPLUS_POWER_MIN_BATTERY_DEFAULT
+  );
+}
+
+function getBatteryCareCapPercent(surplusMinBatteryPercent: number): number {
+  const configured = parsePercentConfig(
+    process.env.ORCHESTRATOR_BATTERY_CARE_CAP_PERCENT,
+    BATTERY_CARE_CAP_DEFAULT
+  );
+  return Math.max(surplusMinBatteryPercent + 5, configured);
+}
+
 /** Battery guard policy used by sweeps/audits to decide whether heavy work is safe. */
 export function getBatteryGuard(repoRoot: string, baseMinSafeBatteryPercent?: number): BatteryGuard {
   const snapshot = getBatterySnapshot();
   const base = baseMinSafeBatteryPercent ?? getMinSafeBatteryPercent(repoRoot);
   const dischargingMin = getDischargingMinSafeBatteryPercent(repoRoot, base);
+  const recoveryMin = getRecoveryMinBatteryPercent(base);
+  const surplusMin = getSurplusMinBatteryPercent();
+  const careCap = getBatteryCareCapPercent(surplusMin);
   const effectiveMin = snapshot.charging === false ? dischargingMin : base;
   const isLowBattery = snapshot.percent !== null && snapshot.percent < effectiveMin;
+  const externallyPowered = snapshot.charging === true || snapshot.powerSource === "ac";
+  const inRecoveryBand = snapshot.percent !== null && snapshot.percent < recoveryMin;
+  const surplusPowerAvailable =
+    externallyPowered &&
+    snapshot.percent !== null &&
+    snapshot.percent >= surplusMin &&
+    snapshot.percent < careCap;
+  const powerFlow: BatteryPowerFlow = isLowBattery || inRecoveryBand
+    ? "recovery"
+    : surplusPowerAvailable
+      ? "surplus"
+      : "balanced";
 
   return {
     batteryPercent: snapshot.percent,
     charging: snapshot.charging,
     powerSource: snapshot.powerSource,
     status: snapshot.status,
+    powerFlow,
+    surplusPowerAvailable,
     baseMinSafeBatteryPercent: base,
     effectiveMinSafeBatteryPercent: effectiveMin,
     dischargingMinSafeBatteryPercent: dischargingMin,
+    recoveryMinBatteryPercent: recoveryMin,
+    surplusMinBatteryPercent: surplusMin,
+    batteryCareCapPercent: careCap,
     isLowBattery,
   };
 }

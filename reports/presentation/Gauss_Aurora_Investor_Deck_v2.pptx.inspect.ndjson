@@ -1,0 +1,352 @@
+{"kind":"deck","id":"pr/k0f5fp","name":"Deck"}
+{"kind":"layout","layoutId":"564fc898-9d1f-495b-aed6-8fc5eb9e820f","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"3cb1012a-457b-4a38-a0f9-f2fdc41fa53b","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/18tvm9","slide":1,"title":"PROJECT GAUSS","textShapes":5}
+{"kind":"shape","id":"sh/elg7mtwr","slide":1,"bbox":[0,0,1280,720]}
+{"kind":"shape","id":"sh/f6p8fydc","slide":1,"bbox":[72,102,138,0]}
+{"kind":"textbox","id":"sh/sjypk3e1","slide":1,"text":"PROJECT GAUSS","textPreview":"PROJECT GAUSS","textChars":13,"textLines":1,"bbox":[72,134,520,30]}
+{"kind":"textbox","id":"sh/dk7qdov6","slide":1,"text":"Mission data,\nmade decision-ready.","textPreview":"Mission data, | made decision-ready.","textChars":34,"textLines":2,"bbox":[72,205,760,150]}
+{"kind":"textbox","id":"sh/qhw7itwv","slide":1,"text":"An evidence-first assurance layer for AI-augmented space operations.","textPreview":"An evidence-first assurance layer for AI-augmented space operations.","textChars":68,"textLines":1,"bbox":[76,384,620,48]}
+{"kind":"textbox","id":"sh/ri58bydg","slide":1,"text":"INVESTOR BRIEF  /  AUGUST 2026","textPreview":"INVESTOR BRIEF  /  AUGUST 2026","textChars":30,"textLines":1,"bbox":[76,620,350,24]}
+{"kind":"textbox","id":"sh/4fepgjep","slide":1,"text":"Ground-first. Flight-candidate ready. Command-inert by design.","textPreview":"Ground-first. Flight-candidate ready. Command-inert by design.","textChars":62,"textLines":1,"bbox":[760,620,445,24]}
+{"kind":"image","id":"im/8bq5g3yt","slide":1,"name":"","alt":"Deep-space star field","bbox":[0,0,1280,720]}
+{"kind":"notes","id":"nt/18tvm9","slide":1,"text":"Open with the category shift: space operators have more data, more autonomy pressure, and less tolerance for untraceable decisions.\n\n[Sources]\n- User-provided: Gauss_Aurora_Pitch_Deck_v1.pptx (visual/source material)\n- User-provided: Project_Gauss_Data_Architecture_for_AI_Automation_in_Space.pdf"}
+{"kind":"slide","id":"sl/2eqo3g","slide":2,"title":"GAUSS","textShapes":13}
+{"kind":"textbox","id":"sh/repkv2xc","slide":2,"text":"GAUSS","textPreview":"GAUSS","textChars":5,"textLines":1,"bbox":[72,38,100,24]}
+{"kind":"textbox","id":"sh/szy1o7ex","slide":2,"text":"PROBLEM","textPreview":"PROBLEM","textChars":7,"textLines":1,"bbox":[190,39,360,22]}
+{"kind":"textbox","id":"sh/t072xsfi","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1155,39,54,22]}
+{"kind":"shape","id":"sh/e1gjqxw3","slide":2,"bbox":[72,72,1136,0]}
+{"kind":"textbox","id":"sh/f2pkj2xo","slide":2,"text":"Fragmented evidence is expensive.","textPreview":"Fragmented evidence is expensive.","textChars":33,"textLines":1,"bbox":[72,98,900,62]}
+{"kind":"textbox","id":"sh/g3i1s7e9","slide":2,"text":"The data exists. The decision context does not.","textPreview":"The data exists. The decision context does not.","textChars":47,"textLines":1,"bbox":[72,164,890,36]}
+{"kind":"shape","id":"sh/u5wjedgz","slide":2,"bbox":[712,116,496,340]}
+{"kind":"shape","id":"sh/v650nixk","slide":2,"bbox":[712,346,496,110]}
+{"kind":"textbox","id":"sh/b2lsj2xc","slide":2,"text":"SPACE WEATHER SIGNAL","textPreview":"SPACE WEATHER SIGNAL","textChars":20,"textLines":1,"bbox":[738,138,300,18]}
+{"kind":"textbox","id":"sh/a1cbqxwr","slide":2,"text":"CME context is only useful when the operator can trace it to the decision.","textPreview":"CME context is only useful when the operator can trace it to the decision.","textChars":74,"textLines":1,"bbox":[738,378,430,52]}
+{"kind":"shape","id":"sh/x43alsfi","slide":2,"bbox":[88,358,9,9]}
+{"kind":"textbox","id":"sh/c3uts7ex","slide":2,"text":"Fragmented","textPreview":"Fragmented","textChars":10,"textLines":1,"bbox":[112,350,165,26]}
+{"kind":"textbox","id":"sh/nylsfixg","slide":2,"text":"Telemetry, space-weather, SSA, memory, and ground-system evidence live in separate lanes.","textPreview":"Telemetry, space-weather, SSA, memory, and ground-system evidence live in separate lanes.","textChars":89,"textLines":1,"bbox":[273,350,365,44]}
+{"kind":"shape","id":"sh/2dsrmdwv","slide":2,"bbox":[88,438,9,9]}
+{"kind":"textbox","id":"sh/p03ahsf6","slide":2,"text":"Opaque","textPreview":"Opaque","textChars":6,"textLines":1,"bbox":[112,430,165,26]}
+{"kind":"textbox","id":"sh/ozu9onel","slide":2,"text":"AI can flag an anomaly, but operators still need provenance, confidence, and a safe fallback.","textPreview":"AI can flag an anomaly, but operators still need provenance, confidence, and a safe fallback.","textChars":93,"textLines":1,"bbox":[273,430,365,44]}
+{"kind":"shape","id":"sh/fa1sbix4","slide":2,"bbox":[88,518,9,9]}
+{"kind":"textbox","id":"sh/e9sridwj","slide":2,"text":"Costly","textPreview":"Costly","textChars":6,"textLines":1,"bbox":[112,510,165,26]}
+{"kind":"textbox","id":"sh/i58bud0b","slide":2,"text":"Every delayed or disputed decision compounds mission risk, engineering time, and procurement friction.","textPreview":"Every delayed or disputed decision compounds mission risk, engineering time, and procurement friction.","textChars":102,"textLines":1,"bbox":[273,510,365,44]}
+{"kind":"image","id":"im/0z61wje9","slide":2,"name":"","alt":"Solar flare imagery","bbox":[712,116,496,340]}
+{"kind":"notes","id":"nt/2eqo3g","slide":2,"text":"Frame the problem as operational evidence fragmentation, not a generic AI opportunity. The buyer is paying to reduce decision latency and audit friction.\n\n[Sources]\n- User-provided: Project_Gauss_Data_Architecture_for_AI_Automation_in_Space.pdf\n- Repo: config/product-packages.json and config/product-packages.schema.json"}
+{"kind":"slide","id":"sl/ptk3f3","slide":3,"title":"GAUSS","textShapes":21}
+{"kind":"textbox","id":"sh/h8byho72","slide":3,"text":"GAUSS","textPreview":"GAUSS","textChars":5,"textLines":1,"bbox":[72,38,100,24]}
+{"kind":"textbox","id":"sh/ul0fm98r","slide":3,"text":"WHY NOW","textPreview":"WHY NOW","textChars":7,"textLines":1,"bbox":[190,39,360,22]}
+{"kind":"textbox","id":"sh/fmtgfepc","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1155,39,54,22]}
+{"kind":"shape","id":"sh/4b2xsjqt","slide":3,"bbox":[72,72,1136,0]}
+{"kind":"textbox","id":"sh/pcbylo7e","slide":3,"text":"AI is ready to assist; mission infrastructure is not ready to trust it.","textPreview":"AI is ready to assist; mission infrastructure is not ready to trust it.","textChars":71,"textLines":1,"bbox":[72,98,900,62]}
+{"kind":"textbox","id":"sh/29kfqt8n","slide":3,"text":"Gauss sits in the trust gap between raw data and safe action.","textPreview":"Gauss sits in the trust gap between raw data and safe action.","textChars":61,"textLines":1,"bbox":[72,164,890,36]}
+{"kind":"shape","id":"sh/kfixgzqp","slide":3,"bbox":[72,228,540,320]}
+{"kind":"shape","id":"sh/5gre94ru","slide":3,"bbox":[72,442,540,106]}
+{"kind":"textbox","id":"sh/t4329kza","slide":3,"text":"THE WINDOW","textPreview":"THE WINDOW","textChars":10,"textLines":1,"bbox":[98,250,180,18]}
+{"kind":"textbox","id":"sh/83ul0zip","slide":3,"text":"More spacecraft. More sensor streams. More critical infrastructure depending on orbital services.","textPreview":"More spacecraft. More sensor streams. More critical infrastructure depending on orbital services.","textChars":97,"textLines":1,"bbox":[98,468,440,56]}
+{"kind":"shape","id":"sh/72lk7uh4","slide":3,"bbox":[640,236,164,124]}
+{"kind":"textbox","id":"sh/61s3yp0j","slide":3,"text":"TARGET PROFILES","textPreview":"TARGET PROFILES","textChars":15,"textLines":1,"bbox":[660,252,104,18]}
+{"kind":"textbox","id":"sh/hs3md4z6","slide":3,"text":"◈","textPreview":"◈","textChars":1,"textLines":1,"bbox":[762,250,28,24]}
+{"kind":"textbox","id":"sh/grul4zil","slide":3,"text":"8","textPreview":"8","textChars":1,"textLines":1,"bbox":[660,277,124,42]}
+{"kind":"textbox","id":"sh/vqlkbuh0","slide":3,"text":"research profiles","textPreview":"research profiles","textChars":17,"textLines":1,"bbox":[660,327,124,22]}
+{"kind":"shape","id":"sh/upc32p0f","slide":3,"bbox":[824,236,164,124]}
+{"kind":"textbox","id":"sh/pwnmh4z2","slide":3,"text":"FIRST MOTION","textPreview":"FIRST MOTION","textChars":12,"textLines":1,"bbox":[844,252,104,18]}
+{"kind":"textbox","id":"sh/4vel8jyx","slide":3,"text":">","textPreview":">","textChars":1,"textLines":1,"bbox":[946,250,28,24]}
+{"kind":"textbox","id":"sh/ozm54n6t","slide":3,"text":"Ground","textPreview":"Ground","textChars":6,"textLines":1,"bbox":[844,277,124,42]}
+{"kind":"textbox","id":"sh/p0v6ds7e","slide":3,"text":"integration first","textPreview":"integration first","textChars":17,"textLines":1,"bbox":[844,327,124,22]}
+{"kind":"shape","id":"sh/2x4n2do3","slide":3,"bbox":[1008,236,200,124]}
+{"kind":"textbox","id":"sh/nyd4bip8","slide":3,"text":"COMMAND PATH","textPreview":"COMMAND PATH","textChars":12,"textLines":1,"bbox":[1028,252,140,18]}
+{"kind":"textbox","id":"sh/c3m58n65","slide":3,"text":"⊘","textPreview":"⊘","textChars":1,"textLines":1,"bbox":[1166,250,28,24]}
+{"kind":"textbox","id":"sh/x4v6hs7q","slide":3,"text":"Inert","textPreview":"Inert","textChars":5,"textLines":1,"bbox":[1028,277,160,42]}
+{"kind":"textbox","id":"sh/a14n6xoz","slide":3,"text":"approval-gated","textPreview":"approval-gated","textChars":14,"textLines":1,"bbox":[1028,327,160,22]}
+{"kind":"shape","id":"sh/b2dofipk","slide":3,"bbox":[640,410,568,0]}
+{"kind":"textbox","id":"sh/s725w36l","slide":3,"text":"A sharper wedge than “AI for space”","textPreview":"A sharper wedge than “AI for space”","textChars":35,"textLines":1,"bbox":[640,438,440,30]}
+{"kind":"textbox","id":"sh/d8bm5876","slide":3,"text":"Mission-data assurance: quality, provenance, radiation context, replay, and bounded inference across the existing ground segment.","textPreview":"Mission-data assurance: quality, provenance, radiation context, replay, and bounded inference across the existing ground segment.","textChars":129,"textLines":1,"bbox":[640,478,530,76]}
+{"kind":"image","id":"im/q9cn6pkb","slide":3,"name":"","alt":"Mission control operations room","bbox":[72,228,540,320]}
+{"kind":"notes","id":"nt/ptk3f3","slide":3,"text":"Use the target count as research coverage, not traction. The commercial wedge is explicitly ground-first; flight-candidate work remains an external evidence gate.\n\n[Sources]\n- Repo: config/mission-targets.json and config/mission-target.schema.json\n- Repo: development/memory/DECISIONS.md, D-110 (2026-08-19)\n- User-provided: Gauss_Aurora_Pitch_Deck_v1.pptx (visual/source material)"}
+{"kind":"slide","id":"sl/te78bb","slide":4,"title":"GAUSS","textShapes":13}
+{"kind":"textbox","id":"sh/e1kripoj","slide":4,"text":"GAUSS","textPreview":"GAUSS","textChars":5,"textLines":1,"bbox":[72,38,100,24]}
+{"kind":"textbox","id":"sh/1ovad4nu","slide":4,"text":"PRODUCT","textPreview":"PRODUCT","textChars":7,"textLines":1,"bbox":[190,39,360,22]}
+{"kind":"textbox","id":"sh/032tkz69","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1155,39,54,22]}
+{"kind":"shape","id":"sh/nqdsfu50","slide":4,"bbox":[72,72,1136,0]}
+{"kind":"textbox","id":"sh/mp4bmpof","slide":4,"text":"Gauss makes AI decisions ready for operations.","textPreview":"Gauss makes AI decisions ready for operations.","textChars":46,"textLines":1,"bbox":[72,98,900,62]}
+{"kind":"textbox","id":"sh/9svah4n6","slide":4,"text":"A neutral assurance layer that helps teams trust, explain, and safely act on mission data.","textPreview":"A neutral assurance layer that helps teams trust, explain, and safely act on mission data.","textChars":90,"textLines":1,"bbox":[72,164,890,36]}
+{"kind":"textbox","id":"sh/ormtoz6l","slide":4,"text":"WHAT TEAMS ALREADY HAVE","textPreview":"WHAT TEAMS ALREADY HAVE","textChars":23,"textLines":1,"bbox":[86,238,250,18]}
+{"kind":"textbox","id":"sh/budsje5w","slide":4,"text":"GAUSS ASSURANCE","textPreview":"GAUSS ASSURANCE","textChars":15,"textLines":1,"bbox":[493,238,260,18]}
+{"kind":"textbox","id":"sh/at4bq9ob","slide":4,"text":"WHAT OPERATORS GET","textPreview":"WHAT OPERATORS GET","textChars":18,"textLines":1,"bbox":[1000,238,210,18]}
+{"kind":"shape","id":"sh/4n250f2p","slide":4,"bbox":[72,278,270,190]}
+{"kind":"shape","id":"sh/5obmtkja","slide":4,"bbox":[438,248,390,250]}
+{"kind":"shape","id":"sh/ilkny5kz","slide":4,"bbox":[922,278,286,190]}
+{"kind":"shape","id":"sh/jmt4ra14","slide":4,"bbox":[342,373,96,0]}
+{"kind":"shape","id":"sh/sr254z21","slide":4,"bbox":[828,373,94,0]}
+{"kind":"shape","id":"sh/tsbmx4jm","slide":4,"bbox":[382,367,12,12]}
+{"kind":"shape","id":"sh/6pkn2pkv","slide":4,"bbox":[868,367,12,12]}
+{"kind":"textbox","id":"sh/rqt4vu1g","slide":4,"text":"Mission data\nWeather context\nOperator history\nExisting systems","textPreview":"Mission data | Weather context | Operator history | Existing systems","textChars":62,"textLines":4,"bbox":[100,316,210,116]}
+{"kind":"textbox","id":"sh/gvm58zix","slide":4,"text":"Validate\nExplain\nGate","textPreview":"Validate | Explain | Gate","textChars":21,"textLines":3,"bbox":[484,292,140,124]}
+{"kind":"textbox","id":"sh/1gv614ji","slide":4,"text":"Confidence signals\nDecision context\nSafe fallback","textPreview":"Confidence signals | Decision context | Safe fallback","textChars":49,"textLines":3,"bbox":[648,306,160,108]}
+{"kind":"textbox","id":"sh/pcrml4bm","slide":4,"text":"Decision-ready evidence\nAudit trail\nNo command authority","textPreview":"Decision-ready evidence | Audit trail | No command authority","textChars":56,"textLines":3,"bbox":[956,316,220,116]}
+{"kind":"textbox","id":"sh/obi5sza1","slide":4,"text":"Start with the ground segment. Earn the right to move closer to flight.","textPreview":"Start with the ground segment. Earn the right to move closer to flight.","textChars":71,"textLines":1,"bbox":[72,570,920,32]}
+{"kind":"notes","id":"nt/te78bb","slide":4,"text":"Walk left to right. The visible slide is intentionally investor-facing; the underlying product boundary remains quality, provenance, correlation, replay, bounded inference, and approval-gated safety. Partners retain sensors, mission control, communications hardware, trust roots, and command authority.\n\n[Sources]\n- Repo: config/product-packages.json and config/product-packages.schema.json\n- User-provided: Project_Gauss_Data_Architecture_for_AI_Automation_in_Space.pdf"}
+{"kind":"slide","id":"sl/ckkqjd","slide":5,"title":"GAUSS","textShapes":18}
+{"kind":"textbox","id":"sh/idsjalcj","slide":5,"text":"GAUSS","textPreview":"GAUSS","textChars":5,"textLines":1,"bbox":[72,38,100,24]}
+{"kind":"textbox","id":"sh/50j2l0ba","slide":5,"text":"PRODUCT","textPreview":"PRODUCT","textChars":7,"textLines":1,"bbox":[190,39,360,22]}
+{"kind":"textbox","id":"sh/4za1cvup","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1155,39,54,22]}
+{"kind":"shape","id":"sh/va10fqt8","slide":5,"bbox":[72,72,1136,0]}
+{"kind":"textbox","id":"sh/u9sj6lcn","slide":5,"text":"Three packages turn trust into expansion.","textPreview":"Three packages turn trust into expansion.","textChars":41,"textLines":1,"bbox":[72,98,900,62]}
+{"kind":"textbox","id":"sh/hcj2h0by","slide":5,"text":"Land with one mission team, then expand across fleets and infrastructure.","textPreview":"Land with one mission team, then expand across fleets and infrastructure.","textChars":73,"textLines":1,"bbox":[72,164,890,36]}
+{"kind":"shape","id":"sh/wba18vud","slide":5,"bbox":[72,238,300,252]}
+{"kind":"textbox","id":"sh/76h0b6tw","slide":5,"text":"01 / LAND","textPreview":"01 / LAND","textChars":9,"textLines":1,"bbox":[96,262,252,18]}
+{"kind":"textbox","id":"sh/m58j21cb","slide":5,"text":"Fleet Integration","textPreview":"Fleet Integration","textChars":17,"textLines":1,"bbox":[96,302,252,52]}
+{"kind":"textbox","id":"sh/4vy9kn2d","slide":5,"text":"Make existing mission data trustworthy across teams, workflows, and customer handoffs.","textPreview":"Make existing mission data trustworthy across teams, workflows, and customer handoffs.","textChars":86,"textLines":1,"bbox":[96,378,252,74]}
+{"kind":"textbox","id":"sh/pw7ats3i","slide":5,"text":"Start on the ground","textPreview":"Start on the ground","textChars":19,"textLines":1,"bbox":[96,462,250,18]}
+{"kind":"shape","id":"sh/2tgridk7","slide":5,"bbox":[424,238,300,252]}
+{"kind":"textbox","id":"sh/3upsrils","slide":5,"text":"02 / EXPAND","textPreview":"02 / EXPAND","textChars":11,"textLines":1,"bbox":[448,262,252,18]}
+{"kind":"textbox","id":"sh/gre9g321","slide":5,"text":"Flight Candidate Adapter","textPreview":"Flight Candidate Adapter","textChars":24,"textLines":1,"bbox":[448,302,252,52]}
+{"kind":"textbox","id":"sh/hs7ap83m","slide":5,"text":"Carry validated evidence toward future onboard deployment without claiming flight qualification.","textPreview":"Carry validated evidence toward future onboard deployment without claiming flight qualification.","textChars":96,"textLines":1,"bbox":[448,378,252,74]}
+{"kind":"textbox","id":"sh/upwret4v","slide":5,"text":"Earn the flight path","textPreview":"Earn the flight path","textChars":20,"textLines":1,"bbox":[448,462,250,18]}
+{"kind":"shape","id":"sh/fq5snylg","slide":5,"bbox":[776,238,300,252]}
+{"kind":"textbox","id":"sh/0nits72l","slide":5,"text":"03 / EXTEND","textPreview":"03 / EXTEND","textChars":11,"textLines":1,"bbox":[800,262,252,18]}
+{"kind":"textbox","id":"sh/lora1c3q","slide":5,"text":"Federated Bridge Node","textPreview":"Federated Bridge Node","textChars":21,"textLines":1,"bbox":[800,302,252,52]}
+{"kind":"textbox","id":"sh/9s3ip8ry","slide":5,"text":"Move trusted data across zones, partners, and protected infrastructure as the network grows.","textPreview":"Move trusted data across zones, partners, and protected infrastructure as the network grows.","textChars":92,"textLines":1,"bbox":[800,378,252,74]}
+{"kind":"textbox","id":"sh/87u1w3qd","slide":5,"text":"Expand the boundary","textPreview":"Expand the boundary","textChars":19,"textLines":1,"bbox":[800,462,250,18]}
+{"kind":"textbox","id":"sh/n6l0ny9s","slide":5,"text":"The boundary is the moat: Gauss makes external mission systems more trustworthy without pretending to own them.","textPreview":"The boundary is the moat: Gauss makes external mission systems more trustworthy without pretending to own them.","textChars":111,"textLines":1,"bbox":[72,570,1100,32]}
+{"kind":"notes","id":"nt/ckkqjd","slide":5,"text":"The package names and boundaries are from the repository product catalog. The visible copy is intentionally non-technical; do not describe the flight-candidate adapter as flight-qualified.\n\n[Sources]\n- Repo: config/product-packages.json and config/product-packages.schema.json"}
+{"kind":"slide","id":"sl/meukt3","slide":6,"title":"GAUSS","textShapes":6}
+{"kind":"shape","id":"sh/ozylc3ap","slide":6,"bbox":[0,0,1280,720]}
+{"kind":"textbox","id":"sh/pk7m58ba","slide":6,"text":"GAUSS","textPreview":"GAUSS","textChars":5,"textLines":1,"bbox":[72,38,100,24]}
+{"kind":"textbox","id":"sh/alg3edsv","slide":6,"text":"MARKET","textPreview":"MARKET","textChars":6,"textLines":1,"bbox":[190,39,360,22]}
+{"kind":"textbox","id":"sh/bmp47itg","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1155,39,54,22]}
+{"kind":"shape","id":"sh/cnylgna1","slide":6,"bbox":[72,72,1136,0]}
+{"kind":"textbox","id":"sh/xo7m9sb6","slide":6,"text":"Start where data quality is already a budget line.","textPreview":"Start where data quality is already a budget line.","textChars":50,"textLines":1,"bbox":[72,98,900,62]}
+{"kind":"textbox","id":"sh/yp03ixsr","slide":6,"text":"Gauss sells first to operators and integrators who cannot afford ambiguous telemetry.","textPreview":"Gauss sells first to operators and integrators who cannot afford ambiguous telemetry.","textChars":85,"textLines":1,"bbox":[72,164,890,36]}
+{"kind":"textbox","id":"sh/7y98j2d8","slide":6,"text":"8 research profiles across satcom, weather/space weather, Earth observation, PNT, lunar relay, and mission integration.","textPreview":"8 research profiles across satcom, weather/space weather, Earth observation, PNT, lunar relay, and mission integration.","textChars":119,"textLines":1,"bbox":[72,566,1000,28]}
+{"kind":"table","id":"tb/29gvy5oj","slide":6,"name":"","rows":5,"cols":4,"preview":"BUYER WEDGE | MISSION PROFILE | PAIN WE SOLVE | LANDING MOTION","bbox":[72,230,1136,288]}
+{"kind":"image","id":"im/u9sfu143","slide":6,"name":"","alt":"Deep-space star field","bbox":[0,0,1280,720]}
+{"kind":"notes","id":"nt/meukt3","slide":6,"text":"These are research profiles and segment hypotheses, not signed customers. The first commercial motion is mission-data and integration buyers serving communications, weather, EO, and cislunar relay systems.\n\n[Sources]\n- Repo: config/mission-targets.json and config/mission-target.schema.json\n- Repo: development/memory/DECISIONS.md, D-110 (2026-08-19)"}
+{"kind":"slide","id":"sl/afg9hh","slide":7,"title":"GAUSS","textShapes":19}
+{"kind":"shape","id":"sh/szyhwnm1","slide":7,"bbox":[0,0,1280,720]}
+{"kind":"textbox","id":"sh/t0ri5snm","slide":7,"text":"GAUSS","textPreview":"GAUSS","textChars":5,"textLines":1,"bbox":[72,38,100,24]}
+{"kind":"textbox","id":"sh/i9gzqd4z","slide":7,"text":"MARKET","textPreview":"MARKET","textChars":6,"textLines":1,"bbox":[190,39,360,22]}
+{"kind":"textbox","id":"sh/japgzi5k","slide":7,"text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1155,39,54,22]}
+{"kind":"shape","id":"sh/kvyhsnmp","slide":7,"bbox":[72,72,1136,0]}
+{"kind":"textbox","id":"sh/5w7i1sna","slide":7,"text":"A focused beachhead before the orbital infrastructure upside.","textPreview":"A focused beachhead before the orbital infrastructure upside.","textChars":61,"textLines":1,"bbox":[72,98,900,62]}
+{"kind":"textbox","id":"sh/250z2h43","slide":7,"text":"Use a transparent internal model; let customer evidence tighten the market over time.","textPreview":"Use a transparent internal model; let customer evidence tighten the market over time.","textChars":85,"textLines":1,"bbox":[72,164,890,36]}
+{"kind":"textbox","id":"sh/3q90bmlo","slide":7,"text":"INTERNAL PLANNING MODEL  /  DIRECTIONAL LADDER, NOT AUDITED RESEARCH","textPreview":"INTERNAL PLANNING MODEL  /  DIRECTIONAL LADDER, NOT AUDITED RESEARCH","textChars":68,"textLines":1,"bbox":[72,224,500,18]}
+{"kind":"textbox","id":"sh/nytcbipw","slide":7,"text":"TAM","textPreview":"TAM","textChars":3,"textLines":1,"bbox":[112,278,160,34]}
+{"kind":"textbox","id":"sh/mxkbid8b","slide":7,"text":"$3–5B","textPreview":"$3–5B","textChars":5,"textLines":1,"bbox":[112,316,340,80]}
+{"kind":"textbox","id":"sh/90vud87m","slide":7,"text":"Mission-data, ground, and distributed in-space infrastructure category.","textPreview":"Mission-data, ground, and distributed in-space infrastructure category.","textChars":71,"textLines":1,"bbox":[112,410,340,52]}
+{"kind":"shape","id":"sh/8z2tk3q1","slide":7,"bbox":[540,245,0,271]}
+{"kind":"textbox","id":"sh/v2dcfips","slide":7,"text":"TAM","textPreview":"TAM","textChars":3,"textLines":1,"bbox":[600,276,90,22]}
+{"kind":"shape","id":"sh/a14bmd87","slide":7,"bbox":[700,278,440,28]}
+{"kind":"shape","id":"sh/x4vuhs7y","slide":7,"bbox":[700,278,520,28]}
+{"kind":"textbox","id":"sh/w3mtonqd","slide":7,"text":"$3–5B","textPreview":"$3–5B","textChars":5,"textLines":1,"bbox":[600,310,400,24]}
+{"kind":"textbox","id":"sh/j6dcj2po","slide":7,"text":"Broad mission-data + infrastructure category","textPreview":"Broad mission-data + infrastructure category","textChars":44,"textLines":1,"bbox":[952,310,188,24]}
+{"kind":"textbox","id":"sh/i54bqx8j","slide":7,"text":"SAM","textPreview":"SAM","textChars":3,"textLines":1,"bbox":[600,354,90,22]}
+{"kind":"shape","id":"sh/exsnylwn","slide":7,"bbox":[700,356,440,28]}
+{"kind":"shape","id":"sh/fy1o7qd8","slide":7,"bbox":[700,356,300,28]}
+{"kind":"textbox","id":"sh/gza50vet","slide":7,"text":"$900M–$1.75B","textPreview":"$900M–$1.75B","textChars":12,"textLines":1,"bbox":[600,388,400,24]}
+{"kind":"textbox","id":"sh/10j690ve","slide":7,"text":"Initial ground and distributed-space wedge","textPreview":"Initial ground and distributed-space wedge","textChars":42,"textLines":1,"bbox":[952,388,188,24]}
+{"kind":"textbox","id":"sh/698nulwr","slide":7,"text":"SOM","textPreview":"SOM","textChars":3,"textLines":1,"bbox":[600,432,90,22]}
+{"kind":"shape","id":"sh/rah43qdc","slide":7,"bbox":[700,434,440,28]}
+{"kind":"shape","id":"sh/sbq5wbex","slide":7,"bbox":[700,434,84,28]}
+{"kind":"textbox","id":"sh/tcj65gv2","slide":7,"text":"$500k ARR","textPreview":"$500k ARR","textChars":9,"textLines":1,"bbox":[600,466,400,24]}
+{"kind":"textbox","id":"sh/q5cn65wv","slide":7,"text":"Five $100k fleet accounts","textPreview":"Five $100k fleet accounts","textChars":25,"textLines":1,"bbox":[952,466,188,24]}
+{"kind":"textbox","id":"sh/b6lofadg","slide":7,"text":"SOM is deliberately operational: five $100k fleet accounts, not a speculative share of a trillion-dollar category.","textPreview":"SOM is deliberately operational: five $100k fleet accounts, not a speculative share of a trillion-dollar category.","textChars":114,"textLines":1,"bbox":[600,510,550,46]}
+{"kind":"image","id":"im/ulkne9gv","slide":7,"name":"","alt":"Deep-space star field","bbox":[0,0,1280,720]}
+{"kind":"notes","id":"nt/afg9hh","slide":7,"text":"The TAM/SAM values are internal planning ranges carried forward from the prior Gauss materials and should be presented as a scenario, not as audited market research. The SOM is tied to the current five-account ARR model.\n\n[Sources]\n- Repo: development/memory/DECISIONS.md, D-110 (2026-08-19)\n- User-provided: Gauss_Aurora_Pitch_Deck_v1.pptx (visual/source material)"}
+{"kind":"slide","id":"sl/g97opp","slide":8,"title":"GAUSS","textShapes":20}
+{"kind":"textbox","id":"sh/szu50nqh","slide":8,"text":"GAUSS","textPreview":"GAUSS","textChars":5,"textLines":1,"bbox":[72,38,100,24]}
+{"kind":"textbox","id":"sh/ryl47i9w","slide":8,"text":"COMMERCIAL","textPreview":"COMMERCIAL","textChars":10,"textLines":1,"bbox":[190,39,360,22]}
+{"kind":"textbox","id":"sh/qxcnyd8r","slide":8,"text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1155,39,54,22]}
+{"kind":"shape","id":"sh/5w3m5sr6","slide":8,"bbox":[72,72,1136,0]}
+{"kind":"textbox","id":"sh/4va5wnql","slide":8,"text":"Five fleet accounts can establish the first $500k ARR base.","textPreview":"Five fleet accounts can establish the first $500k ARR base.","textChars":59,"textLines":1,"bbox":[72,98,900,62]}
+{"kind":"textbox","id":"sh/3u143i90","slide":8,"text":"Charge for the platform annually; keep implementation and flight engineering outside ARR.","textPreview":"Charge for the platform annually; keep implementation and flight engineering outside ARR.","textChars":89,"textLines":1,"bbox":[72,164,890,36]}
+{"kind":"textbox","id":"sh/itsnud8f","slide":8,"text":"REVENUE STACK","textPreview":"REVENUE STACK","textChars":13,"textLines":1,"bbox":[72,230,230,18]}
+{"kind":"textbox","id":"sh/psn6hcra","slide":8,"text":"◒","textPreview":"◒","textChars":1,"textLines":1,"bbox":[305,226,30,26]}
+{"kind":"textbox","id":"sh/ylwb6tk3","slide":8,"text":"$k ARR / annualized contract value","textPreview":"$k ARR / annualized contract value","textChars":34,"textLines":1,"bbox":[72,552,360,22]}
+{"kind":"shape","id":"sh/zm5sfy1o","slide":8,"bbox":[760,306,448,0]}
+{"kind":"textbox","id":"sh/knet83i9","slide":8,"text":"Paid evaluation","textPreview":"Paid evaluation","textChars":15,"textLines":1,"bbox":[760,252,175,25]}
+{"kind":"textbox","id":"sh/l8nah8ju","slide":8,"text":"$20k–$35k","textPreview":"$20k–$35k","textChars":9,"textLines":1,"bbox":[940,252,150,25]}
+{"kind":"textbox","id":"sh/qhcr2tk7","slide":8,"text":"6–10 weeks; credit toward conversion","textPreview":"6–10 weeks; credit toward conversion","textChars":36,"textLines":1,"bbox":[760,280,448,24]}
+{"kind":"shape","id":"sh/bilsby1s","slide":8,"bbox":[760,382,448,0]}
+{"kind":"textbox","id":"sh/cje9432x","slide":8,"text":"Annual platform","textPreview":"Annual platform","textChars":15,"textLines":1,"bbox":[760,328,175,25]}
+{"kind":"textbox","id":"sh/xknadoji","slide":8,"text":"$100k–$150k","textPreview":"$100k–$150k","textChars":11,"textLines":1,"bbox":[940,328,150,25]}
+{"kind":"textbox","id":"sh/udgbed0b","slide":8,"text":"Fleet / mission capacity, not seats","textPreview":"Fleet / mission capacity, not seats","textChars":35,"textLines":1,"bbox":[760,356,448,24]}
+{"kind":"shape","id":"sh/vepsni1w","slide":8,"bbox":[760,458,448,0]}
+{"kind":"textbox","id":"sh/7mhgjqdw","slide":8,"text":"Implementation","textPreview":"Implementation","textChars":14,"textLines":1,"bbox":[760,404,175,25]}
+{"kind":"textbox","id":"sh/6lofqlwb","slide":8,"text":"$30k–$100k","textPreview":"$30k–$100k","textChars":10,"textLines":1,"bbox":[940,404,150,25]}
+{"kind":"textbox","id":"sh/t8zyl0v2","slide":8,"text":"One-time adapters and onboarding","textPreview":"One-time adapters and onboarding","textChars":32,"textLines":1,"bbox":[760,432,448,24]}
+{"kind":"shape","id":"sh/snqhsveh","slide":8,"bbox":[760,534,448,0]}
+{"kind":"textbox","id":"sh/fahgnqd8","slide":8,"text":"Flight candidate","textPreview":"Flight candidate","textChars":16,"textLines":1,"bbox":[760,480,175,25]}
+{"kind":"textbox","id":"sh/u98zulwn","slide":8,"text":"$150k–$400k","textPreview":"$150k–$400k","textChars":11,"textLines":1,"bbox":[940,480,150,25]}
+{"kind":"textbox","id":"sh/hczyp0vy","slide":8,"text":"NRE; external evidence gates","textPreview":"NRE; external evidence gates","textChars":28,"textLines":1,"bbox":[760,508,448,24]}
+{"kind":"chart","id":"ch/sfqx4jq1","slide":8,"name":"","chartType":"bar","bbox":[72,266,600,270]}
+{"kind":"notes","id":"nt/g97opp","slide":8,"text":"Pricing is a starting hypothesis for customer validation. The $500k ARR path is five $100k annual fleet accounts; do not count pilots, implementation, or NRE as ARR.\n\n[Sources]\n- Repo: development/memory/DECISIONS.md, D-110 (2026-08-19)\n- Recommendation developed from the pricing discussion in this task; no market pricing claim is implied."}
+{"kind":"slide","id":"sl/q0wide","slide":9,"title":"GAUSS","textShapes":31}
+{"kind":"textbox","id":"sh/cjul0jex","slide":9,"text":"GAUSS","textPreview":"GAUSS","textChars":5,"textLines":1,"bbox":[72,38,100,24]}
+{"kind":"textbox","id":"sh/bi1krexc","slide":9,"text":"COMMERCIAL","textPreview":"COMMERCIAL","textChars":10,"textLines":1,"bbox":[190,39,360,22]}
+{"kind":"textbox","id":"sh/ahs3y9wr","slide":9,"text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1155,39,54,22]}
+{"kind":"shape","id":"sh/l832xove","slide":9,"bbox":[72,72,1136,0]}
+{"kind":"textbox","id":"sh/k7ul4jet","slide":9,"text":"Charge now. Gate access with evidence.","textPreview":"Charge now. Gate access with evidence.","textChars":38,"textLines":1,"bbox":[72,98,900,62]}
+{"kind":"textbox","id":"sh/z6lkvyd8","slide":9,"text":"Billing, compliance, and mission clearance are separate server-side gates.","textPreview":"Billing, compliance, and mission clearance are separate server-side gates.","textChars":74,"textLines":1,"bbox":[72,164,890,36]}
+{"kind":"shape","id":"sh/y5c32twn","slide":9,"bbox":[72,286,34,34]}
+{"kind":"textbox","id":"sh/9cn218va","slide":9,"text":"□","textPreview":"□","textChars":1,"textLines":1,"bbox":[80,248,30,26]}
+{"kind":"textbox","id":"sh/8bel83e5","slide":9,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[72,294,34,18]}
+{"kind":"shape","id":"sh/yx0nmdkn","slide":9,"bbox":[110,303,176,0]}
+{"kind":"textbox","id":"sh/jy94fi18","slide":9,"text":"Select package","textPreview":"Select package","textChars":14,"textLines":1,"bbox":[72,342,190,28]}
+{"kind":"textbox","id":"sh/kzi5on2t","slide":9,"text":"Ground / fleet / enterprise","textPreview":"Ground / fleet / enterprise","textChars":27,"textLines":1,"bbox":[72,378,185,44]}
+{"kind":"shape","id":"sh/l0rmh8je","slide":9,"bbox":[296,286,34,34]}
+{"kind":"textbox","id":"sh/610nqdkz","slide":9,"text":"◎","textPreview":"◎","textChars":1,"textLines":1,"bbox":[304,248,30,26]}
+{"kind":"textbox","id":"sh/7m94ji1k","slide":9,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[296,294,34,18]}
+{"kind":"shape","id":"sh/8ni5sn2p","slide":9,"bbox":[334,303,176,0]}
+{"kind":"textbox","id":"sh/tobmlsja","slide":9,"text":"Profile the mission","textPreview":"Profile the mission","textChars":19,"textLines":1,"bbox":[296,342,190,28]}
+{"kind":"textbox","id":"sh/25g3etkf","slide":9,"text":"Jurisdiction, data class, deployment","textPreview":"Jurisdiction, data class, deployment","textChars":36,"textLines":1,"bbox":[296,378,185,44]}
+{"kind":"shape","id":"sh/nqp47y10","slide":9,"bbox":[520,286,34,34]}
+{"kind":"textbox","id":"sh/ralkfuhs","slide":9,"text":"∑","textPreview":"∑","textChars":1,"textLines":1,"bbox":[528,248,30,26]}
+{"kind":"textbox","id":"sh/q9cjmp07","slide":9,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[520,294,34,18]}
+{"kind":"shape","id":"sh/dw32hkzy","slide":9,"bbox":[558,303,176,0]}
+{"kind":"textbox","id":"sh/sbu1ozid","slide":9,"text":"Contract + pay","textPreview":"Contract + pay","textChars":14,"textLines":1,"bbox":[520,342,190,28]}
+{"kind":"textbox","id":"sh/36l0bahw","slide":9,"text":"Stripe or invoice / PO","textPreview":"Stripe or invoice / PO","textChars":22,"textLines":1,"bbox":[520,378,185,44]}
+{"kind":"shape","id":"sh/i5sji50b","slide":9,"bbox":[744,286,34,34]}
+{"kind":"textbox","id":"sh/5832dkzm","slide":9,"text":">","textPreview":">","textChars":1,"textLines":1,"bbox":[752,248,30,26]}
+{"kind":"textbox","id":"sh/47u1kfih","slide":9,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[744,294,34,18]}
+{"kind":"shape","id":"sh/n25kneh0","slide":9,"bbox":[782,303,176,0]}
+{"kind":"textbox","id":"sh/21wju90f","slide":9,"text":"Provision","textPreview":"Provision","textChars":9,"textLines":1,"bbox":[744,342,190,28]}
+{"kind":"textbox","id":"sh/k7qhobyx","slide":9,"text":"Entitlements after verified webhook","textPreview":"Entitlements after verified webhook","textChars":35,"textLines":1,"bbox":[744,378,185,44]}
+{"kind":"shape","id":"sh/l8zyhgfi","slide":9,"bbox":[968,286,34,34]}
+{"kind":"textbox","id":"sh/ylozm1gr","slide":9,"text":"⊙","textPreview":"⊙","textChars":1,"textLines":1,"bbox":[976,248,30,26]}
+{"kind":"textbox","id":"sh/j6xgf6xc","slide":9,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[968,294,34,18]}
+{"kind":"textbox","id":"sh/8bqhsby9","slide":9,"text":"Approve scope","textPreview":"Approve scope","textChars":13,"textLines":1,"bbox":[968,342,190,28]}
+{"kind":"textbox","id":"sh/tczylgfe","slide":9,"text":"Evidence-ready access only","textPreview":"Evidence-ready access only","textChars":26,"textLines":1,"bbox":[968,378,185,44]}
+{"kind":"shape","id":"sh/698zq1g3","slide":9,"bbox":[72,482,1136,98]}
+{"kind":"textbox","id":"sh/7ahgj6xo","slide":9,"text":"REGULATORY READINESS PACK","textPreview":"REGULATORY READINESS PACK","textChars":25,"textLines":1,"bbox":[96,506,250,18]}
+{"kind":"textbox","id":"sh/gfahwvy5","slide":9,"text":"GDPR / DPA","textPreview":"GDPR / DPA","textChars":10,"textLines":1,"bbox":[380,506,150,22]}
+{"kind":"textbox","id":"sh/hgjyp0fq","slide":9,"text":"NIS2 applicability","textPreview":"NIS2 applicability","textChars":18,"textLines":1,"bbox":[560,506,180,22]}
+{"kind":"textbox","id":"sh/hcrqpczu","slide":9,"text":"EAR / ITAR review","textPreview":"EAR / ITAR review","textChars":17,"textLines":1,"bbox":[770,506,180,22]}
+{"kind":"textbox","id":"sh/gbipgry9","slide":9,"text":"NIST / CUI scope","textPreview":"NIST / CUI scope","textChars":16,"textLines":1,"bbox":[990,506,180,22]}
+{"kind":"textbox","id":"sh/fap8nmho","slide":9,"text":"Status is evidence-based: unknown → assessing → evidence required → approved.","textPreview":"Status is evidence-based: unknown → assessing → evidence required → approved.","textChars":77,"textLines":1,"bbox":[96,540,820,22]}
+{"kind":"notes","id":"nt/q0wide","slide":9,"text":"This is a product workflow, not a legal conclusion. Keep payment separate from clearance. The EU Space Act is a proposal; NIS2 applicability depends on the customer and national implementation. Stripe webhooks should drive internal entitlements.\n\n[Sources]\n- https://docs.stripe.com/billing/subscriptions/webhooks and https://docs.stripe.com/billing/entitlements\n- https://eur-lex.europa.eu/legal-content/EN/TXT/?from=FI&uri=CELEX%3A32022L2555\n- https://eur-lex.europa.eu/legal-content/EN/TXT/?qid=1761037167193&uri=CELEX%3A52025PC0335\n- https://eur-lex.europa.eu/legal-content/EN/TXT/?qid=1590424137028&uri=CELEX%3A32016R0679\n- https://csrc.nist.gov/pubs/sp/800/171/r3/final"}
+{"kind":"slide","id":"sl/dfxjcb","slide":10,"title":"GAUSS","textShapes":7}
+{"kind":"shape","id":"sh/2dkv2xo7","slide":10,"bbox":[0,0,1280,720]}
+{"kind":"textbox","id":"sh/netcvips","slide":10,"text":"GAUSS","textPreview":"GAUSS","textChars":5,"textLines":1,"bbox":[72,38,100,24]}
+{"kind":"textbox","id":"sh/0b2d0n6h","slide":10,"text":"POSITIONING","textPreview":"POSITIONING","textChars":11,"textLines":1,"bbox":[190,39,360,22]}
+{"kind":"textbox","id":"sh/1cbuts7m","slide":10,"text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1155,39,54,22]}
+{"kind":"shape","id":"sh/e9kvydob","slide":10,"bbox":[72,72,1136,0]}
+{"kind":"textbox","id":"sh/fatcripw","slide":10,"text":"Gauss owns the cross-system evidence layer.","textPreview":"Gauss owns the cross-system evidence layer.","textChars":43,"textLines":1,"bbox":[72,98,900,62]}
+{"kind":"textbox","id":"sh/s7idw365","slide":10,"text":"Adjacent platforms own control, sensing, or model monitoring. Gauss makes their outputs more trusted.","textPreview":"Adjacent platforms own control, sensing, or model monitoring. Gauss makes their outputs more trusted.","textChars":101,"textLines":1,"bbox":[72,164,890,36]}
+{"kind":"shape","id":"sh/dknqhk7i","slide":10,"bbox":[72,562,1136,44]}
+{"kind":"textbox","id":"sh/sze98f6x","slide":10,"text":"NOT ANOTHER CONSOLE","textPreview":"NOT ANOTHER CONSOLE","textChars":19,"textLines":1,"bbox":[94,576,230,18]}
+{"kind":"textbox","id":"sh/ry58fapc","slide":10,"text":"Gauss makes adjacent systems more trustworthy without owning their command authority.","textPreview":"Gauss makes adjacent systems more trustworthy without owning their command authority.","textChars":85,"textLines":1,"bbox":[340,576,820,18]}
+{"kind":"table","id":"tb/ovqdknq9","slide":10,"name":"","rows":6,"cols":4,"preview":"CATEGORY | INCUMBENT / ADJACENT | WHAT THEY OWN | GAUSS EDGE","bbox":[72,232,1136,300]}
+{"kind":"image","id":"im/g7ih0j65","slide":10,"name":"","alt":"Deep-space star field","bbox":[0,0,1280,720]}
+{"kind":"notes","id":"nt/dfxjcb","slide":10,"text":"This matrix is illustrative and intentionally avoids claiming superiority on command, sensing, or flight qualification. Public product descriptions and the user-provided source deck were used only to place adjacent categories. Gauss remains partner-neutral.\n\n[Sources]\n- Repo: config/product-packages.json and config/product-packages.schema.json\n- https://yamcs.com/\n- https://openc3.com/cosmos-enterprise\n- https://www.slingshot.space/product-portal\n- https://www.satcat.com/products/operations\n- User-provided: Gauss_Aurora_Pitch_Deck_v1.pptx (visual/source material)"}
+{"kind":"slide","id":"sl/4qktd4","slide":11,"title":"GAUSS","textShapes":25}
+{"kind":"shape","id":"sh/d43m5w3u","slide":11,"bbox":[0,0,1280,720]}
+{"kind":"textbox","id":"sh/c3u5wrm9","slide":11,"text":"GAUSS","textPreview":"GAUSS","textChars":5,"textLines":1,"bbox":[72,38,100,24]}
+{"kind":"textbox","id":"sh/z6547ml0","slide":11,"text":"TEAM","textPreview":"TEAM","textChars":4,"textLines":1,"bbox":[190,39,360,22]}
+{"kind":"textbox","id":"sh/e5wny14f","slide":11,"text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1155,39,54,22]}
+{"kind":"shape","id":"sh/18nm9w3q","slide":11,"bbox":[72,72,1136,0]}
+{"kind":"textbox","id":"sh/07e50rml","slide":11,"text":"A compact founding team built around mission context.","textPreview":"A compact founding team built around mission context.","textChars":53,"textLines":1,"bbox":[72,98,900,62]}
+{"kind":"textbox","id":"sh/na54b6lw","slide":11,"text":"Product leadership, operator experience, and space-systems execution in one loop.","textPreview":"Product leadership, operator experience, and space-systems execution in one loop.","textChars":81,"textLines":1,"bbox":[72,164,890,36]}
+{"kind":"shape","id":"sh/m9wn214b","slide":11,"bbox":[72,236,330,230]}
+{"kind":"shape","id":"sh/kvedoryh","slide":11,"bbox":[96,262,48,48]}
+{"kind":"textbox","id":"sh/lwnuhwz2","slide":11,"text":"JN","textPreview":"JN","textChars":2,"textLines":1,"bbox":[96,277,48,18]}
+{"kind":"textbox","id":"sh/y9wvm1gb","slide":11,"text":"◈","textPreview":"◈","textChars":1,"textLines":1,"bbox":[358,264,30,26]}
+{"kind":"textbox","id":"sh/zu5cf6hw","slide":11,"text":"Joshua Nathan","textPreview":"Joshua Nathan","textChars":13,"textLines":1,"bbox":[164,264,210,24]}
+{"kind":"textbox","id":"sh/8zedsbyd","slide":11,"text":"CEO / Founder & mission lead","textPreview":"CEO / Founder & mission lead","textChars":28,"textLines":1,"bbox":[164,298,210,22]}
+{"kind":"shape","id":"sh/90nelgzy","slide":11,"bbox":[96,338,282,0]}
+{"kind":"textbox","id":"sh/mxwvq1gn","slide":11,"text":"Product direction, mission context, and commercial wedge.","textPreview":"Product direction, mission context, and commercial wedge.","textChars":57,"textLines":1,"bbox":[96,366,274,62]}
+{"kind":"shape","id":"sh/7y5cj6h8","slide":11,"bbox":[452,236,330,230]}
+{"kind":"shape","id":"sh/g3ydwvyp","slide":11,"bbox":[476,262,48,48]}
+{"kind":"textbox","id":"sh/h47epgza","slide":11,"text":"KL","textPreview":"KL","textChars":2,"textLines":1,"bbox":[476,277,48,18]}
+{"kind":"textbox","id":"sh/pk3u9gre","slide":11,"text":"◎","textPreview":"◎","textChars":1,"textLines":1,"bbox":[738,264,30,26]}
+{"kind":"textbox","id":"sh/4judgbqt","slide":11,"text":"Kristina Logunova","textPreview":"Kristina Logunova","textChars":17,"textLines":1,"bbox":[544,264,210,24]}
+{"kind":"textbox","id":"sh/3ilc7698","slide":11,"text":"COO","textPreview":"COO","textChars":3,"textLines":1,"bbox":[544,298,210,22]}
+{"kind":"shape","id":"sh/2hcvel8n","slide":11,"bbox":[476,338,282,0]}
+{"kind":"textbox","id":"sh/donud0ra","slide":11,"text":"Human–computer interaction and operator experience.","textPreview":"Human–computer interaction and operator experience.","textChars":51,"textLines":1,"bbox":[476,366,274,62]}
+{"kind":"shape","id":"sh/cnedkvqp","slide":11,"bbox":[832,236,330,230]}
+{"kind":"shape","id":"sh/rmlcbq9k","slide":11,"bbox":[856,262,48,48]}
+{"kind":"textbox","id":"sh/qlcvil8z","slide":11,"text":"SH","textPreview":"SH","textChars":2,"textLines":1,"bbox":[856,277,48,18]}
+{"kind":"textbox","id":"sh/tsju1wr6","slide":11,"text":"✦","textPreview":"✦","textChars":1,"textLines":1,"bbox":[1118,264,30,26]}
+{"kind":"textbox","id":"sh/8rad8rql","slide":11,"text":"Shubham Hule","textPreview":"Shubham Hule","textChars":12,"textLines":1,"bbox":[924,264,210,24]}
+{"kind":"textbox","id":"sh/yx8r2xoj","slide":11,"text":"CTO","textPreview":"CTO","textChars":3,"textLines":1,"bbox":[924,298,210,22]}
+{"kind":"shape","id":"sh/jyhsb2p4","slide":11,"bbox":[856,338,282,0]}
+{"kind":"textbox","id":"sh/kzq9476p","slide":11,"text":"Space systems engineering and technical execution.","textPreview":"Space systems engineering and technical execution.","textChars":50,"textLines":1,"bbox":[856,366,274,62]}
+{"kind":"shape","id":"sh/lkzadc7u","slide":11,"bbox":[72,510,1136,88]}
+{"kind":"textbox","id":"sh/6l8r6hof","slide":11,"text":"ADVISOR NETWORK","textPreview":"ADVISOR NETWORK","textChars":15,"textLines":1,"bbox":[96,534,190,18]}
+{"kind":"textbox","id":"sh/7mhsfmp0","slide":11,"text":"Barbara J. Thompson  /  Solar physics & NASA Goddard","textPreview":"Barbara J. Thompson  /  Solar physics & NASA Goddard","textChars":52,"textLines":1,"bbox":[310,532,280,22]}
+{"kind":"textbox","id":"sh/8nqt876l","slide":11,"text":"Eleni Petrakou  /  Particle physics & space weather","textPreview":"Eleni Petrakou  /  Particle physics & space weather","textChars":51,"textLines":1,"bbox":[612,532,270,22]}
+{"kind":"textbox","id":"sh/tojahc76","slide":11,"text":"Jamie Berry  /  Aerospace, defence & space finance","textPreview":"Jamie Berry  /  Aerospace, defence & space finance","textChars":50,"textLines":1,"bbox":[900,532,270,22]}
+{"kind":"textbox","id":"sh/mporudob","slide":11,"text":"A team slide is now present; the next diligence layer is specific founder proof and customer evidence.","textPreview":"A team slide is now present; the next diligence layer is specific founder proof and customer evidence.","textChars":102,"textLines":1,"bbox":[72,636,1120,22]}
+{"kind":"image","id":"im/3exkfuhc","slide":11,"name":"","alt":"Deep-space star field","bbox":[0,0,1280,720]}
+{"kind":"notes","id":"nt/4qktd4","slide":11,"text":"The named team members and advisor network are taken from the user-provided Gauss_Aurora_Pitch_Deck_v1.pptx. Keep the visible copy factual and concise; add measurable founder achievements, customer references, or formal advisor status only when verified.\n\n[Sources]\n- User-provided: Gauss_Aurora_Pitch_Deck_v1.pptx (visual/source material)"}
+{"kind":"slide","id":"sl/qg4z96","slide":12,"title":"GAUSS","textShapes":15}
+{"kind":"textbox","id":"sh/l872lc3e","slide":12,"text":"GAUSS","textPreview":"GAUSS","textChars":5,"textLines":1,"bbox":[72,38,100,24]}
+{"kind":"textbox","id":"sh/y5gjah43","slide":12,"text":"EXECUTION","textPreview":"EXECUTION","textChars":9,"textLines":1,"bbox":[190,39,360,22]}
+{"kind":"textbox","id":"sh/z6pkjmlo","slide":12,"text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[1155,39,54,22]}
+{"kind":"shape","id":"sh/c3y187mx","slide":12,"bbox":[72,72,1136,0]}
+{"kind":"textbox","id":"sh/x472hc3i","slide":12,"text":"Design partners first. Procurement-ready expansion next.","textPreview":"Design partners first. Procurement-ready expansion next.","textChars":56,"textLines":1,"bbox":[72,98,900,62]}
+{"kind":"textbox","id":"sh/a1wj6x4r","slide":12,"text":"The next 18 months turn the evidence contract into repeatable revenue.","textPreview":"The next 18 months turn the evidence contract into repeatable revenue.","textChars":70,"textLines":1,"bbox":[72,164,890,36]}
+{"kind":"shape","id":"sh/b25kf2lc","slide":12,"bbox":[72,250,330,250]}
+{"kind":"textbox","id":"sh/oze14nm1","slide":12,"text":"0–6 mo","textPreview":"0–6 mo","textChars":6,"textLines":1,"bbox":[96,276,120,22]}
+{"kind":"textbox","id":"sh/p0n2ds36","slide":12,"text":"Prove the wedge","textPreview":"Prove the wedge","textChars":15,"textLines":1,"bbox":[96,318,280,34]}
+{"kind":"textbox","id":"sh/lw3u5onu","slide":12,"text":"2 paid ground pilots\nCCSDS / XTCE / Yamcs replay\nFirst compliance evidence pack","textPreview":"2 paid ground pilots | CCSDS / XTCE / Yamcs replay | First compliance evidence pack","textChars":79,"textLines":3,"bbox":[96,374,270,96]}
+{"kind":"shape","id":"sh/kvudw36p","slide":12,"bbox":[406,375,40,0]}
+{"kind":"shape","id":"sh/zu1c3y54","slide":12,"bbox":[452,250,330,250]}
+{"kind":"textbox","id":"sh/ytsvutoj","slide":12,"text":"6–12 mo","textPreview":"6–12 mo","textChars":7,"textLines":1,"bbox":[476,276,120,22]}
+{"kind":"textbox","id":"sh/x8ju1ony","slide":12,"text":"Convert the motion","textPreview":"Convert the motion","textChars":18,"textLines":1,"bbox":[476,318,280,34]}
+{"kind":"textbox","id":"sh/c7adsj6d","slide":12,"text":"2–3 annual fleet contracts\nRepeatable onboarding + billing\nReference architecture","textPreview":"2–3 annual fleet contracts | Repeatable onboarding + billing | Reference architecture","textChars":81,"textLines":3,"bbox":[476,374,270,96]}
+{"kind":"shape","id":"sh/b61cze5s","slide":12,"bbox":[786,375,40,0]}
+{"kind":"shape","id":"sh/a5svq9o7","slide":12,"bbox":[832,250,330,250]}
+{"kind":"textbox","id":"sh/p4jux4n2","slide":12,"text":"12–18 mo","textPreview":"12–18 mo","textChars":8,"textLines":1,"bbox":[856,276,120,22]}
+{"kind":"textbox","id":"sh/o3adoj6h","slide":12,"text":"Expand the boundary","textPreview":"Expand the boundary","textChars":19,"textLines":1,"bbox":[856,318,280,34]}
+{"kind":"textbox","id":"sh/gnud4jed","slide":12,"text":"5 paid fleet accounts\n$500k ARR target\nFlight-candidate study, not qualification","textPreview":"5 paid fleet accounts | $500k ARR target | Flight-candidate study, not qualification","textChars":80,"textLines":3,"bbox":[856,374,270,96]}
+{"kind":"textbox","id":"sh/18nedovi","slide":12,"text":"The commercial proof point is repeatable evidence delivery, not a speculative claim of autonomous spacecraft operations.","textPreview":"The commercial proof point is repeatable evidence delivery, not a speculative claim of autonomous spacecraft operations.","textChars":120,"textLines":1,"bbox":[72,574,1120,30]}
+{"kind":"notes","id":"nt/qg4z96","slide":12,"text":"These are internal milestones, not achieved traction. Keep the January 2027 IOD / hosted-payload path bounded and avoid claiming flight qualification.\n\n[Sources]\n- Repo: development/memory/DECISIONS.md, D-110 (2026-08-19)\n- Repo: config/product-packages.json and config/product-packages.schema.json"}
+{"kind":"slide","id":"sl/4v5rnv","slide":13,"title":"GAUSS","textShapes":18}
+{"kind":"shape","id":"sh/q1svap03","slide":13,"bbox":[0,0,1280,720]}
+{"kind":"textbox","id":"sh/b21cjuho","slide":13,"text":"GAUSS","textPreview":"GAUSS","textChars":5,"textLines":1,"bbox":[72,38,100,24]}
+{"kind":"textbox","id":"sh/ofad8zix","slide":13,"text":"THE ASK","textPreview":"THE ASK","textChars":7,"textLines":1,"bbox":[190,39,360,22]}
+{"kind":"textbox","id":"sh/p0juh4zi","slide":13,"text":"13","textPreview":"13","textChars":2,"textLines":1,"bbox":[1155,39,54,22]}
+{"kind":"shape","id":"sh/2dsv6p0r","slide":13,"bbox":[72,72,1136,0]}
+{"kind":"textbox","id":"sh/3e1cfuhc","slide":13,"text":"$1.5M","textPreview":"$1.5M","textChars":5,"textLines":1,"bbox":[72,160,420,88]}
+{"kind":"textbox","id":"sh/8bedkji1","slide":13,"text":"to make mission-data assurance a repeatable commercial category.","textPreview":"to make mission-data assurance a repeatable commercial category.","textChars":64,"textLines":1,"bbox":[76,260,730,64]}
+{"kind":"textbox","id":"sh/9wnetozm","slide":13,"text":"USE OF FUNDS  /  INTERNAL PLAN","textPreview":"USE OF FUNDS  /  INTERNAL PLAN","textChars":30,"textLines":1,"bbox":[78,382,320,18]}
+{"kind":"textbox","id":"sh/hkfih872","slide":13,"text":"Product + integrations","textPreview":"Product + integrations","textChars":22,"textLines":1,"bbox":[78,420,280,22]}
+{"kind":"shape","id":"sh/wj6h8n6h","slide":13,"bbox":[380,424,310,16]}
+{"kind":"shape","id":"sh/vid0fipw","slide":13,"bbox":[380,424,310,16]}
+{"kind":"textbox","id":"sh/uh4z6dob","slide":13,"text":"45%","textPreview":"45%","textChars":3,"textLines":1,"bbox":[710,420,70,22]}
+{"kind":"textbox","id":"sh/9gvyd87q","slide":13,"text":"Security + compliance","textPreview":"Security + compliance","textChars":21,"textLines":1,"bbox":[78,458,280,22]}
+{"kind":"shape","id":"sh/8fmh4365","slide":13,"bbox":[380,462,310,16]}
+{"kind":"shape","id":"sh/7edgbyp0","slide":13,"bbox":[380,462,138,16]}
+{"kind":"textbox","id":"sh/md4z2tof","slide":13,"text":"20%","textPreview":"20%","textChars":3,"textLines":1,"bbox":[710,458,70,22]}
+{"kind":"textbox","id":"sh/dczipsna","slide":13,"text":"GTM + design partners","textPreview":"GTM + design partners","textChars":21,"textLines":1,"bbox":[78,496,280,22]}
+{"kind":"shape","id":"sh/sbqhg76p","slide":13,"bbox":[380,500,310,16]}
+{"kind":"shape","id":"sh/cfy1cbel","slide":13,"bbox":[380,500,138,16]}
+{"kind":"textbox","id":"sh/dg72lgv6","slide":13,"text":"20%","textPreview":"20%","textChars":3,"textLines":1,"bbox":[710,496,70,22]}
+{"kind":"textbox","id":"sh/qtwja1wv","slide":13,"text":"Operations + runway","textPreview":"Operations + runway","textChars":19,"textLines":1,"bbox":[78,534,280,22]}
+{"kind":"shape","id":"sh/bepkj6dg","slide":13,"bbox":[380,538,310,16]}
+{"kind":"shape","id":"sh/ore18rep","slide":13,"bbox":[380,538,103,16]}
+{"kind":"textbox","id":"sh/psn2hwva","slide":13,"text":"15%","textPreview":"15%","textChars":3,"textLines":1,"bbox":[710,534,70,22]}
+{"kind":"shape","id":"sh/2pwj61wj","slide":13,"bbox":[850,206,330,284]}
+{"kind":"textbox","id":"sh/3q5kfmd4","slide":13,"text":"THE PROOF POINT","textPreview":"THE PROOF POINT","textChars":15,"textLines":1,"bbox":[878,238,250,18]}
+{"kind":"textbox","id":"sh/gne14ret","slide":13,"text":"5 fleet\naccounts","textPreview":"5 fleet | accounts","textChars":16,"textLines":2,"bbox":[878,278,270,76]}
+{"kind":"shape","id":"sh/1on2dwvy","slide":13,"bbox":[878,380,270,0]}
+{"kind":"textbox","id":"sh/jilknmh0","slide":13,"text":"$500k ARR\nGround-first\nEvidence-ready","textPreview":"$500k ARR | Ground-first | Evidence-ready","textChars":37,"textLines":3,"bbox":[878,406,250,72]}
+{"kind":"textbox","id":"sh/ihc3ehgf","slide":13,"text":"Gauss gives space operators a safer path from data abundance to trusted action.","textPreview":"Gauss gives space operators a safer path from data abundance to trusted action.","textChars":79,"textLines":1,"bbox":[76,642,820,24]}
+{"kind":"image","id":"im/czulcnat","slide":13,"name":"","alt":"Deep-space star field","bbox":[0,0,1280,720]}
+{"kind":"notes","id":"nt/4v5rnv","slide":13,"text":"Close on the proof point: five paid fleet accounts and a repeatable evidence contract. The funding allocation is an internal planning scenario, not a committed budget.\n\n[Sources]\n- Repo: development/memory/DECISIONS.md, D-110 (2026-08-19)\n- Repo: config/product-packages.json and config/product-packages.schema.json\n- User-provided: Gauss_Aurora_Pitch_Deck_v1.pptx (visual/source material)"}
+{"kind":"slide","id":"sl/a968me","slide":14,"title":"GAUSS","textShapes":7}
+{"kind":"shape","id":"sh/vaxg7614","slide":14,"bbox":[0,0,1280,720]}
+{"kind":"textbox","id":"sh/a9ofel0z","slide":14,"text":"GAUSS","textPreview":"GAUSS","textChars":5,"textLines":1,"bbox":[72,38,100,24]}
+{"kind":"textbox","id":"sh/5gfyd0jm","slide":14,"text":"READINESS","textPreview":"READINESS","textChars":9,"textLines":1,"bbox":[190,39,360,22]}
+{"kind":"textbox","id":"sh/kf6hkvi1","slide":14,"text":"14","textPreview":"14","textChars":2,"textLines":1,"bbox":[1155,39,54,22]}
+{"kind":"shape","id":"sh/jexgbq1g","slide":14,"bbox":[72,72,1136,0]}
+{"kind":"textbox","id":"sh/idozil0v","slide":14,"text":"Investor-ready story; diligence-ready evidence is next.","textPreview":"Investor-ready story; diligence-ready evidence is next.","textChars":55,"textLines":1,"bbox":[72,98,900,62]}
+{"kind":"textbox","id":"sh/t4zyh0ji","slide":14,"text":"A practical scorecard against ESA BIC, YC, Seraphim, and the current SpaceTech visual bar.","textPreview":"A practical scorecard against ESA BIC, YC, Seraphim, and the current SpaceTech visual bar.","textChars":90,"textLines":1,"bbox":[72,164,890,36]}
+{"kind":"shape","id":"sh/uts3ihgn","slide":14,"bbox":[72,558,1136,54]}
+{"kind":"textbox","id":"sh/vu14rmx8","slide":14,"text":"NEXT UNLOCKS","textPreview":"NEXT UNLOCKS","textChars":12,"textLines":1,"bbox":[94,578,150,18]}
+{"kind":"textbox","id":"sh/wvalkret","slide":14,"text":"Founder proof  •  customer LOI / pilot evidence  •  prototype + TRL / IRL  •  IP / moat map  •  CAC, payback, and gross-margin evidence","textPreview":"Founder proof  •  customer LOI / pilot evidence  •  prototype + TRL / IRL  •  IP / moat map  •  CAC, payback, and gross-margin evidence","textChars":135,"textLines":1,"bbox":[250,578,920,18]}
+{"kind":"table","id":"tb/d4rmdwzq","slide":14,"name":"","rows":6,"cols":4,"preview":"LENS | MUST SHOW | GAUSS TODAY | STATUS","bbox":[72,226,1136,300]}
+{"kind":"image","id":"im/lwji5sjy","slide":14,"name":"","alt":"Deep-space star field","bbox":[0,0,1280,720]}
+{"kind":"notes","id":"nt/a968me","slide":14,"text":"This scorecard is an assessment of the current deck against published programme and investor guidance, not an eligibility determination. The deck is strong on the narrative and visual system; the next diligence unlocks are founder credibility, customer proof, explicit readiness evidence, and IP defensibility.\n\n[Sources]\n- https://access.esa.int/about-access/about-scale-up/business-incubation-centres and https://www.esa-bic.se/apply_v2-1\n- https://www.ycombinator.com/blog/how-to-pitch-your-company/ and https://www.ycombinator.com/howtoapply.html\n- https://florida.seraphim.vc/ and https://accelerator.seraphim.vc/\n- https://www.starcloud.com/\n- https://investors.rocketlabcorp.com/\n- https://www.relativityspace.com/about"}

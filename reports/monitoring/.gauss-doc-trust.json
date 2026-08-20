@@ -1,0 +1,177 @@
+{
+  "generatedAt": "2026-08-20T09:22:52.120Z",
+  "rootDir": "/Users/josh/Documents/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/monitoring",
+  "policyVersion": "orbital-stewardship-v1",
+  "overridesPath": "/Users/josh/Documents/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/monitoring/.gauss-doc-trust-overrides.json",
+  "totals": {
+    "files": 9,
+    "supported": 5,
+    "approved": 5,
+    "indexAllowed": 5,
+    "needsReview": 4,
+    "rejected": 0
+  },
+  "documents": [
+    {
+      "path": "offline-fetch-self-repair.latest.json",
+      "sha256": "f563534a6783858b56e0463e73b3613b33810193b2fc393a5f89e309e6f0e108",
+      "sizeBytes": 1106,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Operator-approved local offline repair evidence for memory retrieval."
+      ]
+    },
+    {
+      "path": "overnight-20260303-232431.jsonl",
+      "sha256": "ebb8c956e95f6681147ab3e8869a1292b4761efe7d9ce7424fedbf71eef65be8",
+      "sizeBytes": 587,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Operator-approved local hardware and runtime telemetry evidence."
+      ]
+    },
+    {
+      "path": "overnight-20260303-232431.pid",
+      "sha256": "df9696642c25743e6b3c6dabbcfc45a91083b16e0d1a964f8098e7a683f49203",
+      "sizeBytes": 6,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "overnight-20260303-232619.jsonl",
+      "sha256": "7454ea4992d9727979f96586d07c256fb0cdfbc509cfc41fd5d5e05e9e302401",
+      "sizeBytes": 316042,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Operator-approved local hardware and runtime telemetry evidence."
+      ]
+    },
+    {
+      "path": "overnight-20260303-232619.summary.txt",
+      "sha256": "e93a6a4ed0f5de9fa1eaa723d4990ada7886e2f31351a36bf64dc692c48e4c28",
+      "sizeBytes": 727,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "picoclaw-offline-sync.latest.json",
+      "sha256": "9c4c86096424130d8243064f3cbe4283a5b04aa7fffe1ca2cdb1c236b658a72d",
+      "sizeBytes": 814,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Operator-approved local offline automation evidence."
+      ]
+    },
+    {
+      "path": "smoke-overnight-2.jsonl",
+      "sha256": "cff23654900a8f1cbce0bd64d790ec8e53116a11e46a4176ace235a99a865756",
+      "sizeBytes": 1171,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Operator-approved local hardware and runtime telemetry evidence."
+      ]
+    },
+    {
+      "path": "smoke-overnight-2.summary.txt",
+      "sha256": "ab7aae5f23ba15b74e7a1cec7559c09595ef1dcb3ee8e047bdc5d3f0f97595e7",
+      "sizeBytes": 691,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "smoke-overnight.summary.txt",
+      "sha256": "5c06953739526ac0be423d0799573668076837d9259325c066ed7c3d275679e6",
+      "sizeBytes": 342,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    }
+  ]
+}

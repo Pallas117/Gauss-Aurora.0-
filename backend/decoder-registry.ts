@@ -1,3 +1,5 @@
+import { readResponseJsonBounded, readResponseTextBounded } from "./runtime/bounded-response.js";
+
 /**
  * Decoder registry (GAUSS-COMP-001): unified telemetry decode abstraction.
  * Selects implementation by source/type: ccsds -> orchestrator decode API; csv -> stub (existing CSV path unchanged).
@@ -22,6 +24,10 @@ export interface DecodeResult {
 export type DecoderFn = (raw: Buffer | string) => Promise<DecodeResult>;
 
 const DECODE_API_BIND_ENV = "ORCHESTRATOR_DECODE_API_BIND";
+const MAX_DECODE_INPUT_BYTES = 4 * 1024 * 1024;
+const MAX_DECODE_RESPONSE_BYTES = 4 * 1024 * 1024;
+const MAX_DECODE_PACKETS = 1_000;
+const MAX_DECODE_ERRORS = 1_000;
 
 function getDecodeApiUrl(): string | null {
   const bind = (process.env[DECODE_API_BIND_ENV] ?? "").trim();
@@ -33,11 +39,16 @@ function getDecodeApiUrl(): string | null {
 /** Normalize raw input to Buffer; returns null and error message if invalid. */
 function toBuffer(raw: Buffer | string): { body: Buffer; error?: string } {
   if (Buffer.isBuffer(raw)) {
-    return { body: raw };
+    return raw.byteLength <= MAX_DECODE_INPUT_BYTES
+      ? { body: raw }
+      : { body: Buffer.alloc(0), error: `Raw decode input exceeds ${MAX_DECODE_INPUT_BYTES} bytes.` };
   }
   if (typeof raw === "string") {
     try {
-      return { body: Buffer.from(raw, "utf8") };
+      const body = Buffer.from(raw, "utf8");
+      return body.byteLength <= MAX_DECODE_INPUT_BYTES
+        ? { body }
+        : { body: Buffer.alloc(0), error: `Raw decode input exceeds ${MAX_DECODE_INPUT_BYTES} bytes.` };
     } catch {
       return { body: Buffer.alloc(0), error: "Invalid raw input: string could not be converted to buffer." };
     }
@@ -67,14 +78,14 @@ async function decodeCcsds(raw: Buffer | string): Promise<DecodeResult> {
     });
 
     if (!response.ok) {
-      const text = await response.text();
+      const text = await readResponseTextBounded(response, 256 * 1024);
       return {
         packets: [],
         errors: [`Orchestrator decode failed: ${response.status} ${response.statusText}${text ? ` - ${text.slice(0, 200)}` : ""}`],
       };
     }
 
-    const data = (await response.json()) as {
+    const data = await readResponseJsonBounded<{
       packets?: Array<{
         timestamp?: string;
         apid?: number;
@@ -85,9 +96,12 @@ async function decodeCcsds(raw: Buffer | string): Promise<DecodeResult> {
         uncertainty?: Record<string, unknown>;
       }>;
       errors?: Array<{ code?: string; reason?: string }>;
-    };
+    }>(response, MAX_DECODE_RESPONSE_BYTES);
+    if (!data) {
+      return { packets: [], errors: ["Orchestrator decode response exceeded the bounded JSON body limit or was invalid JSON."] };
+    }
 
-    const packets: NormalizedPacket[] = (data.packets ?? []).map((p) => ({
+    const packets: NormalizedPacket[] = (Array.isArray(data.packets) ? data.packets : []).slice(0, MAX_DECODE_PACKETS).map((p) => ({
       timestamp: p.timestamp ?? "",
       apid: p.apid ?? 0,
       seq_count: p.seq_count,
@@ -97,7 +111,7 @@ async function decodeCcsds(raw: Buffer | string): Promise<DecodeResult> {
       canonical_point: p.canonical_point,
     }));
 
-    const errors: string[] = (data.errors ?? []).map(
+    const errors: string[] = (Array.isArray(data.errors) ? data.errors : []).slice(0, MAX_DECODE_ERRORS).map(
       (e) => `${e.code ?? "error"}: ${e.reason ?? ""}`.trim() || "Unknown decode error",
     );
 

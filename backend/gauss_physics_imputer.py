@@ -78,6 +78,8 @@ class ReconstructionResult:
     insight: str
     reconstructed_series: list[float]
     corrupted_mask: list[bool]
+    provenance: Dict[str, Any]
+    confidence: Dict[str, float]
     error: str | None = None
 
     def as_dict(self) -> Dict[str, Any]:
@@ -90,6 +92,8 @@ class ReconstructionResult:
             "insight": self.insight,
             "reconstructed_series": self.reconstructed_series,
             "corrupted_mask": self.corrupted_mask,
+            "provenance": self.provenance,
+            "confidence": self.confidence,
             "error": self.error,
         }
 
@@ -107,6 +111,44 @@ class GaussPhysicsImputer:
         self.sensitivity = float(sensitivity)
         self.min_valid_points = int(min_valid_points)
         self.spline_smoothing = float(spline_smoothing)
+
+    @staticmethod
+    def _max_gap_length(mask: list[bool]) -> int:
+        longest = 0
+        current = 0
+        for flagged in mask:
+            if flagged:
+                current += 1
+                if current > longest:
+                    longest = current
+            else:
+                current = 0
+        return longest
+
+    def _context_evidence_score(
+        self,
+        df: pl.DataFrame,
+        context_cols: list[str],
+    ) -> float:
+        if not context_cols:
+            return 0.0
+
+        evidence_scores: list[float] = []
+        for col in context_cols:
+            if col not in df.columns:
+                continue
+            series = df[col].cast(pl.Float64, strict=False)
+            valid = series.filter(~(series.is_null() | series.is_nan() | series.is_infinite()))
+            if valid.len() < self.min_valid_points:
+                continue
+            spread = float((valid.max() or 0.0) - (valid.min() or 0.0))
+            mean_abs = float(valid.abs().mean() or 0.0)
+            scale = max(abs(mean_abs), 1e-6)
+            evidence_scores.append(min(1.0, spread / (scale * 0.02 + 1e-6)))
+
+        if not evidence_scores:
+            return 0.0
+        return round(sum(evidence_scores) / len(evidence_scores), 6)
 
     def identify_corrupted_data(self, series: pl.Series) -> pl.Series:
         """Detect outliers likely caused by radiation-induced bit flips.
@@ -147,6 +189,8 @@ class GaussPhysicsImputer:
         df: pl.DataFrame,
         target_col: str,
         timestamp_col: str = "timestamp",
+        context_cols: list[str] | None = None,
+        short_gap_limit: int = 3,
     ) -> Dict[str, Any]:
         """Reconstruct a telemetry column across full timeline."""
 
@@ -165,6 +209,18 @@ class GaussPhysicsImputer:
                 insight="No rows supplied.",
                 reconstructed_series=[],
                 corrupted_mask=[],
+                provenance={
+                    "tier": 0,
+                    "mode": "none",
+                    "context_columns": [],
+                    "imputed_points": 0,
+                    "max_gap_length": 0,
+                },
+                confidence={
+                    "overall": 0.0,
+                    "gap": 0.0,
+                    "context": 0.0,
+                },
                 error="empty_dataframe",
             ).as_dict()
 
@@ -190,6 +246,8 @@ class GaussPhysicsImputer:
 
         if valid_unique.height < self.min_valid_points:
             anomaly_count = int(indexed["__corrupted"].sum())
+            corrupted_mask = indexed["__corrupted"].to_list()
+            max_gap_length = self._max_gap_length([bool(v) for v in corrupted_mask])
             integrity_score = round(max(0.0, 1.0 - (anomaly_count / max(df.height, 1))), 6)
             _directive_cleanup()
             return ReconstructionResult(
@@ -200,7 +258,19 @@ class GaussPhysicsImputer:
                 anomalies_detected=anomaly_count,
                 insight="Error: Data density too low for physics reconstruction.",
                 reconstructed_series=indexed[target_col].cast(pl.Float64, strict=False).fill_null(0.0).to_list(),
-                corrupted_mask=indexed["__corrupted"].to_list(),
+                corrupted_mask=corrupted_mask,
+                provenance={
+                    "tier": 0,
+                    "mode": "none",
+                    "context_columns": context_cols or [],
+                    "imputed_points": anomaly_count,
+                    "max_gap_length": max_gap_length,
+                },
+                confidence={
+                    "overall": integrity_score,
+                    "gap": round(max(0.0, 1.0 - max_gap_length / max(df.height, 1)), 6),
+                    "context": 0.0,
+                },
                 error="insufficient_valid_points",
             ).as_dict()
 
@@ -208,8 +278,19 @@ class GaussPhysicsImputer:
         y = [float(v) for v in valid_unique["__value"].to_list()]
         all_x = [float(v) for v in indexed[timestamp_col].cast(pl.Float64).to_list()]
 
-        method = "linear_interp"
-        if SCIPY_AVAILABLE and _UnivariateSpline is not None and len(x) >= 4:
+        corrupted_mask = (
+            indexed.select([pl.col("__rowid"), pl.col("__corrupted")])
+            .sort("__rowid")
+            .get_column("__corrupted")
+            .to_list()
+        )
+        max_gap_length = self._max_gap_length([bool(v) for v in corrupted_mask])
+        requested_context_cols = [col for col in (context_cols or []) if col != target_col and col != timestamp_col]
+        context_evidence = self._context_evidence_score(indexed, requested_context_cols)
+        use_physics_constraint = max_gap_length > max(1, int(short_gap_limit)) and context_evidence >= 0.12
+
+        method = "deterministic_linear"
+        if use_physics_constraint and SCIPY_AVAILABLE and _UnivariateSpline is not None and len(x) >= 4:
             try:
                 if NUMPY_AVAILABLE and np is not None:
                     spline = _UnivariateSpline(np.asarray(x, dtype=float), np.asarray(y, dtype=float), s=self.spline_smoothing)
@@ -217,9 +298,10 @@ class GaussPhysicsImputer:
                 else:
                     spline = _UnivariateSpline(x, y, s=self.spline_smoothing)
                     reconstructed_sorted = [float(v) for v in spline(all_x)]
-                method = "spline"
+                method = "physics_constrained_spline"
             except Exception:
                 reconstructed_sorted = _linear_interp(all_x, x, y)
+                method = "physics_constrained_linear"
         else:
             reconstructed_sorted = _linear_interp(all_x, x, y)
 
@@ -235,20 +317,32 @@ class GaussPhysicsImputer:
             .to_list()
         )
 
-        corrupted_mask = (
-            indexed.select([pl.col("__rowid"), pl.col("__corrupted")])
-            .sort("__rowid")
-            .get_column("__corrupted")
-            .to_list()
-        )
-
         anomaly_count = int(sum(1 for value in corrupted_mask if value))
         integrity_score = round(max(0.0, 1.0 - (anomaly_count / max(df.height, 1))), 6)
-        insight = (
-            "Divergence detected in corrupted bits suggests local radiation shield saturation."
-            if integrity_score < 0.9
-            else "Data reconstructed via physics-spline. Operational state nominal."
+        gap_confidence = round(max(0.0, 1.0 - max_gap_length / max(df.height * 0.4, 1)), 6)
+        overall_confidence = round(
+            max(
+                0.0,
+                min(
+                    1.0,
+                    integrity_score * 0.55 +
+                    gap_confidence * 0.25 +
+                    context_evidence * 0.2,
+                ),
+            ),
+            6,
         )
+        if method.startswith("physics_constrained"):
+            insight = (
+                "Telemetry gap reconstructed with physics-constrained continuity using supporting orbital/context evidence."
+            )
+            tier = 2
+        elif integrity_score < 0.9:
+            insight = "Divergence detected in corrupted bits suggests local radiation shield saturation."
+            tier = 1
+        else:
+            insight = "Telemetry gap reconstructed through deterministic continuity. Operational state nominal."
+            tier = 1
 
         _directive_cleanup()
         return ReconstructionResult(
@@ -260,6 +354,18 @@ class GaussPhysicsImputer:
             insight=insight,
             reconstructed_series=[float(v) for v in reconstructed],
             corrupted_mask=[bool(v) for v in corrupted_mask],
+            provenance={
+                "tier": tier,
+                "mode": method,
+                "context_columns": requested_context_cols,
+                "imputed_points": anomaly_count,
+                "max_gap_length": max_gap_length,
+            },
+            confidence={
+                "overall": overall_confidence,
+                "gap": gap_confidence,
+                "context": context_evidence,
+            },
             error=None,
         ).as_dict()
 

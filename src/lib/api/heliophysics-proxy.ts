@@ -4,9 +4,9 @@ import type {
   BackendHealthResponse,
   CanonicalSpaceWeatherPoint,
   DashboardLatestResponse,
-  DeepSeekSafeCommandExecuteResponse,
-  DeepSeekSafeCommandPlanResponse,
-  DeepSeekPlannerResponse,
+  ModelSafeCommandExecuteResponse,
+  ModelSafeCommandPlanResponse,
+  ModelPlannerResponse,
   FeedbackSubmissionRequest,
   FeedbackSubmissionResponse,
   MissionCoreSnapshotResponse,
@@ -15,9 +15,15 @@ import type {
   OpsCommandMetricsResponse,
   OpsCommandQueueResponse,
   OpsCommandSnapshotResponse,
+  OpsDelegationApprovalRequest,
+  OpsDelegationQueueResponse,
+  SpaceDomainResponse,
   SourceStatus,
   ThreatSummaryResponse,
+  WorkerResult,
+  WorkerStatusSnapshot,
 } from "@/lib/types/space-weather";
+import type { SevenZoneAssessment } from "@/lib/types/seven-zone";
 import { getAuthHeaders } from "@/lib/api/auth";
 import { getApiBaseUrl } from "@/lib/api/base-url";
 import {
@@ -26,6 +32,8 @@ import {
   parseDashboardLatestResponse,
   parseMissionCoreSnapshotResponse,
   parseMmsReconnectionFeedResponse,
+  parseSpaceDomainResponse,
+  parseSevenZoneAssessment,
   parseSourceStatusResponse,
   parseSpaceWeatherFeedResponse,
   parseThreatSummaryResponse,
@@ -161,6 +169,32 @@ export async function fetchSourceStatus(): Promise<SourceStatus[]> {
     ...(s.message !== undefined && { message: s.message }),
   }));
   return sources;
+}
+
+export async function fetchSpaceDomainSnapshot(): Promise<SpaceDomainResponse> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ssa/space-domain`,
+    {
+      method: "GET",
+    },
+    { scope: "space-domain snapshot" },
+  );
+  if (!response.ok) {
+    throwHelioHttpError("space-domain snapshot", response.status);
+  }
+  return parseSpaceDomainResponse(await response.json()) as SpaceDomainResponse;
+}
+
+export async function fetchSevenZoneAssessment(): Promise<SevenZoneAssessment> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ssa/seven-zone`,
+    { method: "GET" },
+    { scope: "seven-zone advisory" },
+  );
+  if (!response.ok) {
+    throwHelioHttpError("seven-zone advisory", response.status);
+  }
+  return parseSevenZoneAssessment(await response.json()) as SevenZoneAssessment;
 }
 
 export async function fetchThreatSummary(
@@ -442,7 +476,7 @@ export async function queueOpsCommand(
   return json;
 }
 
-export async function planOpsCommandWithDeepSeek(
+export async function planOpsCommandWithModel(
   payload: {
     prompt: string;
     context?: Record<string, unknown>;
@@ -451,9 +485,9 @@ export async function planOpsCommandWithDeepSeek(
     model?: string;
     idempotency_key?: string;
   },
-): Promise<DeepSeekPlannerResponse> {
+): Promise<ModelPlannerResponse> {
   const response = await fetchWithResilience(
-    `${BASE_URL}/api/ops/command/deepseek`,
+    `${BASE_URL}/api/ops/command/model`,
     {
       method: "POST",
       headers: {
@@ -463,17 +497,17 @@ export async function planOpsCommandWithDeepSeek(
       body: JSON.stringify(payload),
     },
     {
-      scope: "deepseek command planner",
+      scope: "model command planner",
       retries: 1,
       timeoutMs: 20_000,
     },
   );
   const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   if (!response.ok) {
-    const error = typeof json.error === "string" ? json.error : `deepseek planner HTTP ${response.status}`;
+    const error = typeof json.error === "string" ? json.error : `model planner HTTP ${response.status}`;
     throw new Error(error);
   }
-  return json as unknown as DeepSeekPlannerResponse;
+  return json as unknown as ModelPlannerResponse;
 }
 
 export async function fetchOpsCommandJob(jobId: string): Promise<OpsCommandJob> {
@@ -515,15 +549,15 @@ export async function fetchOpsCommandMetrics(): Promise<OpsCommandMetricsRespons
   return json as unknown as OpsCommandMetricsResponse;
 }
 
-export async function planDeepSeekSafeCommand(
+export async function planModelSafeCommand(
   payload: {
     prompt: string;
     context?: Record<string, unknown>;
     model?: string;
   },
-): Promise<DeepSeekSafeCommandPlanResponse> {
+): Promise<ModelSafeCommandPlanResponse> {
   const response = await fetchWithResilience(
-    `${BASE_URL}/api/ops/command/deepseek/run/plan`,
+    `${BASE_URL}/api/ops/command/model/run/plan`,
     {
       method: "POST",
       headers: {
@@ -533,7 +567,7 @@ export async function planDeepSeekSafeCommand(
       body: JSON.stringify(payload),
     },
     {
-      scope: "deepseek safe command plan",
+      scope: "model safe command plan",
       retries: 1,
       timeoutMs: 20_000,
     },
@@ -543,18 +577,18 @@ export async function planDeepSeekSafeCommand(
     const error = typeof json.error === "string" ? json.error : `safe command plan HTTP ${response.status}`;
     throw new Error(error);
   }
-  return json as unknown as DeepSeekSafeCommandPlanResponse;
+  return json as unknown as ModelSafeCommandPlanResponse;
 }
 
-export async function executeDeepSeekSafeCommand(
+export async function executeModelSafeCommand(
   payload: {
     approval_token?: string;
     simulate?: boolean;
     plan?: Record<string, unknown>;
   },
-): Promise<DeepSeekSafeCommandExecuteResponse> {
+): Promise<ModelSafeCommandExecuteResponse> {
   const response = await fetchWithResilience(
-    `${BASE_URL}/api/ops/command/deepseek/run/execute`,
+    `${BASE_URL}/api/ops/command/model/run/execute`,
     {
       method: "POST",
       headers: {
@@ -564,7 +598,7 @@ export async function executeDeepSeekSafeCommand(
       body: JSON.stringify(payload),
     },
     {
-      scope: "deepseek safe command execute",
+      scope: "model safe command execute",
       retries: 0,
       timeoutMs: 30_000,
     },
@@ -574,5 +608,178 @@ export async function executeDeepSeekSafeCommand(
     const error = typeof json.error === "string" ? json.error : `safe command execute HTTP ${response.status}`;
     throw new Error(error);
   }
-  return json as unknown as DeepSeekSafeCommandExecuteResponse;
+  return json as unknown as ModelSafeCommandExecuteResponse;
+}
+
+export interface OpsWorkerDispatchResponse {
+  task: Record<string, unknown>;
+  result: WorkerResult;
+  workers: WorkerStatusSnapshot[];
+  queuedApprovals: OpsDelegationQueueResponse["queuedApprovals"];
+  brokerPolicy: NonNullable<OpsDelegationQueueResponse["brokerPolicy"]>;
+}
+
+export async function fetchOpsWorkers(): Promise<{
+  workers: WorkerStatusSnapshot[];
+  brokerPolicy: NonNullable<OpsDelegationQueueResponse["brokerPolicy"]>;
+}> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ops/control/workers`,
+    {
+      headers: await getAuthHeaders(),
+    },
+    {
+      scope: "ops workers",
+      retries: 1,
+      timeoutMs: 8_000,
+    },
+  );
+  const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!response.ok) {
+    const error = typeof json.error === "string" ? json.error : `ops workers HTTP ${response.status}`;
+    throw new Error(error);
+  }
+  return json as unknown as {
+    workers: WorkerStatusSnapshot[];
+    brokerPolicy: NonNullable<OpsDelegationQueueResponse["brokerPolicy"]>;
+  };
+}
+
+export async function fetchOpsDelegationQueue(): Promise<OpsDelegationQueueResponse> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ops/control/delegation/queue`,
+    {
+      headers: await getAuthHeaders(),
+    },
+    {
+      scope: "ops delegation queue",
+      retries: 1,
+      timeoutMs: 8_000,
+    },
+  );
+  const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!response.ok) {
+    const error =
+      typeof json.error === "string"
+        ? json.error
+        : `ops delegation queue HTTP ${response.status}`;
+    throw new Error(error);
+  }
+  return json as unknown as OpsDelegationQueueResponse;
+}
+
+export async function dispatchOpsWorkerTask(payload: {
+  workerId?: string;
+  lane?: string;
+  kind: string;
+  priority?: string;
+  source?: string;
+  payload?: Record<string, unknown>;
+  relatedArtifacts?: string[];
+}): Promise<OpsWorkerDispatchResponse> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ops/control/delegation/dispatch`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(await getAuthHeaders()),
+      },
+      body: JSON.stringify(payload),
+    },
+    {
+      scope: "ops delegation dispatch",
+      retries: 1,
+      timeoutMs: 20_000,
+    },
+  );
+  const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!response.ok) {
+    const error =
+      typeof json.error === "string"
+        ? json.error
+        : `ops delegation dispatch HTTP ${response.status}`;
+    throw new Error(error);
+  }
+  return json as unknown as OpsWorkerDispatchResponse;
+}
+
+export async function approveOpsDelegationTask(
+  payload: OpsDelegationApprovalRequest,
+): Promise<{
+  result: WorkerResult;
+  workers: WorkerStatusSnapshot[];
+  queuedApprovals: OpsDelegationQueueResponse["queuedApprovals"];
+  brokerPolicy: NonNullable<OpsDelegationQueueResponse["brokerPolicy"]>;
+}> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ops/control/delegation/approve`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(await getAuthHeaders()),
+      },
+      body: JSON.stringify(payload),
+    },
+    {
+      scope: "ops delegation approve",
+      retries: 1,
+      timeoutMs: 12_000,
+    },
+  );
+  const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!response.ok) {
+    const error =
+      typeof json.error === "string"
+        ? json.error
+        : `ops delegation approve HTTP ${response.status}`;
+    throw new Error(error);
+  }
+  return json as unknown as {
+    result: WorkerResult;
+    workers: WorkerStatusSnapshot[];
+    queuedApprovals: OpsDelegationQueueResponse["queuedApprovals"];
+    brokerPolicy: NonNullable<OpsDelegationQueueResponse["brokerPolicy"]>;
+  };
+}
+
+export async function rejectOpsDelegationTask(
+  payload: OpsDelegationApprovalRequest,
+): Promise<{
+  result: WorkerResult;
+  workers: WorkerStatusSnapshot[];
+  queuedApprovals: OpsDelegationQueueResponse["queuedApprovals"];
+  brokerPolicy: NonNullable<OpsDelegationQueueResponse["brokerPolicy"]>;
+}> {
+  const response = await fetchWithResilience(
+    `${BASE_URL}/api/ops/control/delegation/reject`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(await getAuthHeaders()),
+      },
+      body: JSON.stringify(payload),
+    },
+    {
+      scope: "ops delegation reject",
+      retries: 1,
+      timeoutMs: 12_000,
+    },
+  );
+  const json = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!response.ok) {
+    const error =
+      typeof json.error === "string"
+        ? json.error
+        : `ops delegation reject HTTP ${response.status}`;
+    throw new Error(error);
+  }
+  return json as unknown as {
+    result: WorkerResult;
+    workers: WorkerStatusSnapshot[];
+    queuedApprovals: OpsDelegationQueueResponse["queuedApprovals"];
+    brokerPolicy: NonNullable<OpsDelegationQueueResponse["brokerPolicy"]>;
+  };
 }

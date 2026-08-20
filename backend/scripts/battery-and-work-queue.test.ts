@@ -68,7 +68,7 @@ test("getBatteryGuard enforces higher floor while discharging", () => {
 test("getBatteryGuard uses base floor when charging", () => {
   withEnv(
     {
-      BATTERY_PERCENT: "40",
+      BATTERY_PERCENT: "80",
       BATTERY_CHARGING: "true",
       BATTERY_POWER_SOURCE: "ac",
       ORCHESTRATOR_DISCHARGING_MIN_SAFE_BATTERY_PERCENT: "55",
@@ -78,7 +78,25 @@ test("getBatteryGuard uses base floor when charging", () => {
       assert.equal(guard.baseMinSafeBatteryPercent, 35);
       assert.equal(guard.effectiveMinSafeBatteryPercent, 35);
       assert.equal(guard.isLowBattery, false);
+      assert.equal(guard.powerFlow, "surplus");
+      assert.equal(guard.surplusPowerAvailable, true);
+      assert.equal(guard.batteryCareCapPercent, 90);
     }
   );
 });
 
+test("getBatteryGuard avoids surplus mode above the battery care cap", () => {
+  withEnv(
+    {
+      BATTERY_PERCENT: "95",
+      BATTERY_CHARGING: "true",
+      BATTERY_POWER_SOURCE: "ac",
+    },
+    () => {
+      const guard = getBatteryGuard(process.cwd(), 25);
+      assert.equal(guard.isLowBattery, false);
+      assert.equal(guard.powerFlow, "balanced");
+      assert.equal(guard.surplusPowerAvailable, false);
+    }
+  );
+});

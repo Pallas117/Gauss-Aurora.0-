@@ -1,9 +1,10 @@
 import { createRoot } from "react-dom/client";
-import App from "./Cybertiger.tsx";
+import App from "./App.jsx";
 import { reportFailure, reportExitIfDirty } from "./lib/failure-reporting";
 import "./index.css";
 import "./styles/theme-gauss-ui.css";
 import "./styles/crt.css";
+import "./styles/gauss-platform.css";
 
 if (typeof window !== "undefined") {
   window.onerror = (message, source, lineno, colno, error) => {

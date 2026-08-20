@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-03-11T10:49:26.008Z",
+  "inboxDir": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/lessons/inbox",
+  "processedCount": 1,
+  "ragIndex": {
+    "attempted": true,
+    "ok": true,
+    "status": 200,
+    "detail": "{\"ok\":true,\"chunkCount\":57,\"indexedDocumentCount\":9,\"manifestPath\":\"/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/research/documentation-rag/.gauss-doc-trust.json\"}"
+  },
+  "items": [
+    {
+      "sourcePath": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/lessons/inbox/van-allen-probe-a-reentry-round-4.json",
+      "destinationPath": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/research/documentation-rag/mission-lessons/van-allen-probe-a-reentry-lesson-deposit.md",
+      "processedPath": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/lessons/processed/van-allen-probe-a-reentry-round-4.json",
+      "usedLocalModel": true
+    }
+  ]
+}

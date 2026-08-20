@@ -53,9 +53,9 @@ impl std::fmt::Display for SymbolType {
 
 /// Serde helper: PathBuf as string for JSON persist/load (e.g. work-queue-issues.json).
 mod path_serde {
-    use std::path::PathBuf;
     use serde::{Deserialize, Deserializer, Serializer};
-    pub fn serialize<S>(path: &PathBuf, s: S) -> Result<S::Ok, S::Error>
+    use std::path::{Path, PathBuf};
+    pub fn serialize<S>(path: &Path, s: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -447,7 +447,7 @@ impl CodeIndexer {
     /// Check if a function has tests
     fn is_function_tested(&self, content: &str, fn_name: &str) -> bool {
         content.contains(&format!("fn test_{}", fn_name))
-            || content.contains(&format!("#[test]")) && content.contains(&format!("{}(", fn_name))
+            || content.contains("#[test]") && content.contains(&format!("{}(", fn_name))
     }
 
     /// Check if a type has tests
@@ -504,8 +504,7 @@ impl CodeIndexer {
 /// Roots are read from ORCHESTRATOR_SCAN_ROOTS (comma-separated) or default to ["./src", "./gauss-orchestrator/src"].
 pub fn scan_roots_from_env() -> Vec<PathBuf> {
     let default = "./src,./gauss-orchestrator/src";
-    let s = std::env::var("ORCHESTRATOR_SCAN_ROOTS")
-        .unwrap_or_else(|_| default.to_string());
+    let s = std::env::var("ORCHESTRATOR_SCAN_ROOTS").unwrap_or_else(|_| default.to_string());
     s.split(',')
         .map(|p| PathBuf::from(p.trim()))
         .filter(|p| !p.as_os_str().is_empty())
@@ -642,49 +641,48 @@ impl CodeAnalyzer {
 
         for symbol in &self.index.symbols {
             // Check for snake_case in function names
-            if symbol.symbol_type == SymbolType::Function {
-                if symbol.name.contains('_')
-                    && !symbol.name.chars().all(|c| c.is_lowercase() || c == '_')
-                {
-                    issues.push(CodeIssue {
-                        id: format!("naming-{}", symbol.name),
-                        severity: IssueSeverity::Info,
-                        issue_type: IssueType::NamingViolation,
-                        file: symbol.file.clone(),
-                        line_number: symbol.line_number,
-                        symbol: Some(symbol.name.clone()),
-                        description: format!("Function '{}' should use snake_case", symbol.name),
-                        suggested_fix: format!("Rename to: {}", symbol.name.to_lowercase()),
-                        pattern_violated: Some("rust_naming_conventions".to_string()),
-                    });
-                }
+            if symbol.symbol_type == SymbolType::Function
+                && symbol.name.contains('_')
+                && !symbol.name.chars().all(|c| c.is_lowercase() || c == '_')
+            {
+                issues.push(CodeIssue {
+                    id: format!("naming-{}", symbol.name),
+                    severity: IssueSeverity::Info,
+                    issue_type: IssueType::NamingViolation,
+                    file: symbol.file.clone(),
+                    line_number: symbol.line_number,
+                    symbol: Some(symbol.name.clone()),
+                    description: format!("Function '{}' should use snake_case", symbol.name),
+                    suggested_fix: format!("Rename to: {}", symbol.name.to_lowercase()),
+                    pattern_violated: Some("rust_naming_conventions".to_string()),
+                });
             }
 
             // Check for PascalCase in struct/type names
-            if matches!(symbol.symbol_type, SymbolType::Struct | SymbolType::Enum) {
-                if !symbol.name.chars().next().unwrap_or('a').is_uppercase() {
-                    issues.push(CodeIssue {
-                        id: format!("naming-{}", symbol.name),
-                        severity: IssueSeverity::Info,
-                        issue_type: IssueType::NamingViolation,
-                        file: symbol.file.clone(),
-                        line_number: symbol.line_number,
-                        symbol: Some(symbol.name.clone()),
-                        description: format!("Type '{}' should use PascalCase", symbol.name),
-                        suggested_fix: format!(
-                            "Rename to: {}",
-                            symbol
-                                .name
-                                .chars()
-                                .next()
-                                .unwrap()
-                                .to_uppercase()
-                                .to_string()
-                                + &symbol.name[1..]
-                        ),
-                        pattern_violated: Some("rust_naming_conventions".to_string()),
-                    });
-                }
+            if matches!(symbol.symbol_type, SymbolType::Struct | SymbolType::Enum)
+                && !symbol.name.chars().next().unwrap_or('a').is_uppercase()
+            {
+                issues.push(CodeIssue {
+                    id: format!("naming-{}", symbol.name),
+                    severity: IssueSeverity::Info,
+                    issue_type: IssueType::NamingViolation,
+                    file: symbol.file.clone(),
+                    line_number: symbol.line_number,
+                    symbol: Some(symbol.name.clone()),
+                    description: format!("Type '{}' should use PascalCase", symbol.name),
+                    suggested_fix: format!(
+                        "Rename to: {}",
+                        symbol
+                            .name
+                            .chars()
+                            .next()
+                            .unwrap()
+                            .to_uppercase()
+                            .to_string()
+                            + &symbol.name[1..]
+                    ),
+                    pattern_violated: Some("rust_naming_conventions".to_string()),
+                });
             }
         }
 

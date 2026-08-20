@@ -1,0 +1,16 @@
+{
+  "profiles": [
+    {
+      "systemId": "example-constellation",
+      "namePatterns": ["EXAMPLE"],
+      "missionType": "communications_leo",
+      "operator": "authoritative operator or registry owner",
+      "expectedNoradIds": ["12345", "12346"],
+      "expectedObjectCount": 2,
+      "observedAt": "2026-07-17T00:00:00Z",
+      "source": "operator fleet registry",
+      "provenanceUrls": ["https://example.invalid/authoritative-fleet-record"],
+      "notes": "Replace with an authoritative, date-stamped fleet manifest."
+    }
+  ]
+}

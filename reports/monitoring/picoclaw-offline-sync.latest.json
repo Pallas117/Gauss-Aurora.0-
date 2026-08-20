@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-03-11T10:21:46.494Z",
+  "repoRoot": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora",
+  "workspace": "/Users/josh/.picoclaw/workspace",
+  "storePath": "/Users/josh/.picoclaw/workspace/cron/jobs.json",
+  "installedJobs": [
+    {
+      "id": "fetch-self-repair",
+      "name": "Fetch Self-Repair",
+      "enabled": true,
+      "schedule": "every 43200s"
+    },
+    {
+      "id": "service-reanimator",
+      "name": "Service Reanimator",
+      "enabled": true,
+      "schedule": "every 43200s"
+    },
+    {
+      "id": "offline-repair-loop",
+      "name": "Offline Repair Loop",
+      "enabled": true,
+      "schedule": "every 43200s"
+    },
+    {
+      "id": "auth-env-guard",
+      "name": "Auth Env Guard",
+      "enabled": true,
+      "schedule": "every 43200s"
+    }
+  ]
+}

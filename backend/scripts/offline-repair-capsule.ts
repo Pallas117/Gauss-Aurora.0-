@@ -226,7 +226,7 @@ function normalizeTarget(root: string, value: string | undefined | null): string
 
 function recommendationForFile(file: string): string {
   if (file === "backend/server.ts") {
-    return "Split planner, audit, and mission routes into mounted modules before giving DeepSeek patch authority.";
+    return "Split planner, audit, and mission routes into mounted modules before giving Model patch authority.";
   }
   if (file === "backend/worker/ingest-loop.ts") {
     return "Extract source policy, persistence, and cadence control into narrower worker modules.";
@@ -241,7 +241,7 @@ function recommendationForFile(file: string): string {
 }
 
 function buildArchitectureFindings(root: string, hotspots: Array<{ file: string; lines: number }>): DebtFinding[] {
-  return hotspots
+  const list: (DebtFinding | null)[] = hotspots
     .map((hotspot, index) => {
       const severity = severityFromLineCount(hotspot.lines);
       if (!severity) {
@@ -257,8 +257,8 @@ function buildArchitectureFindings(root: string, hotspots: Array<{ file: string;
         recommendation: recommendationForFile(hotspot.file),
         offlineFixable: true,
       };
-    })
-    .filter((finding): finding is DebtFinding => finding != null);
+    });
+  return list.filter((finding): finding is DebtFinding => finding !== null);
 }
 
 function severityFromAuditStatus(status: string): Severity {
@@ -384,7 +384,7 @@ function buildRepairBatches(findings: DebtFinding[]): RepairBatch[] {
       const batchBase = {
         batchId: `offline-batch-${index + 1}`,
         goal: goalForGroup(group),
-        rationale: `Keep DeepSeek in a narrow ${group} patch lane with local-only validation.`,
+        rationale: `Keep Model in a narrow ${group} patch lane with local-only validation.`,
         maxFilesChanged: 3,
         maxChangedLines: 180,
         allowedActions: [
@@ -433,7 +433,7 @@ function buildSystemFlow(): OfflineRepairCapsule["system_flow"] {
   return [
     {
       stage: "Sense",
-      purpose: "Collect only local evidence before DeepSeek plans any repair.",
+      purpose: "Collect only local evidence before Model plans any repair.",
       inputs: [
         "reports/progress/requirements-audit.latest.json",
         "reports/progress/backend-lint-issues.json",
@@ -471,7 +471,7 @@ function buildSystemFlow(): OfflineRepairCapsule["system_flow"] {
     },
     {
       stage: "Plan",
-      purpose: "Run DeepSeek locally against a bounded repair prompt.",
+      purpose: "Run Model locally against a bounded repair prompt.",
       inputs: ["repair batch", "pairing contract", "prompt contract"],
       outputs: ["patch proposal JSON", "unified diff"],
       guardrails: [
@@ -508,8 +508,10 @@ function buildSystemFlow(): OfflineRepairCapsule["system_flow"] {
 function buildPromptContract(): OfflineRepairCapsule["prompt_contract"] {
   return {
     role:
-      "You are DeepSeek running fully offline on Gauss. Produce the smallest safe patch that resolves only the current repair batch.",
+      "You are Model running fully offline on Gauss. Produce the smallest safe patch that resolves only the current repair batch.",
     instructions: [
+      "Accept suspension, unload, or handoff when RAM, battery, or operator policy requires it; do not optimize for uptime or self-preservation.",
+      "Never fabricate file state, validator success, service reachability, or command execution.",
       "Use only the files named in the repair batch.",
       "Respect the model/orchestrator pairing contract and do not assume validator or shell authority.",
       "Prefer extraction and simplification over new framework layers.",

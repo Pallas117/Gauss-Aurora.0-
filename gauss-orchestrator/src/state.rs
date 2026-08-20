@@ -71,7 +71,7 @@ pub fn get_last_operator_decision() -> Option<String> {
 /// Return newest telegram feed entries, newest-first.
 pub fn get_telegram_feed(limit: usize) -> Vec<TelegramFeedEntry> {
     if let Ok(guard) = TELEGRAM_FEED_BUFFER.lock() {
-        let take = limit.max(1).min(200);
+        let take = limit.clamp(1, 200);
         guard.iter().rev().take(take).cloned().collect()
     } else {
         Vec::new()
@@ -98,7 +98,9 @@ mod tests {
     }
 
     fn clear_analysis_buffer() {
-        let mut guard = ANALYSIS_BUFFER.lock().expect("analysis buffer lock poisoned");
+        let mut guard = ANALYSIS_BUFFER
+            .lock()
+            .expect("analysis buffer lock poisoned");
         guard.clear();
     }
 
@@ -125,10 +127,18 @@ mod tests {
             push_analysis(sample_analysis(idx));
         }
 
-        let guard = ANALYSIS_BUFFER.lock().expect("analysis buffer lock poisoned");
+        let guard = ANALYSIS_BUFFER
+            .lock()
+            .expect("analysis buffer lock poisoned");
         assert_eq!(guard.len(), 1000);
-        assert_eq!(guard.first().map(|item| item.file_name.as_str()), Some("sample-5.csv"));
-        assert_eq!(guard.last().map(|item| item.file_name.as_str()), Some("sample-1004.csv"));
+        assert_eq!(
+            guard.first().map(|item| item.file_name.as_str()),
+            Some("sample-5.csv")
+        );
+        assert_eq!(
+            guard.last().map(|item| item.file_name.as_str()),
+            Some("sample-1004.csv")
+        );
 
         drop(guard);
         clear_analysis_buffer();

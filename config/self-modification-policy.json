@@ -1,0 +1,38 @@
+{
+  "schema_version": "gauss-self-modification-policy-v1",
+  "mode": "proposal_only",
+  "runtime_apply": false,
+  "spacecraft_apply": false,
+  "approval_required": true,
+  "signature_required_for_apply": true,
+  "max_patch_bytes": 262144,
+  "max_changed_files": 16,
+  "max_changed_lines": 800,
+  "allowed_path_prefixes": [
+    "src/",
+    "backend/",
+    "gauss-orchestrator/src/",
+    "ml/",
+    "tests/"
+  ],
+  "forbidden_path_prefixes": [
+    ".env",
+    ".github/workflows/",
+    "config/",
+    "containers/",
+    "docker-compose",
+    "scripts/process/",
+    "scripts/tailscale/",
+    "supabase/migrations/",
+    "package.json",
+    "package-lock.json"
+  ],
+  "required_validation_commands": [
+    "npm run develop:verify",
+    "npm run lint"
+  ],
+  "full_validation_commands": [
+    "npm test",
+    "npm run build"
+  ]
+}

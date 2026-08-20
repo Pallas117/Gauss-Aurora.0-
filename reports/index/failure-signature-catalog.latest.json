@@ -1,0 +1,12 @@
+{
+  "generatedAt": "2026-05-08T07:53:15.733Z",
+  "count": 1,
+  "signatures": [
+    {
+      "id": "debug-1",
+      "source": "reports/orchestrator/sweep-debug.json",
+      "summary": "{\"profile\":\"low-power\",\"battery\":25,\"minSafeBattery\":10,\"failures\":[],\"failuresCount\":0,\"completedAt\":\"2026-03-02T16:09:16.403Z\"}",
+      "fingerprint": "{\"profile\":\"low-power\",\"battery\":25,\"minsafebattery\":10,\"failures\":[],\"failurescount\":0,\"completedat\":\"2026-03-02t16:09:"
+    }
+  ]
+}

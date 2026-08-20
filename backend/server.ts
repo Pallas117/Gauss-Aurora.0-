@@ -1,7 +1,8 @@
 import http from "node:http";
 import { randomUUID } from "node:crypto";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, appendFileSync } from "node:fs";
+import os from "node:os";
+import path, { join } from "node:path";
 import cors from "cors";
 import express from "express";
 import type { Request, Response, NextFunction } from "express";
@@ -21,7 +22,8 @@ import {
   securityHeaders,
   createCyberTigerMiddleware,
 } from "./middleware/security.js";
-import { CyberTigerDaemon } from "./cybertiger/daemon.js";
+import { getCyberTiger } from "./cybertiger/daemon.js";
+import { getSlackConnector } from "./cybertiger/slack-connector.js";
 import {
   claimOpsCommandJob,
   finalizeOpsCommandJob,
@@ -40,7 +42,6 @@ import {
 import { hydratePersistedConjunctionState } from "./ssa/conjunction-store.js";
 import {
   inferNowcast,
-  triggerTraining,
 } from "./ml-client/client.js";
 import {
   getLatestCanonical,
@@ -48,11 +49,15 @@ import {
   getSatelliteObjects,
   getSourceStatus,
 } from "./state.js";
-import { getRuntimeMemoryPressureSnapshot } from "./runtime/memory-pressure.js";
+import {
+  toMemoryGovernorHealth,
+} from "./runtime/memory-pressure.js";
+import { getTrackedRuntimeMemoryPressureSnapshot } from "./runtime/limit-context-recorder.js";
 import {
   parseLookback,
   parseEnvBool,
   parseEnvInt,
+  detectTailscaleIp,
 } from "./utils.js";
 import { IngestionWorker } from "./worker/ingest-loop.js";
 import {
@@ -77,15 +82,29 @@ import { mountConjunctionInteropRoutes } from "./routes/conjunction-interop.js";
 import { mountMissionRoutes } from "./routes/mission.js";
 import { mountAiRoutes } from "./routes/ai.js";
 import { mountTuringRoutes } from "./routes/turing.js";
+import { mountRadiationWorkRoutes } from "./routes/radiation-work.js";
+import { mountProcessingRoutes } from "./routes/processing.js";
+import { mountMeshRoutes } from "./routes/mesh.js";
+import { mountNetworkRoutes } from "./routes/network.js";
+import { assertMeshPolicy } from "./mesh/config.js";
+import { getTuringAutoscaler } from "./turing/autoscaler.js";
 import { mountSecurityRoutes } from "./routes/security.js";
 import { mountIngestRoutes } from "./routes/ingest.js";
 import { mountFeedRoutes } from "./routes/feed.js";
 import { mountSsaRoutes } from "./routes/ssa.js";
 import { mountBillingRoutes } from "./routes/billing.js";
 import { mountOpsControlRoutes } from "./routes/ops-control.js";
+import {
+  assertDataResidencyPolicy,
+  assertProductionSecurityProfile,
+} from "./security/data-residency.js";
+import {
+  startRadiationWorkScheduler,
+  stopRadiationWorkScheduler,
+} from "./turing/radiation-work.js";
 
 const app = express();
-const cyberTiger = new CyberTigerDaemon();
+const cyberTiger = getCyberTiger();
 const feedbackEvents: FeedbackEvent[] = [];
 
 let opsCommandRuntime: OpsCommandRuntime;
@@ -222,6 +241,7 @@ function isPrivateNetworkHost(hostname: string): boolean {
   }
   const [a, b] = parts;
   if (a === 10) return true;
+  if (a === 100 && b >= 64 && b <= 127) return true; // Tailscale VPN range (100.64.0.0/10)
   if (a === 172 && b >= 16 && b <= 31) return true;
   if (a === 192 && b === 168) return true;
   if (a === 169 && b === 254) return true;
@@ -261,11 +281,31 @@ app.use(securityHeaders);
 const cyberTigerMiddleware = createCyberTigerMiddleware(cyberTiger);
 
 app.get("/health", (_req, res) => {
-  res.json({
-    ok: true,
-    timestamp: new Date().toISOString(),
-    memory: getRuntimeMemoryPressureSnapshot(),
-  });
+  try {
+    const memorySnapshot = getTrackedRuntimeMemoryPressureSnapshot("health", {
+      route: "/health",
+    });
+    const cpus = os.cpus();
+    const load = os.loadavg();
+    const cpuUsage = cpus.length > 0 ? Math.round((load[0] / cpus.length) * 100) : 0;
+
+    res.json({
+      ok: true,
+      timestamp: new Date().toISOString(),
+      memory: {
+        ...toMemoryGovernorHealth(memorySnapshot),
+        totalGb: memorySnapshot.totalRamGb,
+        usedGb: memorySnapshot.usedRamGb,
+        freeGb: memorySnapshot.freeRamGb,
+      },
+      cpu: {
+        usage: cpuUsage,
+      }
+    });
+  } catch (err) {
+    console.error("[health] Error generating health report:", err);
+    res.status(500).json({ ok: false, error: "Health probe failed" });
+  }
 });
 app.use("/openmct", express.static(join(process.cwd(), "openmct")));
 app.use("/api", cyberTigerMiddleware);
@@ -279,6 +319,10 @@ mountConjunctionInteropRoutes(app, { requireRole, requireClearance, withAsyncMid
 mountMissionRoutes(app, { cyberTiger });
 mountAiRoutes(app);
 mountTuringRoutes(app);
+mountRadiationWorkRoutes(app);
+mountProcessingRoutes(app);
+mountMeshRoutes(app);
+mountNetworkRoutes(app);
 mountSecurityRoutes(app, { cyberTiger });
 mountIngestRoutes(app);
 mountFeedRoutes(app);
@@ -287,25 +331,36 @@ mountBillingRoutes(app);
 
 // --- 4. Ingestion Runtime Factory & Control Routes ---
 const server = http.createServer(app);
+const turingAutoscaler = getTuringAutoscaler();
+const MAX_WS_PAYLOAD_BYTES = 256 * 1024;
+const MAX_WS_BUFFERED_BYTES = 512 * 1024;
 
 const wsSpaceWeather = new WebSocketServer({
   server,
   path: "/ws/feed/space-weather",
   perMessageDeflate: false,
+  maxPayload: MAX_WS_PAYLOAD_BYTES,
 });
 const wsMmsRecon = new WebSocketServer({
   server,
   path: "/ws/feed/mms-reconnection",
   perMessageDeflate: false,
+  maxPayload: MAX_WS_PAYLOAD_BYTES,
 });
 
 type AuthedSocket = WebSocket & { auth?: AuthContext };
 
 function broadcast(wss: WebSocketServer, topic: string, payload: unknown): void {
   const body = JSON.stringify({ topic, payload, timestamp: new Date().toISOString() });
+  if (Buffer.byteLength(body, "utf8") > MAX_WS_PAYLOAD_BYTES) return;
   for (const client of wss.clients) {
     const socket = client as AuthedSocket;
     if (socket.readyState === WebSocket.OPEN && socket.auth) {
+      // Drop slow consumers before ws retains an unbounded outbound queue.
+      if (socket.bufferedAmount > MAX_WS_BUFFERED_BYTES) {
+        socket.terminate();
+        continue;
+      }
       client.send(body);
     }
   }
@@ -377,12 +432,33 @@ if (serveFrontendDist) {
 }
 
 // --- 5. Lifecycle & Startup ---
+// Validate before binding a socket. The network-only profile is deliberately
+// fail-closed so a misconfigured Kali deployment cannot process sensitive data
+// locally or silently fall back to a local model.
+assertDataResidencyPolicy();
+assertProductionSecurityProfile();
+assertMeshPolicy();
+
 const port = Number(process.env.PROXY_PORT ?? 3001);
 const defaultProxyHost = allowPrivateNetworkOrigins ? "0.0.0.0" : "127.0.0.1";
-const host = (process.env.PROXY_HOST ?? defaultProxyHost).trim() || defaultProxyHost;
+const PORT = process.env.PORT || 3001;
+let host = (process.env.PROXY_HOST ?? defaultProxyHost).trim() || defaultProxyHost;
+
+if (host.toLowerCase() === "tailscale") {
+  const tsIp = detectTailscaleIp();
+  if (tsIp) {
+    console.log(`[server] Hosting on Tailscale IP: ${tsIp}`);
+    host = tsIp;
+  } else {
+    console.warn(`[server] PROXY_HOST=tailscale requested, but Tailscale IP was not detected. Falling back to default: ${defaultProxyHost}`);
+    host = defaultProxyHost;
+  }
+}
 
 function shutdown() {
   console.log("[server] shutting down...");
+  turingAutoscaler.stop();
+  stopRadiationWorkScheduler();
   ingestionRuntime.stop("shutdown");
   wsSpaceWeather.close();
   wsMmsRecon.close();
@@ -398,11 +474,33 @@ server.listen(port, host, () => {
   void hydratePersistedConjunctionState()
     .catch(() => [])
     .finally(() => hydratePersistedSourceHealthState().finally(() => ingestionRuntime.start()));
+  turingAutoscaler.start();
+  startRadiationWorkScheduler();
   void recoverPersistedOpsJobs();
-  void checkLocalChatEngine().then(res => console.log(`[startup] Chat engine: ${res.message}`));
+  const startupMemory = getTrackedRuntimeMemoryPressureSnapshot("startup", {
+    route: "server.listen",
+  });
+  console.log(`[startup] Runtime status: ${startupMemory.level}`);
 });
 
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
   console.error("[server] Unhandled error:", err);
+  const logMsg = `[${new Date().toISOString()}] ${err?.message}\n${err?.stack}\n\n`;
+  try {
+    appendFileSync("/tmp/gauss-errors.log", logMsg);
+  } catch (e) {
+    console.error("Failed to write to log file:", e);
+  }
+
+  // Optional Slack notification for unhandled errors
+  const slack = getSlackConnector();
+  const errorMsg = `🚨 *Server Unhandled Error*\n` +
+    `Message: ${err?.message || "Unknown error"}\n` +
+    `Path: \`${req.path}\`\n` +
+    `Method: \`${req.method}\`\n` +
+    `Timestamp: ${new Date().toISOString()}`;
+  
+  void slack.notify(errorMsg).catch(e => console.error("[server] Slack notify error:", e));
+
   res.status(500).json({ error: "Internal server error" });
 });

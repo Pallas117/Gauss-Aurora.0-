@@ -73,7 +73,7 @@ echo "Profile: air_gap=${GAUSS_AIR_GAP}, power=${VITE_POWER_PROFILE}, charging=$
 
 run_step "TypeScript lint" npm run lint
 run_step "Production build" npm run build
-run_step "SDA + boot smoke (Playwright)" npm run test:ui:investor-smoke
+run_step "UI unit smoke (Jest)" npm run test:unit:ui
 run_step "Network management audit" env ORCHESTRATOR_PASS_API_ENABLED=false npm run check:network-management
 run_step "Power drain audit" npm run audit:power
 

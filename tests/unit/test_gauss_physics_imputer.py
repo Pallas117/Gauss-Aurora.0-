@@ -37,6 +37,8 @@ def test_reconstruct_telemetry_returns_actionable_payload() -> None:
     assert len(result["reconstructed_series"]) == frame.height
     assert len(result["corrupted_mask"]) == frame.height
     assert 0.0 <= float(result["integrity_score"]) <= 1.0
+    assert 0.0 <= float(result["confidence"]["overall"]) <= 1.0
+    assert result["provenance"]["tier"] in {1, 2}
     assert isinstance(result["insight"], str) and len(result["insight"]) > 0
 
 
@@ -76,7 +78,7 @@ def test_linear_fallback_when_scipy_disabled(monkeypatch: pytest.MonkeyPatch) ->
     result = imputer.reconstruct_telemetry(frame, "particleFlux")
 
     assert result["success"] is True
-    assert result["method"] == "linear_interp"
+    assert result["method"] == "deterministic_linear"
     assert len(result["reconstructed_series"]) == frame.height
 
 
@@ -103,3 +105,27 @@ def test_reconstruct_telemetry_invokes_gc_collect(monkeypatch: pytest.MonkeyPatc
 
     assert result["success"] is True
     assert len(collect_calls) >= 1, "reconstruct_telemetry should call gc.collect at least once"
+
+
+def test_reconstruct_telemetry_uses_physics_constraint_when_context_supports_long_gap() -> None:
+    imputer = GaussPhysicsImputer(min_valid_points=4)
+    frame = pl.DataFrame(
+        {
+            "timestamp": list(range(10)),
+            "particleFlux": [1.0, 1.1, 1.2, 8.0, 8.4, 8.7, 8.2, 1.3, 1.4, 1.5],
+            "altitudeKm": [420.0, 420.1, 420.2, 420.4, 420.5, 420.7, 420.9, 421.1, 421.2, 421.3],
+            "velocity": [7.6, 7.61, 7.62, 7.64, 7.65, 7.67, 7.69, 7.7, 7.71, 7.72],
+        }
+    )
+
+    result = imputer.reconstruct_telemetry(
+        frame,
+        "particleFlux",
+        context_cols=["altitudeKm", "velocity"],
+        short_gap_limit=2,
+    )
+
+    assert result["success"] is True
+    assert result["provenance"]["tier"] == 2
+    assert result["provenance"]["context_columns"] == ["altitudeKm", "velocity"]
+    assert result["confidence"]["context"] > 0

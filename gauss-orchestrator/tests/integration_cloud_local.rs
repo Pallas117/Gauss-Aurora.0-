@@ -11,7 +11,9 @@ fn can_bind_loopback() -> bool {
 #[tokio::test]
 async fn test_route_to_local_posts_and_returns_local() {
     if !can_bind_loopback() {
-        eprintln!("Skipping test_route_to_local_posts_and_returns_local: loopback bind not permitted.");
+        eprintln!(
+            "Skipping test_route_to_local_posts_and_returns_local: loopback bind not permitted."
+        );
         return;
     }
 
@@ -73,7 +75,7 @@ async fn test_route_to_local_posts_and_returns_local() {
     let dec = res.unwrap();
     use gauss_orchestrator::types::RoutingTarget;
     assert!(matches!(dec.target, RoutingTarget::Local));
-    assert_eq!(dec.anonymized, false);
+    assert!(!dec.anonymized);
 }
 
 #[tokio::test]
@@ -132,5 +134,5 @@ async fn test_route_to_cloud_no_api_key_anonymizes() {
     let dec = res.unwrap();
     use gauss_orchestrator::types::RoutingTarget;
     assert!(matches!(dec.target, RoutingTarget::Cloud));
-    assert_eq!(dec.anonymized, true);
+    assert!(dec.anonymized);
 }

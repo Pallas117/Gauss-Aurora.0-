@@ -1,0 +1,276 @@
+{
+  "generatedAt": "2026-05-08T07:53:15.725Z",
+  "contracts": {
+    "backend/contracts/heliophysics-contract.test.ts": [],
+    "backend/contracts/heliophysics-contract.ts": [],
+    "backend/contracts/mission-core-contract.test.ts": [],
+    "backend/contracts/mission-core-contract.ts": [],
+    "backend/contracts/packet-ingest-contract.test.ts": [],
+    "backend/contracts/packet-ingest-contract.ts": []
+  },
+  "links": [
+    {
+      "route": "POST /api/ai/nowcast/infer",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "POST /api/ai/surya/forecast",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /api/ai/surya/flare",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "GET /session",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/auth-portal.spec.ts",
+        "tests/e2e/helpers/mockUiApis.ts",
+        "tests/e2e/network-transition.spec.ts",
+        "tests/e2e/ui-smoke.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /signup",
+      "tests": [
+        "tests/e2e/auth-portal.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /api/ssa/conjunctions/ingest",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "GET /api/ssa/conjunctions/latest",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "GET /status",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/helpers/mockUiApis.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/space-weather/5s",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/space-weather/latest",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/mms/reconnection",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/mms/reconnection/latest",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/aurora/map",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/sources/status",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/threats/latest",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/dashboard/latest",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/conftest.py",
+        "tests/e2e/auth-portal.spec.ts",
+        "tests/e2e/helpers/mockUiApis.ts",
+        "tests/e2e/network-transition.spec.ts",
+        "tests/e2e/ui-mobile-layout.spec.ts",
+        "tests/e2e/ui-smoke.spec.ts",
+        "tests/e2e/ui-ux-granular.spec.ts",
+        "tests/integration/test_fastapi_endpoints.py",
+        "tests/integration/test_packet_ingest_api.py",
+        "tests/integration/test_powersync_sync.py",
+        "tests/mobile/manus-ar.e2e.ts",
+        "tests/unit/test_dataset_builder.py",
+        "tests/unit/test_engine.py",
+        "tests/unit/test_infer_server_training_feedback.py"
+      ]
+    },
+    {
+      "route": "GET /latest",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/helpers/mockUiApis.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /api/ingest/telemetry/packets",
+      "tests": [
+        "tests/integration/test_packet_ingest_api.py"
+      ]
+    },
+    {
+      "route": "POST /api/ops/pipeline/triad",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "GET /api/mission/core/latest",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/conftest.py",
+        "tests/e2e/auth-portal.spec.ts",
+        "tests/e2e/helpers/mockUiApis.ts",
+        "tests/e2e/network-transition.spec.ts",
+        "tests/e2e/ui-mobile-layout.spec.ts",
+        "tests/e2e/ui-smoke.spec.ts",
+        "tests/e2e/ui-ux-granular.spec.ts",
+        "tests/integration/test_fastapi_endpoints.py",
+        "tests/integration/test_packet_ingest_api.py",
+        "tests/integration/test_powersync_sync.py",
+        "tests/mobile/manus-ar.e2e.ts",
+        "tests/unit/test_dataset_builder.py",
+        "tests/unit/test_engine.py",
+        "tests/unit/test_infer_server_training_feedback.py"
+      ]
+    },
+    {
+      "route": "PATCH /",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/conftest.py",
+        "tests/e2e/auth-portal.spec.ts",
+        "tests/e2e/helpers/mockUiApis.ts",
+        "tests/e2e/network-transition.spec.ts",
+        "tests/e2e/ui-mobile-layout.spec.ts",
+        "tests/e2e/ui-smoke.spec.ts",
+        "tests/e2e/ui-ux-granular.spec.ts",
+        "tests/integration/test_fastapi_endpoints.py",
+        "tests/integration/test_packet_ingest_api.py",
+        "tests/integration/test_powersync_sync.py",
+        "tests/mobile/manus-ar.e2e.ts",
+        "tests/unit/test_dataset_builder.py",
+        "tests/unit/test_engine.py",
+        "tests/unit/test_infer_server_training_feedback.py"
+      ]
+    },
+    {
+      "route": "GET /api/ops/command/latest",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /api/ops/command",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/ops/command/log",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "GET /api/ops/pipeline/triad/latest",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "GET /api/ops/audit/summary",
+      "tests": [
+        "tests/e2e/ui-ux-granular.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/security/cybertiger/status",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "GET /api/ssa/risk-zones",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/ssa/satellites",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/ssa/space-domain",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/turing/devices",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/turing/devices/summary",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    }
+  ]
+}

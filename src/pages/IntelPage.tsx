@@ -4,6 +4,7 @@ import { LockKeyhole, Share2 } from "lucide-react";
 import { AuthSessionModal } from "@/components/heliophysics/AuthSessionModal";
 import { ThreatActionCards } from "@/components/heliophysics/ThreatActionCards";
 import { GaussRagPanel } from "@/components/GaussRagPanel";
+import { MemoryGraphExplorer } from "@/components/MemoryGraphExplorer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,6 +88,8 @@ export default function IntelPage() {
             <GaussRagPanel className="rounded-none border-0 bg-transparent shadow-none" />
           </CardContent>
         </Card>
+
+        <MemoryGraphExplorer />
 
         <ThreatActionCards
           threatSummary={threatSummary.data}

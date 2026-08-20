@@ -1,0 +1,7 @@
+interface:
+  display_name: "Gauss Memory Systems"
+  short_description: "Optimize memory placement with evidence and bounded spill"
+  default_prompt: "Use $gauss-memory-systems to diagnose memory pressure and evaluate safe RAM, storage, unified-memory, and remote-compute placement for Gauss."
+
+policy:
+  allow_implicit_invocation: true

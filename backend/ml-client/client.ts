@@ -1,8 +1,8 @@
-import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import type { NowcastInferenceRequest, NowcastInferenceResponse } from "../types.js";
 import { evaluateInferenceUrgency } from "./probability-gate.js";
+import { getTrackedRuntimeMemoryPressureSnapshot } from "../runtime/limit-context-recorder.js";
 
 const DEFAULT_MODEL_VERSION = "unet-baseline-v1";
 const GATE_MODEL_VERSION = "gauss-gate-deterministic-v1";
@@ -192,7 +192,15 @@ function ragMethodPriorBias(request: NowcastInferenceRequest): number {
 
 export async function inferNowcast(
   request: NowcastInferenceRequest,
+  options: {
+    triggerMode?: "auto" | "manual";
+  } = {},
 ): Promise<NowcastInferenceResponse> {
+  const triggerMode = options.triggerMode ?? "auto";
+  const memoryGovernor = getTrackedRuntimeMemoryPressureSnapshot("ml-client", {
+    operation: "infer-nowcast",
+  });
+
   if (isGateEnabled()) {
     const gateDecision = evaluateInferenceUrgency(request);
     if (!gateDecision.is_urgent) {
@@ -288,19 +296,3 @@ function localDeterministicInference(
   };
 }
 
-export async function triggerTraining(): Promise<{ started: boolean; pid?: number; message: string }> {
-  return new Promise((resolve) => {
-    const script = process.env.TRAINING_SCRIPT_PATH ?? "ml/train/train_unet.py";
-    const child = spawn("python3", [script], {
-      stdio: "ignore",
-      detached: true,
-    });
-
-    child.on("error", (error) => {
-      resolve({ started: false, message: `Failed to start training: ${error.message}` });
-    });
-
-    child.unref();
-    resolve({ started: true, pid: child.pid, message: "Training started" });
-  });
-}

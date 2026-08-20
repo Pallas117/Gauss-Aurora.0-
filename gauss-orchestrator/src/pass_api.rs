@@ -2,20 +2,20 @@ use crate::network_management::{
     default_network_manager, DtnIslAuditReport, LinkState, NetworkError, NetworkManager,
     TransferPlan, TransferPlanRequest,
 };
-use crate::{approval_gate, state};
 use crate::pass_domain::{
     AntennaAdapter, CommandReceipt, FilePassStore, MockAntennaAdapter, PassScheduler, PassWindow,
     PlanPassRequest, SchedulePassRequest, SchedulerError, WindowSuggestion,
 };
+use crate::{approval_gate, state};
 use anyhow::Context;
+use axum::body::Body;
 use axum::extract::{Path, Query, State};
+use axum::http::Request;
 use axum::http::{Method, StatusCode};
 use axum::middleware::{self, Next};
+use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
-use axum::body::Body;
-use axum::http::Request;
-use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::HashMap;
@@ -124,20 +124,26 @@ impl PassApiState {
         idempotency_key: Option<&str>,
         make: impl FnOnce() -> CommandReceipt,
     ) -> CommandReceipt {
-        if let Some(_) = idempotency_key {
+        if idempotency_key.is_some() {
             if let Ok(cache) = self.idempotency_cache.read() {
                 if let Some(r) = cache.get(cache_key) {
                     let receipt = r.clone();
-                    self.append_command_log(pass_id, antenna_id, command_type, idempotency_key, &receipt);
+                    self.append_command_log(
+                        pass_id,
+                        antenna_id,
+                        command_type,
+                        idempotency_key,
+                        &receipt,
+                    );
                     return receipt;
                 }
             }
         }
         let receipt = make();
-        if let Some(_) = idempotency_key {
+        if idempotency_key.is_some() {
             if let Ok(mut cache) = self.idempotency_cache.write() {
                 if cache.len() >= IDEMPOTENCY_CACHE_MAX {
-                    let keys: Vec<String> = cache.keys().cloned().take(10).collect();
+                    let keys: Vec<String> = cache.keys().take(10).cloned().collect();
                     for k in keys {
                         cache.remove(&k);
                     }
@@ -210,7 +216,10 @@ fn scheduler_error(err: SchedulerError) -> (StatusCode, Json<ApiError>) {
 fn network_error(err: NetworkError) -> (StatusCode, Json<ApiError>) {
     let status = match err.code.as_str() {
         "no_route" => StatusCode::CONFLICT,
-        "invalid_route_request" | "invalid_payload" | "invalid_link" | "invalid_bandwidth"
+        "invalid_route_request"
+        | "invalid_payload"
+        | "invalid_link"
+        | "invalid_bandwidth"
         | "invalid_payload_limit" => StatusCode::BAD_REQUEST,
         "store_poisoned" => StatusCode::INTERNAL_SERVER_ERROR,
         _ => StatusCode::INTERNAL_SERVER_ERROR,
@@ -242,11 +251,12 @@ pub fn state_with_store(
     audit_max_entries: usize,
 ) -> PassApiState {
     let scheduler = match store_path {
-        Some(path) => PassScheduler::with_store(Arc::new(FilePassStore::new(path)))
-            .unwrap_or_else(|e| {
+        Some(path) => {
+            PassScheduler::with_store(Arc::new(FilePassStore::new(path))).unwrap_or_else(|e| {
                 tracing::warn!(path = %path, error = %e, "pass store load failed, using in-memory");
                 PassScheduler::default()
-            }),
+            })
+        }
         None => PassScheduler::default(),
     };
     PassApiState::new(
@@ -270,7 +280,11 @@ fn role_allowed(role: &str, method: &Method, path: &str) -> bool {
                 if path == "/passes/plan" {
                     return true;
                 }
-                if path.strip_prefix("/passes/").map(|s| s.ends_with("/schedule")).unwrap_or(false) {
+                if path
+                    .strip_prefix("/passes/")
+                    .map(|s| s.ends_with("/schedule"))
+                    .unwrap_or(false)
+                {
                     return true;
                 }
             }
@@ -282,7 +296,10 @@ fn role_allowed(role: &str, method: &Method, path: &str) -> bool {
 }
 
 fn is_mutation(method: &Method) -> bool {
-    matches!(*method, Method::POST | Method::PUT | Method::PATCH | Method::DELETE)
+    matches!(
+        *method,
+        Method::POST | Method::PUT | Method::PATCH | Method::DELETE
+    )
 }
 
 async fn rbac_audit_middleware(
@@ -383,7 +400,10 @@ pub fn router(state: PassApiState) -> Router {
         .route("/telegram/feed", get(telegram_feed))
         .route("/automation/approvals", get(approvals_feed))
         .route("/audit", get(audit_log))
-        .route_layer(middleware::from_fn_with_state(state_for_layer, rbac_audit_middleware))
+        .route_layer(middleware::from_fn_with_state(
+            state_for_layer,
+            rbac_audit_middleware,
+        ))
         .with_state(state)
 }
 
@@ -540,7 +560,11 @@ async fn point_antenna(
         &id,
         "slew_to",
         req.idempotency_key.as_deref(),
-        || state.antenna_adapter.slew_to(&id, req.az_deg, req.el_deg, &at),
+        || {
+            state
+                .antenna_adapter
+                .slew_to(&id, req.az_deg, req.el_deg, &at)
+        },
     );
     Ok(Json(receipt))
 }
@@ -576,7 +600,7 @@ async fn antenna_commands_log(
         let mut out: Vec<CommandLogEntry> = log
             .iter()
             .rev()
-            .filter(|e| pass_id.map_or(true, |p| e.pass_id == p))
+            .filter(|e| pass_id.is_none_or(|p| e.pass_id == p))
             .take(limit)
             .cloned()
             .collect();
@@ -644,7 +668,9 @@ async fn telegram_feed(Query(query): Query<FeedQuery>) -> Json<Vec<state::Telegr
     Json(state::get_telegram_feed(query.limit.unwrap_or(50)))
 }
 
-async fn approvals_feed(Query(query): Query<FeedQuery>) -> Json<Vec<approval_gate::ApprovalRequest>> {
+async fn approvals_feed(
+    Query(query): Query<FeedQuery>,
+) -> Json<Vec<approval_gate::ApprovalRequest>> {
     let limit = query.limit.unwrap_or(50);
     Json(approval_gate::list_recent(limit))
 }

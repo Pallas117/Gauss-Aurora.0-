@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gauss.local/schemas/mhd-fixture-v1.json",
+  "title": "Gauss deterministic MHD fixture",
+  "type": "object",
+  "required": ["schema", "units", "frames"],
+  "properties": {
+    "schema": { "const": "gauss-mhd-fixture-v1" },
+    "units": {
+      "type": "object",
+      "required": ["distance", "pressure"],
+      "properties": {
+        "distance": { "const": "Re" },
+        "pressure": { "const": "nPa" }
+      },
+      "additionalProperties": false
+    },
+    "frames": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "required": ["sampleIndex", "pressureNormalized", "standOffRe", "tailLengthRe", "reconnection", "beltIntensity", "fieldLineRadiiRe"],
+        "properties": {
+          "sampleIndex": { "type": "integer", "minimum": 0 },
+          "pressureNormalized": { "type": "number", "minimum": 0, "maximum": 1 },
+          "standOffRe": { "type": "number", "minimum": 5, "maximum": 15 },
+          "tailLengthRe": { "type": "number", "minimum": 20, "maximum": 64 },
+          "reconnection": { "type": "number", "minimum": 0, "maximum": 1 },
+          "beltIntensity": { "type": "number", "minimum": 0, "maximum": 1 },
+          "fieldLineRadiiRe": { "type": "array", "minItems": 16, "maxItems": 16, "items": { "type": "number", "minimum": 3.5, "maximum": 15 } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

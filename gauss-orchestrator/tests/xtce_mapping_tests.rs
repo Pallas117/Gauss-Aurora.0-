@@ -1,6 +1,6 @@
 use gauss_orchestrator::{
     config::OrchestratorConfig,
-    telemetry::{decoder_registry, mapping, quality, xtce, decode_and_map_packets, DecodedPacket},
+    telemetry::{decode_and_map_packets, decoder_registry, mapping, quality, xtce, DecodedPacket},
 };
 use std::path::PathBuf;
 
@@ -144,9 +144,18 @@ fn decode_and_map_packets_produces_canonical_shape_for_backend() {
     assert!(!resp.packets.is_empty());
     let packet = &resp.packets[0];
     let point = &packet.canonical_point;
-    assert!(point.get("solarWind").and_then(|s| s.get("speed")).is_some());
-    assert!(point.get("solarWind").and_then(|s| s.get("density")).is_some());
-    assert!(point.get("magneticField").and_then(|m| m.get("z")).is_some());
+    assert!(point
+        .get("solarWind")
+        .and_then(|s| s.get("speed"))
+        .is_some());
+    assert!(point
+        .get("solarWind")
+        .and_then(|s| s.get("density"))
+        .is_some());
+    assert!(point
+        .get("magneticField")
+        .and_then(|m| m.get("z"))
+        .is_some());
     let speed = point["solarWind"]["speed"].as_f64().unwrap();
     let density = point["solarWind"]["density"].as_f64().unwrap();
     let bz = point["magneticField"]["z"].as_f64().unwrap();

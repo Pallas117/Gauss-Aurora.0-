@@ -40,11 +40,18 @@ pub struct XtceDictionary {
 pub fn parse_parameter_set(xtce_content: &str) -> anyhow::Result<HashMap<String, String>> {
     let mut out = HashMap::new();
     // Match <Parameter name="..." parameterTypeRef="..." /> or with other attributes
-    let re = Regex::new(r#"<Parameter\s+name\s*=\s*"([^"]+)"\s+[^>]*parameterTypeRef\s*=\s*"([^"]+)""#)
-        .context("failed to compile Parameter regex")?;
+    let re =
+        Regex::new(r#"<Parameter\s+name\s*=\s*"([^"]+)"\s+[^>]*parameterTypeRef\s*=\s*"([^"]+)""#)
+            .context("failed to compile Parameter regex")?;
     for cap in re.captures_iter(xtce_content) {
-        let name = cap.get(1).map(|m| m.as_str().trim().to_string()).unwrap_or_default();
-        let type_ref = cap.get(2).map(|m| m.as_str().trim().to_string()).unwrap_or_default();
+        let name = cap
+            .get(1)
+            .map(|m| m.as_str().trim().to_string())
+            .unwrap_or_default();
+        let type_ref = cap
+            .get(2)
+            .map(|m| m.as_str().trim().to_string())
+            .unwrap_or_default();
         if !name.is_empty() && !type_ref.is_empty() {
             out.insert(name, type_ref);
         }
@@ -56,8 +63,10 @@ pub fn parse_parameter_set(xtce_content: &str) -> anyhow::Result<HashMap<String,
 pub fn parse_parameter_type_set(xtce_content: &str) -> HashSet<String> {
     let mut out = HashSet::new();
     // FloatParameterType, IntegerParameterType, etc.
-    let re = Regex::new(r#"<(?:Float|Integer|String|Binary|Boolean)ParameterType\s+[^>]*\bname\s*=\s*"([^"]+)""#)
-        .unwrap();
+    let re = Regex::new(
+        r#"<(?:Float|Integer|String|Binary|Boolean)ParameterType\s+[^>]*\bname\s*=\s*"([^"]+)""#,
+    )
+    .unwrap();
     for cap in re.captures_iter(xtce_content) {
         if let Some(m) = cap.get(1) {
             let name = m.as_str().trim().to_string();
@@ -144,10 +153,7 @@ pub fn validate_apid_map_against_xtce(
                         errors.push(XtceApidMapValidationError {
                             apid: apid.clone(),
                             parameter: name.clone(),
-                            message: format!(
-                                "type '{}' not in XTCE ParameterTypeSet",
-                                type_ref
-                            ),
+                            message: format!("type '{}' not in XTCE ParameterTypeSet", type_ref),
                         });
                     }
                 }

@@ -101,7 +101,6 @@ pub struct WorkQueueItem {
 }
 
 /// Full work queue with timestamp; overwritten on each orchestrator run.
-
 /// Includes power-safety and scheduling policy for high-value devices (stakeholder demo phase).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkQueue {
@@ -123,7 +122,9 @@ pub struct WorkQueue {
 fn estimated_minutes_conservative(issue_type: &IssueType, severity: &IssueSeverity) -> u32 {
     let base = match issue_type {
         IssueType::SecurityConcern | IssueType::ConfigViolation => 60,
-        IssueType::MissingErrorHandling | IssueType::TypeMismatch | IssueType::PerformanceIssue => 45,
+        IssueType::MissingErrorHandling | IssueType::TypeMismatch | IssueType::PerformanceIssue => {
+            45
+        }
         IssueType::UnusedImport | IssueType::NamingViolation => 25,
         IssueType::DocumentationMissing | IssueType::UntestablePath => 40,
     };
@@ -190,7 +191,7 @@ pub fn load_backend_lint_items(json_path: &Path) -> Vec<WorkQueueItem> {
             let priority = if severity == "error" { 3u8 } else { 2u8 };
             let id = format!(
                 "backend-lint-{}:{}",
-                i.file.replace('/', "-").replace('\\', "-"),
+                i.file.replace(['/', '\\'], "-"),
                 i.line
             );
             WorkQueueItem {
@@ -224,8 +225,7 @@ pub fn merge_backend_lint_into_queue(queue: &mut WorkQueue, json_path: &Path) {
     }
     queue.items.extend(items);
     queue.total_estimated_minutes = queue.items.iter().map(|i| i.estimated_minutes).sum();
-    queue.scheduling_buffer_minutes =
-        (queue.total_estimated_minutes / 10).clamp(10u32, 60u32);
+    queue.scheduling_buffer_minutes = (queue.total_estimated_minutes / 10).clamp(10u32, 60u32);
 }
 
 #[derive(Deserialize)]
@@ -282,15 +282,11 @@ pub fn merge_directive_uncompleted_into_queue(queue: &mut WorkQueue, json_path: 
     }
     queue.items.extend(items);
     queue.total_estimated_minutes = queue.items.iter().map(|i| i.estimated_minutes).sum();
-    queue.scheduling_buffer_minutes =
-        (queue.total_estimated_minutes / 10).clamp(10u32, 60u32);
+    queue.scheduling_buffer_minutes = (queue.total_estimated_minutes / 10).clamp(10u32, 60u32);
 }
 
 /// Build work queue from analyzed issues and analyses (match by issue_id).
-pub fn build_work_queue(
-    issues: &[CodeIssue],
-    analyses: &[MultiAgentAnalysis],
-) -> WorkQueue {
+pub fn build_work_queue(issues: &[CodeIssue], analyses: &[MultiAgentAnalysis]) -> WorkQueue {
     let timestamp = chrono::Utc::now().to_rfc3339();
     let mut items = Vec::with_capacity(analyses.len());
 
@@ -356,8 +352,7 @@ pub fn build_work_queue(
     // Power-safety: never run heavy work below 25% (devices as high-value assets; stakeholder demo).
     let min_safe_battery_percent = 25u8;
     // Scheduling buffer: 10% of total, clamped 10–60 min so reserved block = total + buffer.
-    let scheduling_buffer_minutes: u32 =
-        (total_estimated_minutes / 10).clamp(10u32, 60u32);
+    let scheduling_buffer_minutes: u32 = (total_estimated_minutes / 10).clamp(10u32, 60u32);
 
     WorkQueue {
         timestamp,
@@ -389,7 +384,8 @@ pub fn work_queue_issues_path(work_queue_path: &str) -> String {
 pub fn write_issues(issues: &[CodeIssue], json_path: &str) -> Result<(), String> {
     let path = Path::new(json_path);
     if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent).map_err(|e| format!("create dir {}: {}", parent.display(), e))?;
+        fs::create_dir_all(parent)
+            .map_err(|e| format!("create dir {}: {}", parent.display(), e))?;
     }
     let json_str = serde_json::to_string_pretty(issues).map_err(|e| e.to_string())?;
     fs::write(path, json_str).map_err(|e| format!("write {}: {}", path.display(), e))?;
@@ -410,7 +406,8 @@ pub fn load_issues(json_path: &str) -> Vec<CodeIssue> {
 pub fn write_work_queue(queue: &WorkQueue, json_path: &str) -> Result<(), String> {
     let path = Path::new(json_path);
     if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent).map_err(|e| format!("create dir {}: {}", parent.display(), e))?;
+        fs::create_dir_all(parent)
+            .map_err(|e| format!("create dir {}: {}", parent.display(), e))?;
     }
 
     let json_str = serde_json::to_string_pretty(queue).map_err(|e| e.to_string())?;
@@ -419,7 +416,10 @@ pub fn write_work_queue(queue: &WorkQueue, json_path: &str) -> Result<(), String
     let total_h = queue.total_estimated_minutes / 60;
     let total_m = queue.total_estimated_minutes % 60;
     let total_est_line = if total_h > 0 {
-        format!("{} min ({}h {}m)", queue.total_estimated_minutes, total_h, total_m)
+        format!(
+            "{} min ({}h {}m)",
+            queue.total_estimated_minutes, total_h, total_m
+        )
     } else {
         format!("{} min", queue.total_estimated_minutes)
     };
@@ -427,9 +427,15 @@ pub fn write_work_queue(queue: &WorkQueue, json_path: &str) -> Result<(), String
     let reserved_h = reserved_min / 60;
     let reserved_m = reserved_min % 60;
     let reserved_line = if reserved_h > 0 {
-        format!("{} min ({}h {}m) = total + {} min buffer", reserved_min, reserved_h, reserved_m, queue.scheduling_buffer_minutes)
+        format!(
+            "{} min ({}h {}m) = total + {} min buffer",
+            reserved_min, reserved_h, reserved_m, queue.scheduling_buffer_minutes
+        )
     } else {
-        format!("{} min (total + {} min buffer)", reserved_min, queue.scheduling_buffer_minutes)
+        format!(
+            "{} min (total + {} min buffer)",
+            reserved_min, queue.scheduling_buffer_minutes
+        )
     };
 
     let md_path = path.with_extension("md");
@@ -459,8 +465,7 @@ pub fn write_work_queue(queue: &WorkQueue, json_path: &str) -> Result<(), String
             .collect::<Vec<_>>()
             .join("\n\n")
     );
-    fs::write(&md_path, md_content)
-        .map_err(|e| format!("write {}: {}", md_path.display(), e))?;
+    fs::write(&md_path, md_content).map_err(|e| format!("write {}: {}", md_path.display(), e))?;
 
     Ok(())
 }
@@ -501,8 +506,7 @@ impl CodeAnalysisOrchestrator {
         let perspectives: Vec<AgentPerspective> = ma_result
             .agent_results
             .iter()
-            .enumerate()
-            .map(|(_i, result)| AgentPerspective {
+            .map(|result| AgentPerspective {
                 agent_name: format!("{:?}", result.model),
                 analysis: result.response.clone(),
                 suggested_approach: self.extract_approach(&result.response),

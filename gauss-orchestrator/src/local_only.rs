@@ -23,7 +23,7 @@ fn host_from_url(url: &str) -> String {
         .next()
         .unwrap_or(after_proto)
         .split('@')
-        .last()
+        .next_back()
         .unwrap_or(after_proto)
         .to_string();
     // Strip port if present (e.g. :8089 or ]:8089 for IPv6)
@@ -55,13 +55,10 @@ fn is_local_or_trusted_host(host: &str) -> bool {
             return true;
         }
     }
-    if h.starts_with("100.") {
-        let rest = &h[4..];
+    if let Some(rest) = h.strip_prefix("100.") {
         let parts: Vec<&str> = rest.split('.').collect();
         if parts.len() == 3 {
-            return parts
-                .iter()
-                .all(|p| p.parse::<u8>().is_ok());
+            return parts.iter().all(|p| p.parse::<u8>().is_ok());
         }
     }
     false
@@ -73,7 +70,9 @@ mod tests {
 
     #[test]
     fn localhost_trusted() {
-        assert!(is_local_or_trusted("http://localhost:8089/v1/chat/completions"));
+        assert!(is_local_or_trusted(
+            "http://localhost:8089/v1/chat/completions"
+        ));
         assert!(is_local_or_trusted("http://127.0.0.1:8088/v1"));
         assert!(is_local_or_trusted("http://[::1]:8089/v1/chat/completions"));
     }
@@ -81,14 +80,22 @@ mod tests {
     #[test]
     fn tailscale_trusted() {
         assert!(is_local_or_trusted("http://100.64.0.1:8089/v1"));
-        assert!(is_local_or_trusted("http://100.101.102.103:8088/v1/chat/completions"));
+        assert!(is_local_or_trusted(
+            "http://100.101.102.103:8088/v1/chat/completions"
+        ));
     }
 
     #[test]
     fn cloud_rejected() {
-        assert!(!is_local_or_trusted("https://api.openai.com/v1/chat/completions"));
-        assert!(!is_local_or_trusted("https://generativelanguage.googleapis.com/v1beta/models"));
-        assert!(!is_local_or_trusted("https://api.anthropic.com/v1/messages"));
+        assert!(!is_local_or_trusted(
+            "https://api.openai.com/v1/chat/completions"
+        ));
+        assert!(!is_local_or_trusted(
+            "https://generativelanguage.googleapis.com/v1beta/models"
+        ));
+        assert!(!is_local_or_trusted(
+            "https://api.anthropic.com/v1/messages"
+        ));
         assert!(!is_local_or_trusted("http://192.168.1.1:8089"));
     }
 }

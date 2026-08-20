@@ -1,0 +1,20 @@
+{
+  "documents": {
+    "connectivity-feed.jsonl": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "reasons": ["Operator-approved local connectivity and security observations."]
+    },
+    "connectivity-latest.json": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "reasons": ["Operator-approved local connectivity and security observations."]
+    }
+  }
+}

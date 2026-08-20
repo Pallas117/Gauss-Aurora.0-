@@ -13,6 +13,6 @@
   ],
   "verbose": true,
   "write_sweep_report": true,
-  "createdAt": "2026-03-02T16:07:07.385Z",
+  "createdAt": "2026-03-21T09:23:20.753Z",
   "purpose": "Optimise tests and debug: lower battery floor, single-threaded, verbose, sweep report written to reports/orchestrator/sweep-debug.json"
 }

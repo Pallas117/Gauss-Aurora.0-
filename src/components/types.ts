@@ -10,6 +10,7 @@ export interface LayerVisibility {
   fieldLines: boolean;
   mhdWaves: boolean;
   mmsReconnection: boolean;
+  orbitRings?: boolean;
   /** Radiation / debris overlay (risk zones when VITE_FEATURE_DEBRIS_3D) */
   radiationData?: boolean;
 }

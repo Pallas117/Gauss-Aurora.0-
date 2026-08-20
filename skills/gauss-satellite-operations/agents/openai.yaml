@@ -1,0 +1,7 @@
+interface:
+  display_name: "Gauss Satellite Operations"
+  short_description: "Run safe satellite operator task packets"
+  default_prompt: "Use $gauss-satellite-operations to review this satellite operator task and produce an evidence-backed next action."
+
+policy:
+  allow_implicit_invocation: true

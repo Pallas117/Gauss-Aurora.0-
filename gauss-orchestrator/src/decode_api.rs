@@ -15,8 +15,8 @@ use tracing::warn;
 
 use crate::config::OrchestratorConfig;
 use crate::pipeline;
-use crate::telemetry::decoder_registry::DecoderFormat;
 use crate::telemetry::decode_and_map_packets;
+use crate::telemetry::decoder_registry::DecoderFormat;
 
 #[derive(Debug, Deserialize)]
 struct DecodeRequestBody {
@@ -41,9 +41,12 @@ pub fn router(config: Arc<OrchestratorConfig>) -> Router {
 
 pub async fn serve(bind_addr: &str, config: Arc<OrchestratorConfig>) -> anyhow::Result<()> {
     use anyhow::Context;
-    let addr: std::net::SocketAddr = bind_addr
-        .parse()
-        .with_context(|| format!("invalid ORCHESTRATOR_DECODE_API_BIND address: {}", bind_addr))?;
+    let addr: std::net::SocketAddr = bind_addr.parse().with_context(|| {
+        format!(
+            "invalid ORCHESTRATOR_DECODE_API_BIND address: {}",
+            bind_addr
+        )
+    })?;
     let listener = tokio::net::TcpListener::bind(addr)
         .await
         .with_context(|| format!("failed binding decode API listener on {}", bind_addr))?;
@@ -62,13 +65,11 @@ async fn decode_handler(
         Some(b'{') => {
             let json: DecodeRequestBody = match serde_json::from_slice(&body) {
                 Ok(j) => j,
-                Err(e) => {
-                    return (
-                        StatusCode::BAD_REQUEST,
-                        Json(serde_json::json!({ "error": "invalid_json", "message": e.to_string() })),
-                    )
-                        .into_response()
-                }
+                Err(e) => return (
+                    StatusCode::BAD_REQUEST,
+                    Json(serde_json::json!({ "error": "invalid_json", "message": e.to_string() })),
+                )
+                    .into_response(),
             };
             let format = match json.format.to_lowercase().as_str() {
                 "ccsds-hex" => DecoderFormat::CcsdsHex,
@@ -77,13 +78,13 @@ async fn decode_handler(
             let payload = json.payload.unwrap_or_default();
             let bytes = match BASE64_STANDARD.decode(payload.trim()) {
                 Ok(b) => b,
-                Err(e) => {
-                    return (
-                        StatusCode::BAD_REQUEST,
-                        Json(serde_json::json!({ "error": "invalid_base64", "message": e.to_string() })),
-                    )
-                        .into_response()
-                }
+                Err(e) => return (
+                    StatusCode::BAD_REQUEST,
+                    Json(
+                        serde_json::json!({ "error": "invalid_base64", "message": e.to_string() }),
+                    ),
+                )
+                    .into_response(),
             };
             (format, bytes)
         }
@@ -118,8 +119,8 @@ async fn triad_handler(
     let client = reqwest::Client::new();
     match pipeline::run_triad_native(&client, path, config.as_ref()).await {
         Ok(report_json) => {
-            let report: serde_json::Value =
-                serde_json::from_str(&report_json).unwrap_or(serde_json::json!({ "raw": report_json }));
+            let report: serde_json::Value = serde_json::from_str(&report_json)
+                .unwrap_or(serde_json::json!({ "raw": report_json }));
             (StatusCode::OK, Json(report)).into_response()
         }
         Err(e) => {

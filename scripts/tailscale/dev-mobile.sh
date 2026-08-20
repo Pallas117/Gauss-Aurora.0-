@@ -22,9 +22,9 @@ detect_tailscale_ip_fallback() {
       iface=$1
       sub(":", "", iface)
     }
-    iface ~ /^utun[0-9]+$/ && $1 == "inet" && $2 ~ /^100\./ {
+    iface ~ /^(utun[0-9]+|tailscale[0-9]*)$/ && $1 == "inet" && $2 ~ /^100\./ && !found {
       print $2
-      exit
+      found=1
     }'
 }
 
@@ -39,14 +39,11 @@ port_in_use() {
 }
 
 if [[ -z "${TS_IP:-}" ]]; then
-  if ! command -v tailscale >/dev/null 2>&1; then
-    TS_IP="$(detect_tailscale_ip_fallback || true)"
-  else
+  # Prefer the already-up tunnel interface. This keeps startup bounded when the
+  # macOS Tailscale CLI is installed but cannot load its preferences.
+  TS_IP="$(detect_tailscale_ip_fallback || true)"
+  if [[ -z "${TS_IP}" ]] && command -v tailscale >/dev/null 2>&1; then
     TS_IP="$(tailscale ip -4 2>/dev/null | awk '/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/{print; exit}')"
-  fi
-
-  if [[ -z "${TS_IP}" ]]; then
-    TS_IP="$(detect_tailscale_ip_fallback || true)"
   fi
 else
   TS_IP="${TS_IP}"

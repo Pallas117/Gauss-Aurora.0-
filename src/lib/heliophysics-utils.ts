@@ -204,6 +204,12 @@ export function getViteEnv(key: string): string | undefined {
     } catch {
         // ignore; fall through to process env fallback
     }
+    const runtimeEnv = (globalThis as { __GAUSS_PUBLIC_ENV__?: Record<string, unknown> })
+        .__GAUSS_PUBLIC_ENV__;
+    const runtimeValue = runtimeEnv?.[key];
+    if (typeof runtimeValue === "string") {
+        return runtimeValue;
+    }
     if (typeof process === "undefined") {
         return undefined;
     }

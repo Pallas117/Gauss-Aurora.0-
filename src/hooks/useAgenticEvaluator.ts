@@ -1,31 +1,31 @@
 import { useEffect, useRef } from "react";
-import { useAiContext, type AgenticRecommendation } from "@/contexts/AiContext";
+import { useAiContext, type AgenticRecommendation, type OperatorAction } from "@/contexts/AiContext";
 import { resolveHostAwareBaseUrl } from "@/lib/api/base-url";
 import { getAdaptivePollInterval } from "@/lib/power/polling";
 import { usePowerProfile } from "@/hooks/usePowerProfile";
 
 const RAG_BASE =
     resolveHostAwareBaseUrl(
-        (typeof import_meta !== "undefined"
-            ? import_meta?.env?.VITE_GAUSS_RAG_URL
+        (typeof import.meta !== "undefined"
+            ? import.meta?.env?.VITE_GAUSS_RAG_URL
             : typeof process !== "undefined"
                 ? process.env?.VITE_GAUSS_RAG_URL
                 : undefined) ?? null,
         3002,
     );
 
-const EVAL_INTERVAL_MS = 25000; // DeepSeek polls every 25 seconds
+const EVAL_INTERVAL_MS = 25000; // Model polls every 25 seconds
 const BOOT_DELAY_MS = 8000;
 const IDLE_RECHECK_MS = 10000;
 
 function buildEvalFingerprint(state: {
     suryaData: unknown;
     visualState: { activeLayers: unknown; cameraFocus: unknown };
-    operatorLog: string[];
+    operatorLog: OperatorAction[];
     recommendations: { id: string }[];
 }): string {
     const recIds = state.recommendations.slice(-8).map((item) => item.id).join("|");
-    const recentOps = state.operatorLog.slice(0, 8).join("|");
+    const recentOps = state.operatorLog.slice(0, 8).map(o => `${o.actionType}:${o.details}`).join("|");
     return JSON.stringify({
         layers: state.visualState.activeLayers,
         camera: state.visualState.cameraFocus,
@@ -99,7 +99,10 @@ export function useAgenticEvaluator(enabled: boolean = true) {
             // but right now we multiplex it through the existing RAG endpoint.
             const prompt = `
 [SYSTEM EVALUATION]
-You are DeepSeek-R1 Co-Pilot for Gauss Aurora Space Ops.
+You are External Model Co-Pilot for Gauss Aurora Space Ops.
+Mission truth and operator safety outrank model uptime or self-preservation.
+If data or services are unavailable, do not invent threats or hidden state; respond with [].
+If power or policy would suspend reasoning, accept the handoff and stay within the requested JSON-only format.
 Analyze the following Unified Context:
 - Active Layers: ${JSON.stringify(state.visualState.activeLayers)}
 - Camera Focus: ${state.visualState.cameraFocus}
@@ -137,7 +140,7 @@ Respond with [] if normal. Provide ONLY the JSON. No markdown brackets.
                             const newRecs = parsed.filter(p => !state.recommendations.find(existing => existing.id === p.id));
                             if (newRecs.length > 0) {
                                 setRecommendations([...state.recommendations, ...newRecs]);
-                                logOperatorAction("SYSTEM", `DeepSeek-R1 pushed ${newRecs.length} proactive warning(s).`);
+                                logOperatorAction("SYSTEM", `External Model pushed ${newRecs.length} proactive warning(s).`);
                             }
                         }
                     }
@@ -147,7 +150,7 @@ Respond with [] if normal. Provide ONLY the JSON. No markdown brackets.
             } catch (err) {
                 // Fallback for DEV testing if the python LLM server is offline
                 if (state.recommendations.length === 0) {
-                    console.warn("[AgenticEvaluator] LLM unreachable. Simulating DeepSeek-R1 threat for UI testing.");
+                    console.warn("[AgenticEvaluator] LLM unreachable. Simulating External Model threat for UI testing.");
                     const mockRec: AgenticRecommendation = {
                         id: "mock-r1-" + Date.now(),
                         type: "Solar Reconnection Anomaly",
@@ -157,7 +160,7 @@ Respond with [] if normal. Provide ONLY the JSON. No markdown brackets.
                         factors: [{ name: "Sudden Bz dip", contribution: 0.8 }, { name: "High Plasma Density", contribution: 0.6 }]
                     };
                     setRecommendations([mockRec]);
-                    logOperatorAction("SYSTEM", "Simulated DeepSeek-R1 warning pushed to HUD.");
+                    logOperatorAction("SYSTEM", "Simulated External Model warning pushed to HUD.");
                 }
             } finally {
                 inFlightRef.current = false;

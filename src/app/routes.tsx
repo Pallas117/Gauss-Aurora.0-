@@ -2,7 +2,8 @@
 import { Suspense, lazy, type ComponentType } from "react";
 import type { RouteObject } from "react-router-dom";
 import { Navigate, createBrowserRouter } from "react-router-dom";
-import Layout from "@/app/Layout";
+import MissionShell from "@/app/MissionShell";
+import PublicShell from "@/app/PublicShell";
 
 const CommandPage = lazy(() => import("@/pages/CommandPage"));
 const SDAPage = lazy(() => import("@/pages/SDAPage"));
@@ -16,11 +17,13 @@ const HeliophysicsDashboard = lazy(() => import("@/pages/HeliophysicsDashboard")
 const Signup = lazy(() => import("@/pages/Signup"));
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
 const OnboardingPage = lazy(() => import("@/pages/OnboardingPage"));
+const LoginPage = lazy(() => import("@/pages/Login"));
 const AdminUsersPage = lazy(() => import("@/pages/AdminUsersPage"));
 const StaffPortalPage = lazy(() => import("@/pages/StaffPortalPage"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const OrbitLab = lazy(() => import("@/pages/OrbitLab"));
 const DevHud = lazy(() => import("@/pages/DevHud"));
+const GaussPlatformPage = lazy(() => import("@/pages/GaussPlatformPage"));
 
 const RouteFallback = () => (
   <div className="flex min-h-[30vh] items-center justify-center text-xs text-muted-foreground">
@@ -51,6 +54,10 @@ const spaceSubsystemRoutes: RouteObject[] = [
   { path: "space/orbit", element: lazyRoute(OrbitLab) },
 ];
 
+const platformRoutes: RouteObject[] = [
+  { path: "platform", element: lazyRoute(GaussPlatformPage) },
+];
+
 const operationsSubsystemRoutes: RouteObject[] = [
   { path: "systems", element: lazyRoute(SystemsPage) },
   { path: "intel", element: lazyRoute(IntelPage) },
@@ -70,14 +77,26 @@ const governanceSubsystemRoutes: RouteObject[] = [
 export const appRoutes: RouteObject[] = [
   {
     path: "/",
-    element: <Layout />,
+    element: <PublicShell />,
     children: [
       {
         index: true,
-        element: gaussShellEnabled ? lazyRoute(LandingPage) : <Navigate to="/heliophysics" replace />,
+        element: gaussShellEnabled ? <Navigate to="/platform" replace /> : <Navigate to="/heliophysics" replace />,
       },
+      { path: "sda", element: lazyRoute(SDAPage) },
+      { path: "space/sda", element: lazyRoute(SDAPage) },
+      { path: "portal", element: lazyRoute(LandingPage) },
+      { path: "landing", element: lazyRoute(LandingPage) },
+      { path: "login", element: lazyRoute(LoginPage) },
+    ],
+  },
+  {
+    path: "/",
+    element: <MissionShell />,
+    children: [
+      ...platformRoutes,
       ...commandSubsystemRoutes,
-      ...spaceSubsystemRoutes,
+      ...spaceSubsystemRoutes.filter((route) => route.path !== "sda" && route.path !== "space/sda"),
       ...operationsSubsystemRoutes,
       ...governanceSubsystemRoutes,
     ],
@@ -89,14 +108,6 @@ export const appRoutes: RouteObject[] = [
   {
     path: "/onboarding",
     element: lazyRoute(OnboardingPage),
-  },
-  {
-    path: "/portal",
-    element: lazyRoute(LandingPage),
-  },
-  {
-    path: "/landing",
-    element: lazyRoute(LandingPage),
   },
   {
     path: "*",

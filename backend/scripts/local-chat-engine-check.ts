@@ -1,9 +1,13 @@
 /**
- * Shared check for the local chat engine (MLX DeepSeek, gauss-brain-stub, etc.).
+ * Shared check for the local/external chat engine (Gauss Brain, PicoClaw, etc.).
  * Used at backend startup and by the test-local-chat-engine CLI.
  */
 
-const TIMEOUT_MS = 30_000;
+const TIMEOUT_MS = Number(
+  process.env.GAUSS_LOCAL_CHAT_TIMEOUT_MS ??
+    process.env.GAUSS_LOCAL_EVAL_TIMEOUT_MS ??
+    30_000,
+);
 const FALLBACK_FIELDS = ["response", "output", "text", "message"] as const;
 
 export function getChatEngineUrl(): string | null {
@@ -23,14 +27,16 @@ function normalizeUrl(base: string): string {
   return `${u}/v1/chat/completions`;
 }
 
-function extractChatContent(parsed: Record<string, unknown>): string | null {
+export function extractChatContent(parsed: Record<string, unknown>): string | null {
   const choices = parsed.choices;
   if (Array.isArray(choices) && choices.length > 0) {
     const first = choices[0] as Record<string, unknown> | undefined;
     const msg = first?.message as Record<string, unknown> | undefined;
-    const content = msg?.content;
-    if (typeof content === "string" && content.trim().length > 0) {
-      return content.trim();
+    for (const field of ["content", "reasoning"] as const) {
+      const value = msg?.[field];
+      if (typeof value === "string" && value.trim().length > 0) {
+        return value.trim();
+      }
     }
   }
   for (const field of FALLBACK_FIELDS) {
@@ -91,7 +97,7 @@ export async function checkLocalChatEngine(): Promise<LocalChatEngineResult> {
     if (isConnectionError) {
       if (url.includes(":8088"))
         hint =
-          " Start MLX DeepSeek: npm run dev:brain:mlx (or mlx_lm.server --model mlx-community/DeepSeek-R1-Distill-Qwen-1.5B-4bit --port 8088)";
+          " Start External Model: npm run dev:brain:mlx (or use the Tailscale mesh endpoint)";
       else if (url.includes(":8089"))
         hint = " Start the stub with: npm run dev:brain:stub";
       else if (url.includes(":8080"))

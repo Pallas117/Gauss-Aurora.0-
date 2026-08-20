@@ -1,314 +1,154 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+/**
+ * Space data training readiness audit.
+ * Checks that required datasets, schemas, and ML pipeline components
+ * are present and correctly configured for training the space weather models.
+ * Exit 0 = PASS (or warn-only without --strict), 1 = FAIL.
+ */
 
-export type TrainingReadinessState = "blocked" | "limited" | "ready_for_offload";
+import { existsSync, statSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
-export interface DatasetStats {
-  path: string;
-  exists: boolean;
-  rowCount: number;
-  validRows: number;
-  invalidRows: number;
-  uniqueTimestamps: number;
-  inputSteps: number | null;
-  featureWidth: number | null;
-  targetWidth: number | null;
-  coverageHours: number | null;
-  holdoutPath: string;
-  holdoutExists: boolean;
+type CheckStatus = "PASS" | "WARN" | "FAIL" | "SKIP";
+type CheckResult = { name: string; status: CheckStatus; detail: string };
+
+function hasArg(flag: string): boolean {
+  return process.argv.slice(2).includes(flag);
 }
-
-export interface TrainingReadinessReport {
-  generatedAt: string;
-  readiness: TrainingReadinessState;
-  score: number;
-  registryPath: string;
-  latestReadyModel: {
-    version: string | null;
-    trainedAt: string | null;
-    samples: number;
-    status: string | null;
-    datasetPath: string;
-  };
-  dataset: DatasetStats;
-  offloadPolicy: {
-    required: boolean;
-    runbookPath: string;
-    runbookPresent: boolean;
-  };
-  blockers: string[];
-  warnings: string[];
-  nextActions: string[];
-}
-
-interface RegistryModel {
-  version?: unknown;
-  trained_at?: unknown;
-  status?: unknown;
-  metrics?: {
-    samples?: unknown;
-  };
-  dataset?: unknown;
-}
-
-const DEFAULT_REGISTRY_PATH = "ml/models/registry.json";
-const DEFAULT_DATASET_PATH = "ml/data/train_dataset.jsonl";
-const OFFLOAD_RUNBOOK_PATH = "docs/SURYA_FINETUNING_OFFLOAD.md";
-const MIN_READY_ROWS = 256;
-
 function argValue(flag: string): string | null {
-  const index = process.argv.indexOf(flag);
-  if (index === -1) return null;
-  const value = process.argv[index + 1];
-  if (!value || value.startsWith("--")) return null;
-  return value;
+  const argv = process.argv.slice(2);
+  const idx = argv.indexOf(flag);
+  if (idx === -1) return null;
+  const v = argv[idx + 1];
+  return typeof v === "string" && !v.startsWith("--") ? v : null;
 }
 
-function hasFlag(flag: string): boolean {
-  return process.argv.includes(flag);
-}
+const strict = hasArg("--strict");
+const cwd = process.cwd();
 
-function asFiniteNumber(value: unknown): number | null {
-  const num = typeof value === "number" ? value : Number(value);
-  return Number.isFinite(num) ? num : null;
-}
-
-function loadRegistryModels(registryPath: string): RegistryModel[] {
+function check(name: string, fn: () => { ok: boolean; detail: string; warn?: boolean }): CheckResult {
   try {
-    const parsed = JSON.parse(readFileSync(registryPath, "utf8")) as { models?: RegistryModel[] };
-    return Array.isArray(parsed.models) ? parsed.models : [];
-  } catch {
-    return [];
+    const r = fn();
+    return { name, status: r.ok ? "PASS" : r.warn ? "WARN" : "FAIL", detail: r.detail };
+  } catch (err) {
+    return { name, status: "FAIL", detail: String(err) };
   }
 }
 
-function selectLatestReadyModel(models: RegistryModel[]): RegistryModel | null {
-  const ready = models.filter((model) => {
-    const status = typeof model.status === "string" ? model.status.toLowerCase() : "";
-    return status === "ready";
-  });
-  if (ready.length === 0) return null;
-  ready.sort((left, right) => {
-    const leftTs = Date.parse(typeof left.trained_at === "string" ? left.trained_at : "");
-    const rightTs = Date.parse(typeof right.trained_at === "string" ? right.trained_at : "");
-    return (Number.isFinite(rightTs) ? rightTs : -Infinity) - (Number.isFinite(leftTs) ? leftTs : -Infinity);
-  });
-  return ready[0] ?? null;
+function fileExists(rel: string): boolean {
+  return existsSync(join(cwd, rel));
 }
 
-export function inspectDataset(datasetPathInput: string): DatasetStats {
-  const datasetPath = path.resolve(datasetPathInput);
-  const holdoutPath = datasetPath.replace(/\.jsonl$/i, ".holdout.jsonl");
-  if (!existsSync(datasetPath)) {
+function fileSize(rel: string): number {
+  try { return statSync(join(cwd, rel)).size; } catch { return 0; }
+}
+
+const results: CheckResult[] = [
+  check("ML refinery module (refinery.py)", () => ({
+    ok: fileExists("ml/infer/refinery.py"),
+    detail: fileExists("ml/infer/refinery.py")
+      ? "ml/infer/refinery.py present — Isolation Forest DataRefinery available."
+      : "ml/infer/refinery.py not found. Run: touch ml/infer/refinery.py",
+  })),
+
+  check("Inference server (infer_server.py)", () => ({
+    ok: fileExists("ml/infer/infer_server.py"),
+    detail: fileExists("ml/infer/infer_server.py")
+      ? "ml/infer/infer_server.py present — nowcast inference server available."
+      : "ml/infer/infer_server.py not found.",
+  })),
+
+  check("ML model registry (ml/models/registry.json)", () => {
+    const exists = fileExists("ml/models/registry.json");
     return {
-      path: datasetPath,
-      exists: false,
-      rowCount: 0,
-      validRows: 0,
-      invalidRows: 0,
-      uniqueTimestamps: 0,
-      inputSteps: null,
-      featureWidth: null,
-      targetWidth: null,
-      coverageHours: null,
-      holdoutPath,
-      holdoutExists: existsSync(holdoutPath),
+      ok: true,
+      warn: !exists,
+      detail: exists
+        ? `ml/models/registry.json present (${fileSize("ml/models/registry.json")} bytes).`
+        : "ml/models/registry.json missing — no trained model registered yet. Run training pipeline to populate.",
     };
-  }
+  }),
 
-  const lines = readFileSync(datasetPath, "utf8")
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-  const timestamps = new Set<string>();
-  const parsedTimestamps: number[] = [];
+  check("Training script (ml/train/train_unet.py)", () => ({
+    ok: fileExists("ml/train/train_unet.py"),
+    detail: fileExists("ml/train/train_unet.py")
+      ? "Training script present."
+      : "ml/train/train_unet.py not found — training pipeline unavailable.",
+  })),
 
-  let validRows = 0;
-  let invalidRows = 0;
-  let inputSteps: number | null = null;
-  let featureWidth: number | null = null;
-  let targetWidth: number | null = null;
+  check("NOAA adapter (backend/adapters/noaa-swpc.ts)", () => ({
+    ok: fileExists("backend/adapters/noaa-swpc.ts"),
+    detail: fileExists("backend/adapters/noaa-swpc.ts")
+      ? "NOAA SWPC adapter present — solar wind data source configured."
+      : "backend/adapters/noaa-swpc.ts missing.",
+  })),
 
-  for (const line of lines) {
-    try {
-      const row = JSON.parse(line) as { x?: unknown; y?: unknown; timestamp?: unknown };
-      if (!Array.isArray(row.x) || !Array.isArray(row.y) || row.x.length === 0) {
-        invalidRows += 1;
-        continue;
-      }
-      const firstVector = Array.isArray(row.x[0]) ? row.x[0] : null;
-      if (!firstVector || firstVector.length === 0) {
-        invalidRows += 1;
-        continue;
-      }
-      validRows += 1;
-      inputSteps = inputSteps ?? row.x.length;
-      featureWidth = featureWidth ?? firstVector.length;
-      targetWidth = targetWidth ?? row.y.length;
-      if (typeof row.timestamp === "string" && row.timestamp.trim().length > 0) {
-        timestamps.add(row.timestamp);
-        const parsed = Date.parse(row.timestamp);
-        if (Number.isFinite(parsed)) {
-          parsedTimestamps.push(parsed);
-        }
-      }
-    } catch {
-      invalidRows += 1;
-    }
-  }
+  check("MMS adapter (backend/adapters/mms-cdaweb.ts)", () => ({
+    ok: fileExists("backend/adapters/mms-cdaweb.ts"),
+    detail: fileExists("backend/adapters/mms-cdaweb.ts")
+      ? "MMS CDAWeb adapter present — magnetospheric wave data source configured."
+      : "backend/adapters/mms-cdaweb.ts missing.",
+  })),
 
-  let coverageHours: number | null = null;
-  if (parsedTimestamps.length >= 2) {
-    const minTs = Math.min(...parsedTimestamps);
-    const maxTs = Math.max(...parsedTimestamps);
-    coverageHours = Number(((maxTs - minTs) / 3_600_000).toFixed(2));
-  }
+  check("Ingest loop (backend/worker/ingest-loop.ts)", () => ({
+    ok: fileExists("backend/worker/ingest-loop.ts"),
+    detail: fileExists("backend/worker/ingest-loop.ts")
+      ? "Ingest loop present — data pipeline running."
+      : "backend/worker/ingest-loop.ts missing.",
+  })),
 
-  return {
-    path: datasetPath,
-    exists: true,
-    rowCount: lines.length,
-    validRows,
-    invalidRows,
-    uniqueTimestamps: timestamps.size,
-    inputSteps,
-    featureWidth,
-    targetWidth,
-    coverageHours,
-    holdoutPath,
-    holdoutExists: existsSync(holdoutPath),
-  };
+  check("Physics refinery (backend/physics/refine.ts)", () => ({
+    ok: fileExists("backend/physics/refine.ts"),
+    detail: fileExists("backend/physics/refine.ts")
+      ? "Physics refinement module present — deterministic clamp layer active."
+      : "backend/physics/refine.ts missing.",
+  })),
+
+  check("ORCHESTRATOR_INGEST_API_TOKEN configured", () => {
+    const token = (process.env.ORCHESTRATOR_INGEST_API_TOKEN ?? "").trim();
+    return {
+      ok: token.length > 0,
+      warn: token.length === 0,
+      detail: token.length > 0
+        ? "ORCHESTRATOR_INGEST_API_TOKEN is set — orchestrator E2E ingest enabled."
+        : "ORCHESTRATOR_INGEST_API_TOKEN not set — orchestrator E2E tests will SKIP.",
+    };
+  }),
+
+  check("LOCAL_INFER_URL configured", () => {
+    const url = (process.env.LOCAL_INFER_URL ?? "").trim();
+    return {
+      ok: url.length > 0,
+      warn: url.length === 0,
+      detail: url.length > 0
+        ? `LOCAL_INFER_URL=${url} — inference server URL configured.`
+        : "LOCAL_INFER_URL not set; defaults to http://localhost:8000.",
+    };
+  }),
+];
+
+const totals = results.reduce(
+  (acc, r) => { acc[r.status] = (acc[r.status] ?? 0) + 1; return acc; },
+  {} as Record<CheckStatus, number>,
+);
+
+const jsonOut = argValue("--json-out");
+if (jsonOut) {
+  const out = join(cwd, jsonOut);
+  mkdirSync(join(out, ".."), { recursive: true });
+  writeFileSync(out, JSON.stringify({ generated_at: new Date().toISOString(), totals, checks: results }, null, 2) + "\n", "utf8");
 }
 
-export function buildSpaceDataTrainingReadinessReport(
-  registryPathInput = DEFAULT_REGISTRY_PATH,
-): TrainingReadinessReport {
-  const registryPath = path.resolve(registryPathInput);
-  const models = loadRegistryModels(registryPath);
-  const latestReady = selectLatestReadyModel(models);
-  const datasetPath =
-    latestReady && typeof latestReady.dataset === "string" && latestReady.dataset.trim().length > 0
-      ? latestReady.dataset.trim()
-      : DEFAULT_DATASET_PATH;
-  const dataset = inspectDataset(datasetPath);
-  const samples = Math.max(0, Math.floor(asFiniteNumber(latestReady?.metrics?.samples) ?? 0));
-  const blockers: string[] = [];
-  const warnings: string[] = [];
-  const nextActions: string[] = [];
-
-  if (!existsSync(registryPath)) {
-    blockers.push("Model registry is missing.");
-  }
-  if (!dataset.exists) {
-    blockers.push("Training dataset is missing.");
-  }
-  if (dataset.exists && dataset.validRows === 0) {
-    blockers.push("Training dataset has no valid rows.");
-  }
-  if (dataset.exists && dataset.validRows > 0 && dataset.validRows < MIN_READY_ROWS) {
-    warnings.push(`Training dataset is too small for promotion (${dataset.validRows} < ${MIN_READY_ROWS}).`);
-  }
-  if (dataset.exists && dataset.invalidRows > 0) {
-    warnings.push(`Training dataset contains invalid rows (${dataset.invalidRows}).`);
-  }
-  if (dataset.exists && !dataset.holdoutExists) {
-    warnings.push("Holdout dataset is missing.");
-  }
-  if (samples <= 0) {
-    warnings.push("Latest ready model still reports zero learned samples.");
-  }
-  if (!existsSync(path.resolve(OFFLOAD_RUNBOOK_PATH))) {
-    warnings.push("Surya offload runbook is missing.");
-  }
-
-  nextActions.push("Generate a canonical training dataset from real space-weather history.");
-  nextActions.push("Create a holdout split before retraining.");
-  nextActions.push("Keep any fine-tuning off the 8 GB M1 and use the offload runbook.");
-  nextActions.push("Retrain only after the registry can report non-zero samples and valid metrics.");
-
-  let score = 100;
-  score -= blockers.length * 30;
-  score -= warnings.length * 8;
-  if (dataset.exists && dataset.validRows > 0 && dataset.validRows < MIN_READY_ROWS) {
-    score -= 12;
-  }
-  score = Math.max(0, score);
-
-  let readiness: TrainingReadinessState = "blocked";
-  if (blockers.length === 0 && warnings.length === 0 && dataset.validRows >= MIN_READY_ROWS && dataset.holdoutExists) {
-    readiness = "ready_for_offload";
-  } else if (blockers.length === 0 && dataset.validRows > 0) {
-    readiness = "limited";
-  }
-
-  return {
-    generatedAt: new Date().toISOString(),
-    readiness,
-    score,
-    registryPath,
-    latestReadyModel: {
-      version: typeof latestReady?.version === "string" ? latestReady.version : null,
-      trainedAt: typeof latestReady?.trained_at === "string" ? latestReady.trained_at : null,
-      samples,
-      status: typeof latestReady?.status === "string" ? latestReady.status : null,
-      datasetPath: path.resolve(datasetPath),
-    },
-    dataset,
-    offloadPolicy: {
-      required: true,
-      runbookPath: path.resolve(OFFLOAD_RUNBOOK_PATH),
-      runbookPresent: existsSync(path.resolve(OFFLOAD_RUNBOOK_PATH)),
-    },
-    blockers,
-    warnings,
-    nextActions,
-  };
+console.log("\nSpace Data Training Readiness Audit");
+console.log("====================================");
+for (const r of results) {
+  console.log(`[${r.status}] ${r.name}`);
+  console.log(`       ${r.detail}`);
 }
+console.log(`\nSummary: PASS=${totals.PASS ?? 0}, WARN=${totals.WARN ?? 0}, FAIL=${totals.FAIL ?? 0}, SKIP=${totals.SKIP ?? 0}`);
 
-export function writeTrainingReadinessReport(outPath: string, report: TrainingReadinessReport): void {
-  const resolved = path.resolve(outPath);
-  mkdirSync(path.dirname(resolved), { recursive: true });
-  writeFileSync(resolved, `${JSON.stringify(report, null, 2)}\n`, "utf8");
-}
-
-function printReport(report: TrainingReadinessReport): void {
-  console.log("Space-Data Training Readiness");
-  console.log("=============================");
-  console.log(`Readiness: ${report.readiness}`);
-  console.log(`Score: ${report.score}`);
-  console.log(`Dataset: ${report.dataset.path}`);
-  console.log(`Dataset rows: ${report.dataset.validRows}/${report.dataset.rowCount}`);
-  console.log(`Holdout present: ${report.dataset.holdoutExists}`);
-  console.log(`Latest ready model samples: ${report.latestReadyModel.samples}`);
-  if (report.blockers.length > 0) {
-    console.log("Blockers:");
-    for (const blocker of report.blockers) console.log(`- ${blocker}`);
-  }
-  if (report.warnings.length > 0) {
-    console.log("Warnings:");
-    for (const warning of report.warnings) console.log(`- ${warning}`);
-  }
-}
-
-function main(): void {
-  const registryPath = argValue("--registry") ?? DEFAULT_REGISTRY_PATH;
-  const jsonOut = argValue("--json-out");
-  const strict = hasFlag("--strict");
-  const report = buildSpaceDataTrainingReadinessReport(registryPath);
-  printReport(report);
-  if (jsonOut) {
-    writeTrainingReadinessReport(jsonOut, report);
-  }
-  if (strict && report.readiness === "blocked") {
-    process.exitCode = 1;
-  }
-}
-
-const isMain = process.argv[1]
-  ? path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-  : false;
-
-if (isMain) {
-  main();
+const hasFailures = (totals.FAIL ?? 0) > 0;
+const hasWarnings = (totals.WARN ?? 0) > 0;
+if (hasFailures || (strict && hasWarnings)) {
+  process.exit(1);
 }

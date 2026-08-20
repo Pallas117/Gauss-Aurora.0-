@@ -1,5 +1,5 @@
 /**
- * Triad (Surya + DeepSeek) mission assessment panel.
+ * Triad (Surya + Model) mission assessment panel.
  * Run Triad pipeline and show last report; optionally push summary as a recommendation to AgenticActionCards.
  */
 
@@ -13,7 +13,7 @@ import { Play, Sun, Brain } from "lucide-react";
 const DEFAULT_SOURCE_PATH = "telemetry_drop/latest.csv";
 
 function triadReportToRecommendation(report: TriadReport) {
-  const summary = report.summary ?? report.deepseek?.recommendation ?? "";
+  const summary = report.summary ?? report.model?.recommendation ?? "";
   const suryaVal =
     report.surya?.forecast?.length > 0
       ? report.surya.forecast.reduce((a, p) => a + (p?.value ?? 0), 0) / report.surya.forecast.length
@@ -26,7 +26,7 @@ function triadReportToRecommendation(report: TriadReport) {
     recommended_action: summary.slice(0, 300),
     factors: [
       { name: "Surya", contribution: suryaVal },
-      { name: "DeepSeek", contribution: report.deepseek?.stub === false ? 0.9 : 0.5 },
+      { name: "External Model", contribution: report.model?.stub === false ? 0.9 : 0.5 },
     ],
   };
 }
@@ -51,7 +51,7 @@ export function TriadPanel() {
           <CardTitle className="text-sm flex items-center gap-2">
             <Sun className="h-4 w-4 text-amber-400" />
             <Brain className="h-4 w-4 text-purple-400" />
-            Surya + DeepSeek Triad
+            Surya + Model Triad
           </CardTitle>
           <Button
             size="sm"
@@ -75,21 +75,21 @@ export function TriadPanel() {
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
                 Assessment
               </p>
-              <p className="font-mono text-purple-200">{report.summary || report.deepseek?.recommendation || "—"}</p>
+              <p className="font-mono text-purple-200">{report.summary || report.model?.recommendation || "—"}</p>
             </div>
             <div className="flex flex-wrap gap-1.5">
               <Badge variant="secondary" className="text-[10px]">
                 Surya: {report.surya?.stub ? "stub" : "live"}
               </Badge>
               <Badge variant="secondary" className="text-[10px]">
-                DeepSeek: {report.deepseek?.stub ? "stub" : "live"}
+                External Model: {report.model?.stub ? "stub" : "live"}
               </Badge>
             </div>
           </>
         )}
         {!report && !error && !loading && (
           <p className="text-muted-foreground text-xs">
-            Run Triad to get a mission assessment from Surya forecast + DeepSeek. Result will appear in priority actions.
+            Run Triad to get a mission assessment from Surya forecast + External Model. Result will appear in priority actions.
           </p>
         )}
       </CardContent>

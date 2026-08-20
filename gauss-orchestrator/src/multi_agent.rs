@@ -49,6 +49,8 @@ pub enum TaskType {
     SafetyCheck,
     /// Data analysis and pattern matching
     DataAnalysis,
+    /// Recursive task decomposition and orchestration
+    RecursiveDecomposition,
 }
 
 /// Result from a single agent's processing
@@ -135,10 +137,7 @@ impl MultiAgentOrchestrator {
             .no_proxy()
             .build()
             .unwrap_or_else(|_| Client::new());
-        Self {
-            client,
-            config,
-        }
+        Self { client, config }
     }
 
     /// Route task to specific models based on strengths
@@ -215,10 +214,14 @@ impl MultiAgentOrchestrator {
     /// When strict_local_inference is true, only DeepSeek on a local/trusted URL is allowed—no cloud egress.
     fn select_models_for_task(&self, task: TaskType) -> Vec<AIModel> {
         let has_deepseek = !self.config.deepseek_url.is_empty()
-            && (!self.config.strict_local_inference || local_only::is_local_or_trusted(&self.config.deepseek_url));
-        let has_gemini = !self.config.strict_local_inference && self.config.gemini_api_key.is_some();
-        let has_openai = !self.config.strict_local_inference && self.config.openai_api_key.is_some();
-        let has_claude = !self.config.strict_local_inference && self.config.claude_api_key.is_some();
+            && (!self.config.strict_local_inference
+                || local_only::is_local_or_trusted(&self.config.deepseek_url));
+        let has_gemini =
+            !self.config.strict_local_inference && self.config.gemini_api_key.is_some();
+        let has_openai =
+            !self.config.strict_local_inference && self.config.openai_api_key.is_some();
+        let has_claude =
+            !self.config.strict_local_inference && self.config.claude_api_key.is_some();
 
         let candidates: Vec<AIModel> = match task {
             TaskType::Reasoning => {
@@ -232,6 +235,9 @@ impl MultiAgentOrchestrator {
             TaskType::Comprehension => vec![AIModel::Gemini, AIModel::Claude],
             TaskType::SafetyCheck => vec![AIModel::Claude, AIModel::GPT4],
             TaskType::DataAnalysis => vec![AIModel::DeepSeek, AIModel::GPT4, AIModel::Gemini],
+            TaskType::RecursiveDecomposition => {
+                vec![AIModel::Claude, AIModel::GPT4, AIModel::DeepSeek]
+            }
         };
 
         // When only local engine is configured (or strict local), use DeepSeek for all task types
@@ -279,7 +285,8 @@ impl MultiAgentOrchestrator {
         } else if use_cloud && self.config.claude_api_key.is_some() {
             self.call_claude(&synthesis_prompt).await
         } else if !self.config.deepseek_url.is_empty()
-            && (!self.config.strict_local_inference || local_only::is_local_or_trusted(&self.config.deepseek_url))
+            && (!self.config.strict_local_inference
+                || local_only::is_local_or_trusted(&self.config.deepseek_url))
         {
             let result = self.call_deepseek(&synthesis_prompt).await?;
             Ok(result.response)

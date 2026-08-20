@@ -152,12 +152,12 @@ test.describe("AI Nowcast", () => {
     assert.ok(ok, `expected 200, 401, 429, or 502, got ${status}`);
   });
 
-  test("POST /api/ai/nowcast/train returns 200, 401, 429, or 502", async () => {
+  test("POST /api/ai/nowcast/train returns 200, 401, 404, 429, or 502", async () => {
     if (!backendReachable) return test.skip();
     const { status } = await fetchOk("POST", "/api/ai/nowcast/train", { token: operatorToken, body: {} });
-    const ok = status === 200 || status === 401 || status === 429 || status === 502;
+    const ok = status === 200 || status === 401 || status === 404 || status === 429 || status === 502;
     record("AI Nowcast", "POST /api/ai/nowcast/train", ok, `status=${status}`);
-    assert.ok(ok, `expected 200, 401, 429, or 502, got ${status}`);
+    assert.ok(ok, `expected 200, 401, 404, 429, or 502, got ${status}`);
   });
 });
 

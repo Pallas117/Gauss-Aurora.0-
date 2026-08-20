@@ -1,0 +1,24 @@
+# Never copy operator secrets or local credentials into a build context.
+.env
+.env.*
+!.env.example
+
+# Host/build state is not part of the reproducible test image.
+.git
+.gitignore
+node_modules
+dist
+coverage
+.vite
+.vite-temp
+.playwright-cli
+reports
+target
+**/__pycache__
+**/*.pyc
+*.log
+
+# Local editor and OS metadata.
+.DS_Store
+.idea
+.vscode

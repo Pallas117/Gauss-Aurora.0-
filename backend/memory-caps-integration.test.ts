@@ -71,10 +71,10 @@ test("memory caps: canonical feed, MMS feed, and decoder samples stay within lim
   canonicalFeed.length = 0;
   mmsFeed.length = 0;
 
-  for (let i = 0; i < 21_000; i += 1) {
+  for (let i = 0; i < 4_300; i += 1) {
     pushCanonical(canonicalPoint(i));
   }
-  for (let i = 0; i < 6_000; i += 1) {
+  for (let i = 0; i < 1_200; i += 1) {
     pushMms(mmsPoint(i));
   }
   for (let i = 0; i < 1_500; i += 1) {
@@ -85,7 +85,7 @@ test("memory caps: canonical feed, MMS feed, and decoder samples stay within lim
   const mmsLen = getMmsFeed().length;
   const decoderLen = getDecoderSamplesLength();
 
-  assert.ok(canonicalLen <= 20_000, `canonical feed cap: expected <= 20000, got ${canonicalLen}`);
-  assert.ok(mmsLen <= 5_000, `MMS feed cap: expected <= 5000, got ${mmsLen}`);
+  assert.ok(canonicalLen <= 4_096, `canonical feed cap: expected <= 4096, got ${canonicalLen}`);
+  assert.ok(mmsLen <= 1_024, `MMS feed cap: expected <= 1024, got ${mmsLen}`);
   assert.ok(decoderLen <= 1_000, `decoder samples cap: expected <= 1000, got ${decoderLen}`);
 });

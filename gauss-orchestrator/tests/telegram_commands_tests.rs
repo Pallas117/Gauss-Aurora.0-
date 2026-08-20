@@ -12,8 +12,8 @@ fn parses_plain_text_as_ask_command() {
 
 #[test]
 fn parses_ask_with_argument() {
-    let cmd = TelegramCommand::parse("/ask summarize the latest audit run")
-        .expect("/ask should parse");
+    let cmd =
+        TelegramCommand::parse("/ask summarize the latest audit run").expect("/ask should parse");
     match cmd {
         TelegramCommand::Ask(text) => assert_eq!(text, "summarize the latest audit run"),
         other => panic!("expected Ask command, got {:?}", other),

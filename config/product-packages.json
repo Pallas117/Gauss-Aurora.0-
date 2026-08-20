@@ -1,0 +1,101 @@
+{
+  "schema": "gauss-product-packages-v1",
+  "partners": [
+    {
+      "id": "xorbita",
+      "name": "xOrbita",
+      "sourceUrl": "https://xorbita.com/data",
+      "capabilities": ["on-orbit SSA sensing", "object detection and characterization", "orbital-state and risk data"],
+      "gaussWrap": ["provenance and licensing-aware ingestion", "telemetry/radiation/memory correlation", "fleet risk and quality-gated evidence products"],
+      "nonCompeteBoundary": ["do not build a competing debris sensor or catalog", "do not redistribute licensed raw SSA data without permission", "do not represent Gauss risk scores as xOrbita sensor outputs"],
+      "verificationStatus": "public_capability_claim",
+      "unknowns": ["event/track API and schema", "latency, covariance, confidence, and redistribution terms", "mission-specific support and SLA"]
+    },
+    {
+      "id": "jaops",
+      "name": "JAOPS",
+      "sourceUrl": "https://www.jaops.com/",
+      "capabilities": ["Yamcs Gateway and mission-control tooling", "simulation environments and operator training", "mission planning, monitoring, and supervised operations"],
+      "gaussWrap": ["quality/radiation/data-protection processor for Yamcs", "replayable fleet evidence and bounded inference", "operator-visible advisory events with no command authority"],
+      "nonCompeteBoundary": ["do not replace the mission-control system or operator workflow", "do not issue telecommands", "do not sell MCC, training, or operations-as-a-service as Gauss-owned capability"],
+      "verificationStatus": "public_capability_claim",
+      "unknowns": ["supported Yamcs Gateway version and plugin/API boundary", "operator approval and alarm-routing workflow", "joint integration and support ownership"]
+    },
+    {
+      "id": "transcelestial",
+      "name": "Transcelestial",
+      "sourceUrl": "https://transcelestial.space/",
+      "capabilities": ["optical space and ground communication terminals", "inter-satellite and high-rate downlink capability", "link scheduling, monitoring, and optical ground infrastructure"],
+      "gaussWrap": ["DTN store-and-forward and priority policy", "link-quality provenance and radiation-aware workload selection", "data-product and compute-lease coordination across bridge nodes"],
+      "nonCompeteBoundary": ["do not build optical terminals or PAT systems", "do not replace link scheduling or network operations", "do not command beams or terminals from the Gauss safety path"],
+      "verificationStatus": "public_capability_claim",
+      "unknowns": ["management telemetry/API and link-metric semantics", "data-transfer intent interface and authority model", "supported DTN/profile and security integration"]
+    },
+    {
+      "id": "pan-galactic",
+      "name": "Pan Galactic Corporation",
+      "sourceUrl": "https://www.pangalactic.io/",
+      "capabilities": ["GalacticOS hardened Linux and secure boot", "quantum-safe cryptography and container security", "secure distributed-ledger and data-chain claims"],
+      "gaussWrap": ["mission data schemas, provenance, and quality semantics", "radiation-aware compute leases and abstention policy", "signed model/artifact governance using partner security primitives"],
+      "nonCompeteBoundary": ["do not build a competing operating system or crypto library", "do not make independent PQC or certification claims", "do not replace the partner trust root, key hierarchy, or ledger"],
+      "verificationStatus": "public_capability_claim",
+      "unknowns": ["exact product names, versions, APIs, and deployment model", "external attestation and certification evidence", "key-management, ledger, and incident-response boundary"]
+    }
+  ],
+  "packages": [
+    {
+      "id": "fleet-integration",
+      "name": "Gauss Fleet Integration",
+      "tier": "commercial",
+      "positioning": "Fleet-level CCSDS/XTCE/Yamcs integration with replayable telemetry quality, radiation correlation, bounded inference, and constellation evidence without replacing the customer's ground segment.",
+      "delivery": "self_hosted_ground",
+      "installArtifacts": ["config/mission-target.schema.json", "config/mission-targets.json", "config/analytics-tensor.schema.json", "gauss-orchestrator/src/telemetry/ccsds.rs", "gauss-orchestrator/src/telemetry/xtce.rs", "gauss-orchestrator/src/telemetry/yamcs.rs", "services/yamcs-replay", "docs/architecture/CFS_YAMCS_ECC_INTEGRATION.md"],
+      "requiredInputs": ["approved spacecraft and fleet identity profile", "mission XTCE or equivalent telemetry dictionary", "CCSDS packet samples and replay window", "calibration, units, time-correlation, and quality rules", "Yamcs or ground-segment deployment boundary", "radiation/environment source and freshness policy"],
+      "acceptanceTests": ["CCSDS identity, sequence, and integrity validation", "XTCE mapping and unknown-parameter handling", "Yamcs replay with raw/calibrated/derived lineage", "fleet duplicate, gap, stale, and calibration fault cases", "radiation-event and memory-integrity correlation", "deterministic tensor and incident replay"],
+      "externalGates": ["customer mission dictionary approval", "customer security/data-residency review", "customer archive and retention approval"],
+      "partnerBoundary": {
+        "partnerOwned": ["xOrbita SSA observations and licensed risk inputs", "JAOPS Yamcs Gateway, mission-control, and operator workflow", "Transcelestial link-service telemetry", "Pan Galactic host trust and cryptographic services"],
+        "gaussOwned": ["quality, provenance, calibration, and radiation correlation", "replayable fleet evidence and bounded inference", "stable adapters and customer-facing integration acceptance"],
+        "gaussDoesNotOwn": ["SSA sensing/catalog production", "mission-control or telecommand authority", "optical communications hardware or scheduling", "operating-system, cryptography, or certification claims"],
+        "integrationSurface": ["versioned event/track adapter", "Yamcs processor/plugin or data-link boundary", "link-metrics and data-transfer-intent adapter", "signed service/container and provenance export"]
+      },
+      "safety": { "commandAuthority": false, "onlineTraining": false, "fallback": "deterministic_baseline", "approvalRequired": true }
+    },
+    {
+      "id": "flight-candidate-adapter",
+      "name": "Gauss Flight Candidate Adapter",
+      "tier": "flight-candidate",
+      "positioning": "A fixed-memory cFS application and evidence pack for target-processor integration, radiation-aware gating, ECC-protected buffers, and safe residual inference.",
+      "delivery": "cfs_source_and_target_build",
+      "installArtifacts": ["services/cfs-gauss-mhd", "gauss-orchestrator/src/telemetry/fused_tensor.rs", "gauss-orchestrator/src/telemetry/ecc.rs", "gauss-orchestrator/src/telemetry/radiation.rs", "config/radiation-envelope.schema.json", "config/analytics-tensor.schema.json", "docs/architecture/CFS_YAMCS_ECC_INTEGRATION.md", "docs/architecture/RADIATION_COMPUTE_PROTECTION.md"],
+      "requiredInputs": ["selected cFS release and target processor/PSP", "Software Bus message IDs, EVS events, tables, and watchdog policy", "memory controller ECC/EDAC and scrubbing evidence", "power, thermal, RAM, stack, and worst-case latency budgets", "reviewed radiation environment, shielding, and part-lot evidence", "approved deterministic baseline and frozen model artifact, if used"],
+      "acceptanceTests": ["target cFS build and host SIL build", "fixed-memory and no-unbounded-allocation checks", "malformed packet, stale radiation, uncertainty, and abstention cases", "single-bit correction and double-bit detection at software boundary", "watchdog, reset, power-cycle, brownout, and link-loss recovery", "hardware-in-the-loop timing, RAM, stack, power, and thermal measurements"],
+      "externalGates": ["target processor and cFS integration review", "hardware ECC/EDAC and radiation assurance review", "mission software assurance and command-inhibition approval", "flight opportunity, launch, and operations authority"],
+      "partnerBoundary": {
+        "partnerOwned": ["JAOPS simulation, operational review, and mission-control acceptance", "Pan Galactic secure host, boot, and key boundary", "Transcelestial link hardware and flight/ground network evidence", "xOrbita SSA input where the mission needs it"],
+        "gaussOwned": ["fixed-memory cFS-shaped validation and feature path", "bounded residual inference with deterministic fallback", "integration evidence, replay, and flight-candidate acceptance artifacts"],
+        "gaussDoesNotOwn": ["target hardware radiation qualification", "cFS mission command authority", "optical terminal firmware or network control", "secure-boot, crypto, or flight-certification authority"],
+        "integrationSurface": ["cFS app/build and Software Bus contracts", "JAOPS simulator/HIL test harness", "signed Pan Galactic deployment artifact", "Transcelestial link-health input and xOrbita event input"]
+      },
+      "safety": { "commandAuthority": false, "onlineTraining": false, "fallback": "deterministic_baseline", "approvalRequired": true }
+    },
+    {
+      "id": "bridge-node",
+      "name": "Gauss Federated Bridge Node",
+      "tier": "infrastructure",
+      "positioning": "A bounded LEO/MEO/GEO/lunar/ground bridge for encrypted data products, DTN store-and-forward, provenance, and approved compute leases.",
+      "delivery": "self_hosted_bridge_node",
+      "installArtifacts": ["config/space-data-center-bridge.schema.json", "config/space-data-center-bridge.json", "gauss-orchestrator/src/network_management.rs", "gauss-orchestrator/src/mesh_ledger.rs", "scripts/turing/device-cache-server.py", "docs/architecture/SPACE_DATA_CENTER_BRIDGE.md"],
+      "requiredInputs": ["approved node identities and trust-zone map", "contact plan, link budgets, payload ceilings, and expiry policy", "data classification, encryption, replication, and retention policy", "compute capability, RAM, power, thermal, and radiation reports", "approved model/artifact registry and signing keys", "operator approval and rollback authority"],
+      "acceptanceTests": ["DTN store-and-forward across LEO/MEO/GEO/lunar test zones", "contact gap, duplicate, expiry, corruption, and replay cases", "bounded compute lease admission, expiry, retry, and release", "cross-zone provenance, hash, encryption, and replication checks", "worker loss, memory pressure, radiation inhibit, and deterministic fallback", "operator approval, revoke, and command-inert behavior"],
+      "externalGates": ["link, spectrum, and network security authority", "CCSDS DTN/LunaNet or customer service-profile conformance", "node hardware, radiation, power, and thermal qualification", "ground and flight operations acceptance"],
+      "partnerBoundary": {
+        "partnerOwned": ["Transcelestial optical transport and link scheduling", "JAOPS Yamcs/ground operations endpoint", "Pan Galactic host trust, crypto, and ledger services", "xOrbita SSA event products when used as an upstream source"],
+        "gaussOwned": ["content-addressed mission data products and provenance", "DTN-aware admission, retention, and compute-lease policy", "cross-layer quality, radiation, and abstention decisions"],
+        "gaussDoesNotOwn": ["carrier/network hardware or beam control", "MCC/telecommand operations", "OS, crypto primitives, or trust-root management", "licensed upstream SSA catalog or sensor operation"],
+        "integrationSurface": ["DTN bundle/product adapter", "Yamcs ingest and replay adapter", "Pan Galactic signed deployment and audit export", "link-health and SSA event inputs"]
+      },
+      "safety": { "commandAuthority": false, "onlineTraining": false, "fallback": "deterministic_baseline", "approvalRequired": true }
+    }
+  ]
+}

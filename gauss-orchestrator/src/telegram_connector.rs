@@ -60,12 +60,7 @@ impl TelegramConnector {
     }
 
     /// Send an explicit permission request with actionable approve/deny commands.
-    pub async fn notify_permission_request(
-        &self,
-        request_id: &str,
-        title: &str,
-        detail: &str,
-    ) {
+    pub async fn notify_permission_request(&self, request_id: &str, title: &str, detail: &str) {
         let msg = format!(
             "🛂 <b>{}</b>\n\n{}\n\n\
              Request ID: <code>{}</code>\n\
@@ -235,17 +230,21 @@ pub async fn run_telegram_listener(
         return;
     }
 
+    let allowed_user_ids: std::collections::HashSet<u64> =
+        std::env::var("ORCHESTRATOR_TELEGRAM_ALLOWED_USER_IDS")
+            .unwrap_or_default()
+            .split(',')
+            .filter_map(|value| value.trim().parse::<u64>().ok())
+            .collect();
+    if allowed_user_ids.is_empty() {
+        tracing::warn!(
+            "telegram command listener disabled: set ORCHESTRATOR_TELEGRAM_ALLOWED_USER_IDS"
+        );
+        return;
+    }
+
     let bot = Bot::new(token);
     let target_chat_id = ChatId(chat_id);
-
-    // #region agent log
-    let debug_log = "/Users/josh/Documents/lightbound/Gauss/Gauss Aurora V0.1/.cursor/debug-21c0ed.log";
-    let ts = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0);
-    let _ = std::fs::OpenOptions::new().append(true).create(true).open(debug_log).and_then(|mut f| {
-        use std::io::Write;
-        writeln!(f, "{}", serde_json::json!({"sessionId":"21c0ed","hypothesisId":"H4","location":"telegram_connector.rs:listener_start","message":"listener started","data":{"target_chat_id":chat_id},"timestamp":ts}))
-    });
-    // #endregion
 
     tracing::info!("🤖 Telegram listener starting - ready to send agent analysis reports");
 
@@ -273,18 +272,10 @@ pub async fn run_telegram_listener(
         📝 Agent analysis reports will be sent to this chat.\n\
         Files are continuously monitored in ./new_telemetry/\n\n\
         All fixes are validated with cargo test before applying.";
-    // #region agent log
-    let welcome_res = bot
+    let _welcome_res = bot
         .send_message(target_chat_id, welcome)
         .parse_mode(ParseMode::Html)
         .await;
-    let ts2 = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0);
-    let (welcome_ok, err_str): (bool, String) = welcome_res.as_ref().map(|_| (true, String::new())).unwrap_or_else(|e| (false, e.to_string()));
-    let _ = std::fs::OpenOptions::new().append(true).create(true).open(debug_log).and_then(|mut f| {
-        use std::io::Write;
-        writeln!(f, "{}", serde_json::json!({"sessionId":"21c0ed","hypothesisId":"H5","location":"telegram_connector.rs:welcome","message":"welcome send","data":{"ok":welcome_ok,"error":err_str},"timestamp":ts2}))
-    });
-    // #endregion
 
     // Poll updates and forward commands to orchestrator.
     // This enables actual two-way chat controls without requiring webhook setup.
@@ -296,7 +287,10 @@ pub async fn run_telegram_listener(
         .clamp(10, 120);
     let mut offset: i32 = 0;
     loop {
-        let mut request = bot.get_updates().timeout(poll_timeout_secs as u32).limit(50);
+        let mut request = bot
+            .get_updates()
+            .timeout(poll_timeout_secs as u32)
+            .limit(50);
         if offset > 0 {
             request = request.offset(offset);
         }
@@ -307,14 +301,13 @@ pub async fn run_telegram_listener(
                     offset = update.id + 1;
                     if let teloxide::types::UpdateKind::Message(message) = update.kind {
                         if message.chat.id != target_chat_id {
-                            // #region agent log
-                            let ts3 = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0);
-                            let incoming_id = format!("{:?}", message.chat.id);
-                            let _ = std::fs::OpenOptions::new().append(true).create(true).open(debug_log).and_then(|mut f| {
-                                use std::io::Write;
-                                writeln!(f, "{}", serde_json::json!({"sessionId":"21c0ed","hypothesisId":"H4","location":"telegram_connector.rs:filter","message":"chat id mismatch skip","data":{"target_chat_id":chat_id,"incoming_chat_id":incoming_id},"timestamp":ts3}))
-                            });
-                            // #endregion
+                            continue;
+                        }
+                        let Some(sender) = message.from() else {
+                            continue;
+                        };
+                        if !allowed_user_ids.contains(&sender.id.0) {
+                            tracing::warn!("ignored Telegram command from non-allowlisted sender");
                             continue;
                         }
                         let Some(text) = message.text() else {

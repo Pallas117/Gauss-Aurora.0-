@@ -19,30 +19,17 @@ jest.mock("@/hooks/useBackendHealth", () => ({
       timestamp: new Date().toISOString(),
       memory: {
         level: "nominal",
-        signals: ["headroom-healthy"],
-        totalRamGb: 8,
-        freeRamGb: 4,
-        usedRamGb: 4,
-        freeRatio: 0.5,
-        thresholds: {
-          constrainedFreeMb: 3072,
-          criticalFreeMb: 1536,
-          constrainedFreeRatio: 0.22,
-          criticalFreeRatio: 0.12,
-        },
-        ceiling: {
-          ceilingMb: 5800,
-          overCeiling: false,
-          checkedAt: new Date().toISOString(),
-          cacheMs: 2000,
-          lastError: null,
-        },
+        freeMb: 4096,
+        suspendedSubsystems: [],
+        svgLiteForced: false,
+        deepseekMode: "auto",
       },
     },
     loading: false,
     error: null,
     memoryLevel: "nominal",
-    memorySignals: ["headroom-healthy"],
+    deepseekMode: "auto",
+    svgLiteForced: false,
   }),
 }));
 
@@ -56,12 +43,55 @@ jest.mock("@/components/ops/OpsLaneLinks", () => ({
 
 jest.mock("@/lib/api/heliophysics-proxy", () => ({
   fetchOpsCommandMetrics: jest.fn(() => new Promise(() => {})),
+  fetchOpsWorkers: jest.fn(async () => ({
+    workers: [
+      {
+        id: "command-planner",
+        lane: "runtime",
+        enabled: true,
+        approval: "operator-gate",
+        state: "idle",
+        lastRunAt: null,
+        lastResult: null,
+      },
+    ],
+    brokerPolicy: {
+      memoryLevel: "nominal",
+      deepseekMode: "auto",
+      autoSafeOps: true,
+    },
+  })),
+  fetchOpsDelegationQueue: jest.fn(async () => ({
+    pendingTasks: [],
+    queuedApprovals: [],
+    brokerPolicy: {
+      memoryLevel: "nominal",
+      deepseekMode: "auto",
+      autoSafeOps: true,
+    },
+  })),
+  dispatchOpsWorkerTask: jest.fn(async () => ({
+    result: {
+      status: "completed",
+      summary: "worker completed",
+    },
+  })),
+  approveOpsDelegationTask: jest.fn(async () => ({
+    result: {
+      summary: "approved",
+    },
+  })),
+  rejectOpsDelegationTask: jest.fn(async () => ({
+    result: {
+      summary: "rejected",
+    },
+  })),
   queueOpsCommand: jest.fn(async () => ({
     job: {
       jobId: "job-1",
     },
   })),
-  planDeepSeekSafeCommand: jest.fn(async () => ({
+  planModelSafeCommand: jest.fn(async () => ({
     proposal: {
       commandPreview: "echo ok",
       plan: {
@@ -74,7 +104,7 @@ jest.mock("@/lib/api/heliophysics-proxy", () => ({
       token: "token-1",
     },
   })),
-  executeDeepSeekSafeCommand: jest.fn(async () => ({
+  executeModelSafeCommand: jest.fn(async () => ({
     execution: {
       ok: true,
       commandPreview: "echo ok",
@@ -129,5 +159,16 @@ describe("DevHud internal feature", () => {
     fireEvent.click(screen.getByRole("button", { name: /run/i }));
 
     expect(await screen.findByTestId("audit-logs")).toHaveTextContent("backend=healthy");
+  });
+
+  it("lists worker states from the terminal commands", async () => {
+    render(<DevHud />);
+
+    fireEvent.change(screen.getByLabelText(/operator command/i), {
+      target: { value: "workers" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /run/i }));
+
+    expect(await screen.findByTestId("audit-logs")).toHaveTextContent("[WORKERS]");
   });
 });

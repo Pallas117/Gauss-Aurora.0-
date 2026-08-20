@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gauss.local/schema/analytics-tensor-v1.json",
+  "title": "Gauss analytics tensor v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "generatedAt",
+    "timestamp",
+    "cadenceSeconds",
+    "physics",
+    "mms",
+    "solar",
+    "exogenous",
+    "reliability",
+    "doctrine",
+    "masks",
+    "provenance"
+  ],
+  "properties": {
+    "schema": { "const": "gauss-analytics-tensor-v1" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "cadenceSeconds": { "const": 5 },
+    "physics": {
+      "type": "array",
+      "minItems": 24,
+      "maxItems": 24,
+      "items": { "type": "array", "minItems": 18, "maxItems": 18, "items": { "type": "number" } }
+    },
+    "mms": { "type": "array", "minItems": 20, "maxItems": 20, "items": { "type": "number" } },
+    "solar": { "type": "array", "minItems": 8, "maxItems": 8, "items": { "type": "number" } },
+    "exogenous": { "type": "array", "minItems": 8, "maxItems": 8, "items": { "type": "number" } },
+    "reliability": { "type": "array", "minItems": 10, "maxItems": 10, "items": { "type": "number" } },
+    "doctrine": { "type": "array", "minItems": 6, "maxItems": 6, "items": { "type": "number" } },
+    "masks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["physics", "mms", "solar", "exogenous", "doctrine"],
+      "properties": {
+        "physics": { "type": "array", "minItems": 24, "maxItems": 24, "items": { "type": "number", "minimum": 0, "maximum": 1 } },
+        "mms": { "type": "number", "minimum": 0, "maximum": 1 },
+        "solar": { "type": "number", "minimum": 0, "maximum": 1 },
+        "exogenous": { "type": "number", "minimum": 0, "maximum": 1 },
+        "doctrine": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "runtime"],
+      "properties": {
+        "source": { "const": "deterministic" },
+        "runtime": { "const": "contract-only" }
+      }
+    }
+  }
+}

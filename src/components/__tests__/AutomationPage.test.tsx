@@ -14,6 +14,34 @@ jest.mock("@/hooks/usePowerProfile", () => ({
   usePowerProfile: () => usePowerProfileMock(),
 }));
 
+jest.mock("@/hooks/useOpsWorkerMesh", () => ({
+  useOpsWorkerMesh: () => ({
+    workers: [
+      {
+        id: "source-policy",
+        lane: "runtime",
+        enabled: true,
+        approval: "safe-auto",
+        state: "idle",
+        lastRunAt: null,
+        lastResult: null,
+      },
+    ],
+    queue: {
+      pendingTasks: [],
+      queuedApprovals: [],
+      brokerPolicy: {
+        memoryLevel: "nominal",
+        externalModelMode: "auto",
+        autoSafeOps: true,
+      },
+    },
+    loading: false,
+    error: null,
+    refresh: jest.fn(),
+  }),
+}));
+
 jest.mock("@/lib/api/auth", () => ({
   getAuthHeaders: () => getAuthHeadersMock(),
 }));
@@ -121,6 +149,8 @@ describe("AutomationPage", () => {
   test("renders source override state and applies a new operator pin", async () => {
     render(<AutomationPage />);
 
+    expect(screen.getByText(/specialist workers/i)).toBeInTheDocument();
+    expect(screen.getByText(/source-policy/i)).toBeInTheDocument();
     expect(screen.getByTestId("automation-source-override-noaa-swpc")).toHaveTextContent(
       "override sample",
     );

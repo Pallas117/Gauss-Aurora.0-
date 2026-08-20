@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gauss Sovereign UI"
+  short_description: "Build mission UI within Gauss constraints"
+  default_prompt: "Use $gauss-sovereign-ui to implement a responsive Gauss operator UI change."

@@ -225,6 +225,101 @@ const MOCK_SATELLITES = {
   updatedAt: NOW,
 };
 
+const MOCK_SPACE_DOMAIN = {
+  snapshot: {
+    updatedAt: NOW,
+    riskZones: MOCK_RISK_ZONES,
+    satellites: MOCK_SATELLITES,
+    conjunctions: {
+      updatedAt: NOW,
+      count: 3,
+    },
+  },
+  summary: {
+    updatedAt: NOW,
+    freshness: {
+      riskZonesAgeSeconds: 4,
+      satellitesAgeSeconds: 5,
+      conjunctionsAgeSeconds: 12,
+    },
+    availability: {
+      riskZones: true,
+      satellites: true,
+      conjunctions: true,
+    },
+    counts: {
+      riskZoneCount: 2,
+      satelliteObjectCount: 2,
+      highValueCount: 1,
+      unidentifiedCount: 1,
+      conjunctionCount: 3,
+    },
+    crowding: {
+      maxRiskScore: 0.74,
+      avgRiskScore: 0.625,
+      geoMaxRiskScore: 0.74,
+      meoMaxRiskScore: 0.51,
+      weightedObjectDensity: 0.42,
+      unidentifiedRatio: 0.5,
+    },
+    conjunctionRisk: {
+      maxCollisionProbability: 0.0024,
+      minMissDistanceM: 145,
+      recentCriticalCount: 1,
+    },
+    learnedLane: {
+      modelVersion: "ssa-registry-test",
+      score: 0.63,
+      confidence: 0.78,
+      trigger: true,
+      threshold: 0.58,
+      blend: 0.66,
+      features: {
+        conjunctionCount: 3,
+        maxCollisionProbability: 0.0024,
+        inverseMissDistance: 1 / 145,
+        debrisDensity: 0.42,
+        highValueNeighborDensity: 0.67,
+        unidentifiedRatio: 0.5,
+        geoCrowdingScore: 0.74,
+        meoCrowdingScore: 0.51,
+        leoCrowdingScore: 0.18,
+        tleFreshnessScore: 0.93,
+        conjunctionFreshnessScore: 0.87,
+        availabilityScore: 1,
+      },
+      topContributors: [
+        { name: "conjunctionCount", weight: 0.31, value: 3, contribution: 0.19 },
+        { name: "geoCrowdingScore", weight: 0.22, value: 0.74, contribution: 0.16 },
+      ],
+    },
+  },
+  analysis: {
+    generatedAt: NOW,
+    cadenceSeconds: 30,
+    source: "deterministic",
+    severity: "warning",
+    headline: "Elevated orbital risk requires attention",
+    summary:
+      "Elevated SSA pressure detected: learned lane 63%, catalog risk 74%, and 3 conjunctions under watch.",
+    confidence: 0.82,
+    changed: true,
+    changedSignals: ["conjunction-count", "collision-probability"],
+    metrics: {
+      learnedLaneScore: 0.63,
+      maxRiskScore: 0.74,
+      maxCollisionProbability: 0.0024,
+      minMissDistanceM: 145,
+      conjunctionCount: 3,
+    },
+    model: {
+      used: false,
+      modelId: null,
+      generatedAt: null,
+    },
+  },
+};
+
 const MOCK_TURING_SUMMARY = {
   total: 1,
   healthy: 1,
@@ -295,6 +390,21 @@ const MOCK_OPS_COMMAND = {
   ],
 };
 
+const MOCK_OPS_COMMAND_METRICS = {
+  metrics: {
+    queue_depth: 2,
+    planner_latency_avg_ms: 184,
+    execution_total: 12,
+    execution_succeeded_total: 11,
+    battery_throttle_hits_total: 0,
+  },
+  planner_circuit: {
+    open: false,
+    open_until: null,
+    consecutive_failures: 0,
+  },
+};
+
 export async function mockUiApis(page: Page): Promise<void> {
   const corsHeaders = {
     "access-control-allow-origin": "*",
@@ -346,6 +456,10 @@ export async function mockUiApis(page: Page): Promise<void> {
     await fulfillCorsJson(route, MOCK_SATELLITES);
   });
 
+  await page.route(/\/api\/ssa\/space-domain/, async (route) => {
+    await fulfillCorsJson(route, MOCK_SPACE_DOMAIN);
+  });
+
   await page.route(/\/api\/turing\/devices\/summary/, async (route) => {
     await fulfillCorsJson(route, MOCK_TURING_SUMMARY);
   });
@@ -368,6 +482,10 @@ export async function mockUiApis(page: Page): Promise<void> {
 
   await page.route(/\/api\/ops\/command\/latest/, async (route) => {
     await fulfillCorsJson(route, MOCK_OPS_COMMAND);
+  });
+
+  await page.route(/\/api\/ops\/command\/metrics/, async (route) => {
+    await fulfillCorsJson(route, MOCK_OPS_COMMAND_METRICS);
   });
 
   const MOCK_MISSION_CORE = {
@@ -446,24 +564,10 @@ export async function mockUiApis(page: Page): Promise<void> {
       timestamp: NOW,
       memory: {
         level: "nominal",
-        signals: ["headroom-healthy"],
-        totalRamGb: 8,
-        freeRamGb: 4,
-        usedRamGb: 4,
-        freeRatio: 0.5,
-        thresholds: {
-          constrainedFreeMb: 3072,
-          criticalFreeMb: 1536,
-          constrainedFreeRatio: 0.22,
-          criticalFreeRatio: 0.12,
-        },
-        ceiling: {
-          ceilingMb: 5800,
-          overCeiling: false,
-          checkedAt: NOW,
-          cacheMs: 2000,
-          lastError: null,
-        },
+        freeMb: 4096,
+        suspendedSubsystems: [],
+        svgLiteForced: false,
+        deepseekMode: "auto",
       },
     });
   });

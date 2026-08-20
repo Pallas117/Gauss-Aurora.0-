@@ -1,0 +1,17 @@
+import "../base-url-public.test.ts";
+import "../cybertiger/daemon.test.ts";
+import "../decoder-registry.test.ts";
+import "../decoder-status.test.ts";
+import "../memory-caps-integration.test.ts";
+import "../memory-check.test.ts";
+import "../middleware/auth.test.ts";
+import "../model-command-bridge.test.ts";
+import "../offline-resilience.test.ts";
+import "../ops-command-executor.test.ts";
+import "../ops-command-runtime.test.ts";
+import "../planner-context.test.ts";
+import "../power-polling.test.ts";
+import "../safe-command-runner.test.ts";
+import "../state.test.ts";
+import "../turing/pool.test.ts";
+import "../workers/mesh/broker.test.ts";

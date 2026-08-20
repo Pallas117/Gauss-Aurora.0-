@@ -1,6 +1,7 @@
 import type {
   AuroraGridPoint,
   CanonicalSpaceWeatherPoint,
+  ExogenousSignalContext,
   MMSReconVectorPoint,
   SourceStatus,
   SphericalHarmonicCoefficients,
@@ -15,8 +16,10 @@ import {
   type SatelliteObjectsSnapshot,
 } from "./ssa/space-domain-store.js";
 
-const DEFAULT_MAX_CANONICAL = 20_000;
-const DEFAULT_MAX_MMS = 5_000;
+// Keep only the recent operational window in-process. Longer history belongs in
+// Supabase/Influx, where it does not compete with the 8 GB edge runtime.
+const DEFAULT_MAX_CANONICAL = 4_096;
+const DEFAULT_MAX_MMS = 1_024;
 
 function getMaxCanonicalPoints(): number {
   const raw = (process.env.CANONICAL_FEED_MAX ?? "").trim();
@@ -41,6 +44,7 @@ let auroraMap:
       harmonics: SphericalHarmonicCoefficients;
     }
   | null = null;
+let exogenousContext: ExogenousSignalContext | null = null;
 
 export function pushCanonical(point: CanonicalSpaceWeatherPoint): void {
   canonicalFeed.push(point);
@@ -124,10 +128,18 @@ export function getRiskZones(): RiskZoneSnapshot | null {
   return getRiskZoneSnapshot();
 }
 
-export function setSatelliteObjects(objects: SatelliteObject[]): void {
-  setSatelliteObjectsSnapshot(objects);
+export function setSatelliteObjects(objects: SatelliteObject[], coverage?: Parameters<typeof setSatelliteObjectsSnapshot>[1]): void {
+  setSatelliteObjectsSnapshot(objects, coverage);
 }
 
 export function getSatelliteObjects(): SatelliteObjectsSnapshot | null {
   return getSatelliteObjectsSnapshot();
+}
+
+export function setExogenousContext(ctx: ExogenousSignalContext): void {
+  exogenousContext = ctx;
+}
+
+export function getExogenousContext(): ExogenousSignalContext | null {
+  return exogenousContext;
 }

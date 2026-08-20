@@ -1,0 +1,270 @@
+{
+  "schema_version": 1,
+  "scope": "Project Gauss software, ground-segment services, operator workflows, and development supply chain",
+  "assumptions": [
+    "CSDSS is interpreted as CCSDS (Consultative Committee for Space Data Systems).",
+    "The repository can evidence technical controls; organizational, contractual, and legal conformity still require human governance and independent assessment.",
+    "Official source pages are checked for version markers and content hashes; normative standards are not copied into the repository."
+  ],
+  "sources": [
+    {
+      "id": "iso-27001-2022",
+      "authority": "ISO",
+      "framework": "ISO/IEC 27001",
+      "version": "2022 + Amd 1:2024",
+      "url": "https://www.iso.org/standard/27001?browse=tc",
+      "markers": ["ISO/IEC 27001:2022", "International Standard"],
+      "last_verified": "2026-07-16"
+    },
+    {
+      "id": "iso-27001-amd1-2024",
+      "authority": "ISO",
+      "framework": "ISO/IEC 27001 Amendment 1",
+      "version": "Amd 1:2024",
+      "url": "https://www.iso.org/standard/88435.html",
+      "markers": ["ISO/IEC 27001:2022/Amd 1:2024", "Published"],
+      "last_verified": "2026-07-16"
+    },
+    {
+      "id": "iso-27002-2022",
+      "authority": "ISO",
+      "framework": "ISO/IEC 27002",
+      "version": "2022",
+      "url": "https://www.iso.org/standard/75652.html",
+      "markers": ["ISO/IEC 27002:2022", "Information security controls"],
+      "last_verified": "2026-07-16"
+    },
+    {
+      "id": "iso-27701-2025",
+      "authority": "ISO",
+      "framework": "ISO/IEC 27701",
+      "version": "2025",
+      "url": "https://www.iso.org/standard/27701?browse=tc",
+      "markers": ["ISO/IEC 27701:2025", "Privacy Information Management System"],
+      "last_verified": "2026-07-16"
+    },
+    {
+      "id": "nist-csf-2",
+      "authority": "NIST",
+      "framework": "Cybersecurity Framework",
+      "version": "CSF 2.0 / CSWP 29",
+      "url": "https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20",
+      "markers": ["The NIST Cybersecurity Framework (CSF) 2.0", "CSWP 29"],
+      "last_verified": "2026-07-16"
+    },
+    {
+      "id": "nist-800-53-5-2-0",
+      "authority": "NIST",
+      "framework": "SP 800-53",
+      "version": "Rev. 5 / Release 5.2.0",
+      "url": "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final",
+      "markers": ["NIST SP 800-53 Rev. 5", "5.2.0"],
+      "last_verified": "2026-07-16"
+    },
+    {
+      "id": "nist-800-53a-5-2-0",
+      "authority": "NIST",
+      "framework": "SP 800-53A",
+      "version": "Rev. 5 / Release 5.2.0",
+      "url": "https://csrc.nist.gov/pubs/sp/800/53/a/r5/final",
+      "markers": ["NIST SP 800-53A Rev. 5", "5.2.0"],
+      "last_verified": "2026-07-16"
+    },
+    {
+      "id": "nist-ssdf",
+      "authority": "NIST",
+      "framework": "Secure Software Development Framework",
+      "version": "SP 800-218 v1.1 final; v1.2 tracked as draft",
+      "url": "https://csrc.nist.gov/projects/ssdf/publications",
+      "markers": ["SP 800-218", "Version 1.2"],
+      "last_verified": "2026-07-16"
+    },
+    {
+      "id": "nist-ir-8270",
+      "authority": "NIST",
+      "framework": "Commercial Satellite Operations Cybersecurity",
+      "version": "NISTIR 8270 final",
+      "url": "https://csrc.nist.gov/pubs/ir/8270/final",
+      "markers": ["IR 8270", "Commercial Satellite Operations"],
+      "last_verified": "2026-07-16"
+    },
+    {
+      "id": "nist-ir-8401",
+      "authority": "NIST",
+      "framework": "Satellite Ground Segment Command and Control",
+      "version": "NISTIR 8401 final",
+      "url": "https://csrc.nist.gov/pubs/ir/8401/final",
+      "markers": ["IR 8401", "Satellite Ground Segment"],
+      "last_verified": "2026-07-16"
+    },
+    {
+      "id": "nist-ir-8441",
+      "authority": "NIST",
+      "framework": "Hybrid Satellite Networks",
+      "version": "NISTIR 8441 final",
+      "url": "https://csrc.nist.gov/pubs/ir/8441/final",
+      "markers": ["IR 8441", "Hybrid Satellite Networks"],
+      "last_verified": "2026-07-16"
+    },
+    {
+      "id": "ccsds-security-catalog",
+      "authority": "CCSDS",
+      "framework": "Space Data Link Security and Authentication",
+      "version": "355.0-B-2, 355.1-B-1, 357.0-B-1, 354.0-M-1",
+      "url": "https://ccsds.org/publications/allpubs/",
+      "markers": ["CCSDS 355.0-B-2", "CCSDS 355.1-B-1", "CCSDS 357.0-B-1", "CCSDS 354.0-M-1"],
+      "last_verified": "2026-07-16"
+    },
+    {
+      "id": "ccsds-blue-books",
+      "authority": "CCSDS",
+      "framework": "Recommended Standards",
+      "version": "Active Blue Book catalog",
+      "url": "https://ccsds.org/publications/bluebooks/",
+      "markers": ["Blue Books", "Recommended Standards"],
+      "last_verified": "2026-07-16"
+    },
+    {
+      "id": "gdpr-2016-679",
+      "authority": "European Union",
+      "framework": "General Data Protection Regulation",
+      "version": "Regulation (EU) 2016/679",
+      "url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng",
+      "markers": ["REGULATION (EU) 2016/679", "Article 25", "Article 32", "Article 33", "Article 35"],
+      "deferred_statuses": [202],
+      "last_verified": "2026-07-16"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "GOV-001",
+      "title": "Governance scope, ownership, and evidence are documented",
+      "sources": ["iso-27001-2022", "nist-csf-2", "nist-ir-8270"],
+      "enforcement": "blocking",
+      "checks": [
+        { "type": "file_exists", "path": "docs/CYBERTIGER_COMPLIANCE_BASELINE.md" },
+        { "type": "file_exists", "path": "development/memory/DECISIONS.md" },
+        { "type": "file_exists", "path": ".github/workflows/compliance.yml" }
+      ]
+    },
+    {
+      "id": "IAM-001",
+      "title": "Authenticated role-based access is enforced at service boundaries",
+      "sources": ["iso-27001-2022", "iso-27002-2022", "nist-csf-2", "nist-800-53-5-2-0", "gdpr-2016-679"],
+      "enforcement": "blocking",
+      "checks": [
+        { "type": "file_contains", "path": "backend/routes/security.ts", "pattern": "requireRole\\(\\\"admin\\\"\\)" },
+        { "type": "file_contains", "path": "backend/routes/ops-control.ts", "pattern": "requireRole\\(\\\"operator\\\"\\)" },
+        { "type": "file_contains", "path": "backend/auth.ts", "pattern": "AUTH_REQUIRED" }
+      ]
+    },
+    {
+      "id": "AUD-001",
+      "title": "Security events and privileged responses are auditable",
+      "sources": ["iso-27001-2022", "iso-27002-2022", "nist-800-53-5-2-0", "gdpr-2016-679"],
+      "enforcement": "blocking",
+      "checks": [
+        { "type": "file_contains", "path": "backend/cybertiger/daemon.ts", "pattern": "auth\\.failure" },
+        { "type": "file_contains", "path": "backend/cybertiger/daemon.ts", "pattern": "ip\\.blocked" },
+        { "type": "file_contains", "path": "backend/middleware/security.ts", "pattern": "x-request-id" }
+      ]
+    },
+    {
+      "id": "NET-001",
+      "title": "Boundary protection, throttling, and secure response headers exist",
+      "sources": ["iso-27002-2022", "nist-csf-2", "nist-800-53-5-2-0", "nist-ir-8401"],
+      "enforcement": "blocking",
+      "checks": [
+        { "type": "file_contains", "path": "backend/cybertiger/daemon.ts", "pattern": "rateLimitWindowMs" },
+        { "type": "file_contains", "path": "backend/middleware/security.ts", "pattern": "X-Content-Type-Options" },
+        { "type": "file_contains", "path": "backend/middleware/security.ts", "pattern": "X-Frame-Options" }
+      ]
+    },
+    {
+      "id": "SPACE-001",
+      "title": "CCSDS telemetry framing has executable decoder coverage",
+      "sources": ["ccsds-blue-books", "nist-ir-8401"],
+      "enforcement": "blocking",
+      "checks": [
+        { "type": "file_exists", "path": "gauss-orchestrator/src/telemetry/ccsds.rs" },
+        { "type": "file_exists", "path": "gauss-orchestrator/tests/ccsds_decoder_tests.rs" },
+        { "type": "package_script", "script": "test:orchestrator" }
+      ]
+    },
+    {
+      "id": "PRIV-001",
+      "title": "Privacy-by-design technical controls protect stored operational data",
+      "sources": ["iso-27701-2025", "gdpr-2016-679"],
+      "enforcement": "blocking",
+      "checks": [
+        { "type": "file_contains", "path": "supabase/migrations/20260218234500_space_weather_rbac.sql", "pattern": "enable row level security" },
+        { "type": "file_contains", "path": "supabase/migrations/20260302120000_user_onboarding.sql", "pattern": "enable row level security" },
+        { "type": "file_contains", "path": "backend/middleware/security.ts", "pattern": "Permissions-Policy" }
+      ]
+    },
+    {
+      "id": "SDLC-001",
+      "title": "Secure development and regression tests run in CI",
+      "sources": ["nist-ssdf", "nist-800-53-5-2-0", "iso-27002-2022"],
+      "enforcement": "blocking",
+      "checks": [
+        { "type": "workflow_contains", "path": ".github/workflows/ci-tests.yml", "pattern": "npm ci" },
+        { "type": "workflow_contains", "path": ".github/workflows/ci-tests.yml", "pattern": "npm test" },
+        { "type": "workflow_contains", "path": ".github/workflows/compliance.yml", "pattern": "npm audit" },
+        { "type": "file_exists", "path": "package-lock.json" }
+      ]
+    },
+    {
+      "id": "OPS-001",
+      "title": "Satellite operator actions use typed, approval-gated packets",
+      "sources": ["nist-ir-8401", "ccsds-security-catalog", "iso-27001-2022"],
+      "enforcement": "blocking",
+      "checks": [
+        { "type": "file_exists", "path": "agents/operator-task.schema.json" },
+        { "type": "file_contains", "path": "agents/roles/satellite-operations.md", "pattern": "explicit human authorization" },
+        { "type": "package_script", "script": "develop:task" }
+      ]
+    },
+    {
+      "id": "SPACE-SEC-001",
+      "title": "CCSDS SDLS, authentication credentials, and key management are closed or formally tracked",
+      "sources": ["ccsds-security-catalog", "nist-ir-8401", "nist-800-53-5-2-0"],
+      "enforcement": "advisory",
+      "checks": [
+        { "type": "file_contains", "path": "docs/COMPLIANCE_ALIGNMENT.md", "pattern": "SDLS" },
+        { "type": "file_contains", "path": "docs/COMPLIANCE_ALIGNMENT.md", "pattern": "key management" }
+      ]
+    },
+    {
+      "id": "GDPR-ROPA-001",
+      "title": "Records of processing, lawful basis, and DPIA ownership are addressed",
+      "sources": ["gdpr-2016-679", "iso-27701-2025"],
+      "enforcement": "advisory",
+      "checks": [
+        { "type": "file_contains", "path": "docs/COMPLIANCE_ALIGNMENT.md", "pattern": "Article 30" },
+        { "type": "file_contains", "path": "docs/COMPLIANCE_ALIGNMENT.md", "pattern": "DPIA" },
+        { "type": "file_contains", "path": "docs/COMPLIANCE_ALIGNMENT.md", "pattern": "lawful basis" }
+      ]
+    },
+    {
+      "id": "GDPR-BREACH-001",
+      "title": "Personal-data breach assessment and notification timing are defined",
+      "sources": ["gdpr-2016-679", "nist-csf-2", "iso-27001-2022"],
+      "enforcement": "advisory",
+      "checks": [
+        { "type": "file_contains", "path": "docs/COMPLIANCE_ALIGNMENT.md", "pattern": "72 hours" },
+        { "type": "file_contains", "path": "docs/COMPLIANCE_ALIGNMENT.md", "pattern": "breach" }
+      ]
+    },
+    {
+      "id": "GDPR-TRANSFER-001",
+      "title": "Processor contracts and international-transfer safeguards are identified",
+      "sources": ["gdpr-2016-679", "iso-27701-2025"],
+      "enforcement": "advisory",
+      "checks": [
+        { "type": "file_contains", "path": "docs/COMPLIANCE_ALIGNMENT.md", "pattern": "processor" },
+        { "type": "file_contains", "path": "docs/COMPLIANCE_ALIGNMENT.md", "pattern": "international transfers" }
+      ]
+    }
+  ]
+}

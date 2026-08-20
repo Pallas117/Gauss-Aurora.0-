@@ -61,8 +61,9 @@ fn test_config() -> OrchestratorConfig {
 async fn post_telemetry_decode_returns_decoded_and_mapped_packets() {
     let config = test_config();
     let app = decode_api::router(Arc::new(config));
-    let fixture =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/ccsds_valid.bin");
+    let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/ccsds_valid.bin");
+    println!("DEBUG: CARGO_MANIFEST_DIR = {}", env!("CARGO_MANIFEST_DIR"));
+    println!("DEBUG: fixture path = {:?}", fixture);
     let bytes = std::fs::read(&fixture).expect("fixture must exist");
 
     let request = Request::builder()
@@ -74,12 +75,7 @@ async fn post_telemetry_decode_returns_decoded_and_mapped_packets() {
     let response: axum::response::Response = app.oneshot(request).await.unwrap();
     assert_eq!(response.status(), 200);
 
-    let body = response
-        .into_body()
-        .collect()
-        .await
-        .unwrap()
-        .to_bytes();
+    let body = response.into_body().collect().await.unwrap().to_bytes();
     let json: serde_json::Value = serde_json::from_slice(body.as_ref()).unwrap();
 
     assert_eq!(json["decoded_count"].as_u64(), Some(1));
@@ -88,9 +84,18 @@ async fn post_telemetry_decode_returns_decoded_and_mapped_packets() {
     assert_eq!(packets.len(), 1);
 
     let point = &packets[0]["canonical_point"];
-    assert!(point.get("solarWind").and_then(|s| s.get("speed")).is_some());
-    assert!(point.get("solarWind").and_then(|s| s.get("density")).is_some());
-    assert!(point.get("magneticField").and_then(|m| m.get("z")).is_some());
+    assert!(point
+        .get("solarWind")
+        .and_then(|s| s.get("speed"))
+        .is_some());
+    assert!(point
+        .get("solarWind")
+        .and_then(|s| s.get("density"))
+        .is_some());
+    assert!(point
+        .get("magneticField")
+        .and_then(|m| m.get("z"))
+        .is_some());
 
     let speed = point["solarWind"]["speed"].as_f64().unwrap();
     let density = point["solarWind"]["density"].as_f64().unwrap();

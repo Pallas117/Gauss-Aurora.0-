@@ -3,8 +3,9 @@
  */
 
 import { Pool } from "pg";
-import type { OpsCommandType } from "./deepseek-command-bridge.js";
+import type { OpsCommandType } from "./model-command-bridge.js";
 import type { OpsCommandJobRecord, OpsCommandJobSource, OpsCommandJobStatus } from "./ops-command-runtime.js";
+import type { OpsCommandExecutionResult } from "./ops-command-executor.js";
 
 let pool: Pool | null = null;
 let opsCommandJobSchemaReady = false;
@@ -92,7 +93,7 @@ function asJobStatus(value: unknown): OpsCommandJobStatus {
 
 function asJobSource(value: unknown): OpsCommandJobSource {
   const source = typeof value === "string" ? value : "";
-  if (source === "manual" || source === "deepseek") {
+  if (source === "manual" || source === "external-model") {
     return source;
   }
   return "manual";
@@ -114,7 +115,7 @@ function mapOpsCommandJobRow(row: Record<string, unknown>): OpsCommandJobRecord 
     updatedAt: asIso(row.updated_at) ?? new Date().toISOString(),
     startedAt: asIso(row.started_at),
     completedAt: asIso(row.completed_at),
-    result: row.result && typeof row.result === "object" ? (row.result as Record<string, unknown>) : null,
+    result: row.result && typeof row.result === "object" ? (row.result as unknown as OpsCommandExecutionResult) : null,
     error: typeof row.error === "string" ? row.error : null,
   };
 }
@@ -126,7 +127,7 @@ async function ensureOpsCommandJobSchema(p: Pool): Promise<void> {
       job_id UUID PRIMARY KEY,
       command_type TEXT NOT NULL,
       payload JSONB NOT NULL DEFAULT '{}',
-      source TEXT NOT NULL CHECK (source IN ('manual', 'deepseek')),
+      source TEXT NOT NULL CHECK (source IN ('manual', 'external-model')),
       status TEXT NOT NULL CHECK (status IN ('planned', 'running', 'succeeded', 'failed')),
       simulate BOOLEAN NOT NULL DEFAULT false,
       idempotency_key TEXT,
@@ -209,7 +210,7 @@ export async function getCommandLogLatest(limit: number): Promise<CommandLogRow[
        LIMIT $1`,
       [Math.max(1, Math.min(limit, 500))],
     );
-    return result.rows.map((row) => ({
+    return result.rows.map((row: any) => ({
       id: Number(row.id),
       created_at: row.created_at,
       command_type: row.command_type,
@@ -339,7 +340,7 @@ export async function listOpsCommandJobs(limit: number, statuses?: OpsCommandJob
            LIMIT $1`,
           [max],
         );
-    return result.rows.map((row) => mapOpsCommandJobRow(row as Record<string, unknown>));
+    return result.rows.map((row: any) => mapOpsCommandJobRow(row as Record<string, unknown>));
   } catch (err) {
     console.warn("[pg] ops_command_jobs list failed:", err instanceof Error ? err.message : err);
     return [];

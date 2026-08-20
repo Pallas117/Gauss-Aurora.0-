@@ -4,6 +4,7 @@ import { getSupabaseAdminClient } from "./supabase.js";
 
 export type AuthRole = "viewer" | "operator" | "admin";
 export type AuthClearance = "public" | "mission" | "restricted";
+export type ServiceCapability = "telemetry:ingest" | "operator" | "control";
 
 export interface AuthContext {
   userId: string;
@@ -14,6 +15,7 @@ export interface AuthContext {
   rawClearances: string[];
   emailVerified: boolean;
   token: string;
+  serviceCapabilities?: ServiceCapability[];
 }
 
 export type AuthenticatedRequest = Request & { auth?: AuthContext };
@@ -119,8 +121,9 @@ export function getTokenFromRequest(req: Request): string | null {
   if (authHeader) {
     return authHeader;
   }
-  const queryToken = typeof req.query.token === "string" ? req.query.token.trim() : "";
-  return queryToken || null;
+  // Bearer tokens in URLs leak through browser history, proxy/access logs,
+  // referrers, and telemetry. HTTP callers must use Authorization headers.
+  return null;
 }
 
 function normalizeRole(value: unknown): AuthRole | null {
@@ -154,7 +157,9 @@ export function resolveAuthRoleFromMetadata(
     user_metadata?: Record<string, unknown>;
   },
 ): AuthRole {
-  return highestRole(extractRoles(user));
+  // `user_metadata` is user-controlled in Supabase. Only app_metadata is
+  // server-managed and may influence authorization.
+  return highestRole(extractRoles(user.app_metadata));
 }
 
 function defaultClearanceForRole(role: AuthRole): AuthClearance {
@@ -169,31 +174,25 @@ export function resolveAuthClearanceFromMetadata(
     user_metadata?: Record<string, unknown>;
   },
 ): AuthClearance {
-  const rawRoles = extractRoles(user);
+  const rawRoles = extractRoles(user.app_metadata);
   const role = highestRole(rawRoles);
-  const clearances = extractClearances(user);
+  const clearances = extractClearances(user.app_metadata);
   return highestClearance(clearances, role);
 }
 
-function extractRoles(user: {
-  app_metadata?: Record<string, unknown>;
-  user_metadata?: Record<string, unknown>;
-}): string[] {
+function extractRoles(metadata?: Record<string, unknown>): string[] {
   const roles = new Set<string>();
 
-  const appRole = normalizeRole(user.app_metadata?.role);
+  const appRole = normalizeRole(metadata?.role);
   if (appRole) roles.add(appRole);
 
-  const appRoles = user.app_metadata?.roles;
+  const appRoles = metadata?.roles;
   if (Array.isArray(appRoles)) {
     for (const role of appRoles) {
       const mapped = normalizeRole(role);
       if (mapped) roles.add(mapped);
     }
   }
-
-  const userRole = normalizeRole(user.user_metadata?.role);
-  if (userRole) roles.add(userRole);
 
   if (roles.size === 0) {
     roles.add("viewer");
@@ -202,18 +201,15 @@ function extractRoles(user: {
   return Array.from(roles);
 }
 
-function extractClearances(user: {
-  app_metadata?: Record<string, unknown>;
-  user_metadata?: Record<string, unknown>;
-}): string[] {
+function extractClearances(metadata?: Record<string, unknown>): string[] {
   const clearances = new Set<string>();
 
   const appClearance =
-    normalizeClearance(user.app_metadata?.clearance) ??
-    normalizeClearance(user.app_metadata?.clearance_level);
+    normalizeClearance(metadata?.clearance) ??
+    normalizeClearance(metadata?.clearance_level);
   if (appClearance) clearances.add(appClearance);
 
-  const appClearances = user.app_metadata?.clearances;
+  const appClearances = metadata?.clearances;
   if (Array.isArray(appClearances)) {
     for (const clearance of appClearances) {
       const mapped = normalizeClearance(clearance);
@@ -221,12 +217,27 @@ function extractClearances(user: {
     }
   }
 
-  const userClearance =
-    normalizeClearance(user.user_metadata?.clearance) ??
-    normalizeClearance(user.user_metadata?.clearance_level);
-  if (userClearance) clearances.add(userClearance);
-
   return Array.from(clearances);
+}
+
+/**
+ * Keep signup metadata non-authoritative. Supabase users can edit
+ * `user_metadata`; role, clearance, and permission-shaped fields must never be
+ * copied into a new account as if they were an access decision.
+ */
+export function sanitizeSignupMetadata(input: unknown): Record<string, unknown> {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return {};
+  }
+  const allowedKeys = new Set(["display_name", "requested_role", "organization", "timezone"]);
+  const output: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
+    if (!allowedKeys.has(key)) continue;
+    if (typeof value === "string") {
+      output[key] = value.trim().slice(0, 160);
+    }
+  }
+  return output;
 }
 
 function highestRole(rawRoles: string[]): AuthRole {

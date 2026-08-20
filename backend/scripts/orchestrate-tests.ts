@@ -16,6 +16,7 @@ function determineExecutionProfile(): Profile {
   const totalRamGB = os.totalmem() / 1024 / 1024 / 1024;
   const freeRamGB = os.freemem() / 1024 / 1024 / 1024;
   const cpus = os.cpus().length;
+  const batteryGuard = getBatteryGuard(process.cwd());
 
   console.log(
     `[Orchestrator] System State: ${cpus} CPUs, ${freeRamGB.toFixed(1)}GB free RAM (Total: ${totalRamGB.toFixed(1)}GB)`
@@ -24,7 +25,12 @@ function determineExecutionProfile(): Profile {
   if (process.env.POWER_SAVE_MODE === "true" || freeRamGB < 4) {
     return "low-power";
   }
-  if (freeRamGB > 8 && cpus >= 8) {
+  if (batteryGuard.surplusPowerAvailable) {
+    console.log(
+      `[Orchestrator] Surplus power available (${batteryGuard.batteryPercent}% on external power, care cap ${batteryGuard.batteryCareCapPercent}%).`,
+    );
+  }
+  if ((freeRamGB > 8 && cpus >= 8) || (batteryGuard.surplusPowerAvailable && freeRamGB >= 4.5 && cpus >= 8)) {
     return "high-performance";
   }
   return "balanced";
@@ -254,7 +260,7 @@ function runSweep(repoRoot: string): void {
     console.log("\n[Orchestrator] BXR stack E2E skipped.");
   }
 
-  // Playwright (skip on low-power, battery below floor, or debug with skip_playwright)
+  // Playwright removed from local dependency surface; always skip UI E2E here.
   const skipPlaywright = isDebug && (debugProfile?.skip_playwright ?? true);
   if (profile === "low-power" || skipUiForBattery || skipPlaywright) {
     const reason =
@@ -263,30 +269,9 @@ function runSweep(repoRoot: string): void {
         : skipPlaywright
           ? "ORCHESTRATOR_DEBUG + skip_playwright — unset env or set skip_playwright: false in reports/orchestrator/debug-profile.json to run"
           : "low-power or battery < min safe";
-    console.log(`\n[Orchestrator] Playwright UI E2E skipped (${reason}).`);
+    console.log(`\n[Orchestrator] Playwright UI E2E skipped (${reason}; dependency removed from package scripts).`);
   } else {
-    const playwrightWorkers =
-      isDebug && typeof debugProfile?.playwright_workers === "number"
-        ? debugProfile.playwright_workers
-        : profile === "high-performance"
-          ? os.cpus().length
-          : Math.max(1, Math.floor(os.cpus().length / 2));
-    runOptional(
-      "Playwright UI",
-      `npx playwright test --workers=${playwrightWorkers} --retries=${profile === "high-performance" ? 2 : 1}`
-    );
-    runOptional(
-      "Playwright UI mobile",
-      "npx playwright test tests/e2e/ui-mobile-layout.spec.ts --workers=1"
-    );
-    runOptional(
-      "Playwright UI/UX granular",
-      "npx playwright test tests/e2e/ui-ux-granular.spec.ts --workers=1"
-    );
-    runOptional(
-      "Playwright network transition",
-      "npx playwright test tests/e2e/network-transition.spec.ts --workers=1"
-    );
+    console.log("\n[Orchestrator] Playwright UI E2E skipped (dependency removed from package scripts).");
   }
 
   const sweepDebugPath = path.join(sweepFailuresDir, "sweep-debug.json");
@@ -337,50 +322,9 @@ function orchestrateTests(): void {
   // Legacy power-profile path (test:orchestrator:power)
   console.log(`[Orchestrator] Assigned Profile: [${profile.toUpperCase()}]`);
 
-  let playwrightWorkers = 1;
-  let useHeadless = true;
-  let runRetries = 0;
-  let suite = "all";
-
-  switch (profile) {
-    case "low-power":
-      playwrightWorkers = 1;
-      useHeadless = true;
-      console.log(
-        `[Orchestrator] Optimizing for minimum wattage and RAM footprint. Executing sequential UI smoke tests only.`
-      );
-      suite = "smoke";
-      break;
-    case "balanced":
-      playwrightWorkers = Math.max(1, Math.floor(os.cpus().length / 2));
-      useHeadless = true;
-      runRetries = 1;
-      console.log(`[Orchestrator] Optimizing for standard fidelity and speed.`);
-      break;
-    case "high-performance":
-      playwrightWorkers = os.cpus().length;
-      useHeadless = !!process.env.CI;
-      runRetries = 2;
-      console.log(
-        `[Orchestrator] High fidelity selected. Will maximize concurrent threads and enable visual DOM traces.`
-      );
-      break;
-  }
-
-  console.log(`\n[Orchestrator] Dispatching to Playwright:`);
-  console.log(`  ⟶ Workers: ${playwrightWorkers}`);
-  console.log(`  ⟶ Mode: ${useHeadless ? "Headless" : "Headed"}`);
-  console.log(`  ⟶ Target Suite: ${suite}`);
-
-  const smokeSpec = "tests/e2e/ui-smoke.spec.ts";
-  const pwCmd = `npx playwright test ${suite === "smoke" ? smokeSpec : ""} --workers=${playwrightWorkers} ${useHeadless ? "" : "--headed"} --retries=${runRetries}`;
-
-  console.log(`\n> Executing: ${pwCmd}`);
+  console.log("\n[Orchestrator] Playwright disabled in this pipeline; running backend/UI unit coverage only.");
   try {
     execSync("npm run test:unit:ui", { stdio: "inherit", cwd: repoRoot });
-    execSync(pwCmd, { stdio: "inherit", cwd: repoRoot });
-    console.log(`\n[Orchestrator] Playwright UI/UX granular`);
-    execSync("npm run test:ui:granular", { stdio: "inherit", cwd: repoRoot });
     console.log(`\n✅ [Orchestrator] testing pipeline complete. 0 waste detected.`);
   } catch (err) {
     console.error(`\n❌ [Orchestrator] Pipeline failed. Check logs.`);

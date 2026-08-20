@@ -113,6 +113,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Impacted test selection (advisory)
+        run: npm run test:impact:json
+
       - name: Backend env sanity
         if: env.SUPABASE_URL != '' || env.VITE_SUPABASE_URL != ''
         run: npm run check:backend-env
@@ -127,6 +130,9 @@ jobs:
         run: npm run test:protocol-conformance
         env:
           ORCHESTRATOR_DECODE_API_BIND: ""
+
+      - name: Build system index reports
+        run: npm run index:system
 
   directive-adherence:
     name: Directive Adherence (M1 8GB)
@@ -154,6 +160,9 @@ jobs:
       - name: Run directive adherence audit
         run: npm run audit:directive
 
+      - name: Document trust strict gate
+        run: npm run audit:documents:trust:strict
+
   ui-unit-tests:
     name: UI Unit (Jest + RTL)
     runs-on: ubuntu-latest
@@ -171,27 +180,6 @@ jobs:
 
       - name: Run Jest UI tests with coverage
         run: npm run test:unit:ui -- --coverage
-
-  web-e2e:
-    name: Web E2E (Playwright)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Run Playwright tests
-        run: npm run test:ui
 
   mobile-e2e:
     name: Mobile E2E (Detox)

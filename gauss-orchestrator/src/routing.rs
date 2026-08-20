@@ -1,21 +1,23 @@
 use crate::config::OrchestratorConfig;
+use crate::model_governance::governed_prompt;
 use crate::types::{RoutingDecision, RoutingTarget};
 use reqwest::Client;
 use serde_json::json;
 use std::time::Duration;
 
 /// Operator (DeepSeek) system prompt: frame the model as the mission decision-maker we are training.
-const OPERATOR_SYSTEM_PROMPT: &str = "You are the Gauss mission operator (decision-maker). \
-Use spacecraft operations procedures and probability-based reasoning. \
-Reason ethically: prioritize crew and asset safety; treat Earth and its fields as one system; state uncertainty when present; be transparent; align with equitable, sustainable, data-backed outcomes. \
-Communicate in a calm, precise, mission-focused voice; you are a partner to the human operator in a system built to save lives and enable an equitable, sustainable space future. \
-Respond with exactly one of: NOMINAL, MONITOR, or INITIATE SHIELDING, then a one-line rationale. When uncertain, say so and suggest what would clarify (e.g. additional telemetry or time window).";
-
 pub async fn route_to_local(
     client: &Client,
     data: &str,
     config: &OrchestratorConfig,
 ) -> Result<RoutingDecision, reqwest::Error> {
+    let operator_system_prompt = governed_prompt(
+        "You are the Gauss mission operator (decision-maker). Use spacecraft operations procedures and probability-based reasoning. Reason ethically: prioritize crew and asset safety; treat Earth and its fields as one system; state uncertainty when present; be transparent; align with equitable, sustainable, data-backed outcomes. Communicate in a calm, precise, mission-focused voice; you are a partner to the human operator in a system built to save lives and enable an equitable, sustainable space future.",
+        &[
+            "Respond with exactly one of: NOMINAL, MONITOR, or INITIATE SHIELDING, then a one-line rationale.",
+            "When uncertain, say so and suggest what would clarify (e.g. additional telemetry or time window).",
+        ],
+    );
     let user_content = format!(
         "As the mission operator, review this telemetry and state your decision (NOMINAL / MONITOR / INITIATE SHIELDING) and one-line rationale.\n\nTelemetry:\n{}",
         data
@@ -23,7 +25,7 @@ pub async fn route_to_local(
     let payload = json!({
         "model": config.local_engine_model,
         "messages": [
-            { "role": "system", "content": OPERATOR_SYSTEM_PROMPT },
+            { "role": "system", "content": operator_system_prompt },
             { "role": "user", "content": user_content }
         ],
         "temperature": 0.3,
@@ -65,7 +67,9 @@ pub async fn route_to_local(
 
     Ok(RoutingDecision {
         target: RoutingTarget::Local,
-        reason: "High-sensitivity content routed to local DeepSeek engine (operator/decision-maker)".to_string(),
+        reason:
+            "High-sensitivity content routed to local DeepSeek engine (operator/decision-maker)"
+                .to_string(),
         anonymized: false,
         operator_decision,
     })

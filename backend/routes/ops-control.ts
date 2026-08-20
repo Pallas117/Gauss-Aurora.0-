@@ -19,19 +19,19 @@ import {
   extractFirstJsonObject,
   isOpsCommandType,
   normalizeChatCompletionsUrl,
-  parseDeepSeekCommandPlan,
+  parseModelCommandPlan,
   type OpsCommandType,
-} from "../deepseek-command-bridge.js";
+} from "../model-command-bridge.js";
 import {
   SafeCommandApprovalVault,
   buildSafeCommandProposal,
-  parseDeepSeekSafeCommandPlan,
+  parseSafeCommandPlan,
   resolveSafeCommandAllowlist,
   runSafeCommand,
   validateSafeCommandPlan,
-  type DeepSeekSafeCommandPlan,
+  type SafeCommandPlan,
   type SafeCommandProposal,
-} from "../deepseek-safe-command-runner.js";
+} from "../safe-command-runner.js";
 import {
   resolvePlannerModelProfile,
   resolvePlannerPowerState,
@@ -39,11 +39,31 @@ import {
   type OpsCommandJobRecord,
   type OpsCommandRuntimeMetrics,
 } from "../ops-command-runtime.js";
+import { buildGovernedModelSystemPrompt } from "../ethics/model-governance.js";
 import { buildPlannerTrendSummary } from "../planner-context.js";
 import { getChatEngineUrl } from "../scripts/local-chat-engine-check.js";
-import { getCanonicalFeed, getLatestCanonical, getSourceStatus } from "../state.js";
+import {
+  getAuroraMap,
+  getCanonicalFeed,
+  getLatestCanonical,
+  getLatestMms,
+  getSourceStatus,
+  setExogenousContext,
+  getExogenousContext,
+} from "../state.js";
 import type { CanonicalSpaceWeatherPoint, DtnIslAuditStatus, SourceStatus } from "../types.js";
 import { parseIngestionRuntimeMode, type IngestionRuntimeStatus } from "../worker/runtime-controller.js";
+import {
+  createWorkerMeshBroker,
+} from "../workers/mesh/registry.js";
+import { createWorkerTaskEnvelope } from "../workers/mesh/broker.js";
+import type {
+  WorkerId,
+  WorkerLane,
+  WorkerTaskKind,
+  WorkerTaskPriority,
+  WorkerTaskSource,
+} from "../workers/mesh/types.js";
 import {
   buildModelOrchestratorPairing,
   buildRepairPairingSummary,
@@ -51,7 +71,10 @@ import {
   type OfflineRepairPairing,
   type OfflineRepairPairingSummary,
 } from "../repair/offline-repair-pairing.js";
-import { filterByLookback } from "../utils.js";
+import { getTrackedRuntimeMemoryPressureSnapshot } from "../runtime/limit-context-recorder.js";
+import { recordOperationalLimitContext } from "../runtime/limit-context-recorder.js";
+import { filterByLookback, parseLookback } from "../utils.js";
+import { kaliSupervisorReportPath, readKaliSupervisorReport } from "../ops/kali-supervisor.js";
 
 type CanonicalFeedSource = "memory" | "supabase" | "influxdb";
 
@@ -200,7 +223,7 @@ type OfflineRepairArtifact = {
   batch: OfflineRepairBatch;
   pairing: OfflineRepairPairing;
   planner: {
-    mode: "local-deepseek" | "deterministic-fallback";
+    mode: "external-model" | "deterministic-fallback";
     model: string;
     profile: string;
     reason: string;
@@ -229,6 +252,34 @@ const REQUIREMENTS_AUDIT_JSON = "reports/progress/requirements-audit.latest.json
 const DEFAULT_OFFLINE_REPAIR_CAPSULE_PATH = "reports/orchestrator/offline-repair-capsule.latest.json";
 const DEFAULT_OFFLINE_REPAIR_ARTIFACTS_DIR = "reports/orchestrator/repair-patches";
 const MAX_VALIDATOR_OUTPUT_BYTES = 24_000;
+const WORKER_IDS = new Set<WorkerId>([
+  "telemetry-ingest",
+  "ssa-analysis",
+  "source-policy",
+  "command-planner",
+  "safe-executor",
+  "service-reanimator",
+  "offline-repair",
+  "event-deposit",
+]);
+const WORKER_LANES = new Set<WorkerLane>(["runtime", "offline"]);
+const WORKER_TASK_KINDS = new Set<WorkerTaskKind>([
+  "telemetry-refresh",
+  "ssa-review",
+  "source-adjustment",
+  "command-request",
+  "service-outage",
+  "repair-batch",
+  "event-lesson",
+]);
+const WORKER_TASK_PRIORITIES = new Set<WorkerTaskPriority>(["low", "medium", "high"]);
+const WORKER_TASK_SOURCES = new Set<WorkerTaskSource>([
+  "runtime",
+  "command-ui",
+  "automation",
+  "picoclaw",
+  "offline-capsule",
+]);
 
 function resolveWorkspacePath(input: string | undefined, fallback: string): string {
   const candidate = input?.trim();
@@ -236,6 +287,49 @@ function resolveWorkspacePath(input: string | undefined, fallback: string): stri
     return join(process.cwd(), fallback);
   }
   return candidate.startsWith("/") ? candidate : join(process.cwd(), candidate);
+}
+
+function parseWorkerId(value: unknown): WorkerId | null {
+  return typeof value === "string" && WORKER_IDS.has(value as WorkerId)
+    ? (value as WorkerId)
+    : null;
+}
+
+function parseWorkerLane(value: unknown): WorkerLane | null {
+  return typeof value === "string" && WORKER_LANES.has(value as WorkerLane)
+    ? (value as WorkerLane)
+    : null;
+}
+
+function parseWorkerTaskKind(value: unknown): WorkerTaskKind | null {
+  return typeof value === "string" && WORKER_TASK_KINDS.has(value as WorkerTaskKind)
+    ? (value as WorkerTaskKind)
+    : null;
+}
+
+function parseWorkerTaskPriority(value: unknown): WorkerTaskPriority | null {
+  return typeof value === "string" && WORKER_TASK_PRIORITIES.has(value as WorkerTaskPriority)
+    ? (value as WorkerTaskPriority)
+    : null;
+}
+
+function parseWorkerTaskSource(value: unknown): WorkerTaskSource | null {
+  return typeof value === "string" && WORKER_TASK_SOURCES.has(value as WorkerTaskSource)
+    ? (value as WorkerTaskSource)
+    : null;
+}
+
+function featuresForRole(role: string | null | undefined): {
+  heliophysics: boolean;
+  debris: boolean;
+} {
+  if (role === "operator" || role === "admin") {
+    return { heliophysics: true, debris: true };
+  }
+  if (role === "viewer") {
+    return { heliophysics: true, debris: false };
+  }
+  return { heliophysics: false, debris: false };
 }
 
 function parseEnvBool(name: string, fallback = false): boolean {
@@ -276,7 +370,7 @@ function resolveLocalEngineChatUrl(): string | null {
 }
 
 function resolveLocalEngineApiKey(): string | null {
-  const key = (process.env.ORCHESTRATOR_LOCAL_ENGINE_API_KEY ?? process.env.DEEPSEEK_API_KEY ?? "").trim();
+  const key = (process.env.ORCHESTRATOR_LOCAL_ENGINE_API_KEY ?? process.env.EXTERNAL_MODEL_API_KEY ?? process.env.DEEPSEEK_API_KEY ?? "").trim();
   return key.length > 0 ? key : null;
 }
 
@@ -383,7 +477,7 @@ async function insertSafeCommandAuditLog(entry: {
   };
 }
 
-function buildFallbackSafeCommandPlan(prompt: string, allowlist: Set<string>): DeepSeekSafeCommandPlan {
+function buildFallbackSafeCommandPlan(prompt: string, allowlist: Set<string>): SafeCommandPlan {
   const lower = prompt.toLowerCase();
   if (allowlist.has("uptime") && /(uptime|load|cpu|performance)/.test(lower)) {
     return {
@@ -873,6 +967,41 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
     ttlMs: safeCommandApprovalTtlMs(),
     maxEntries: Math.max(64, Math.min(parseEnvInt("ORCHESTRATOR_SAFE_COMMAND_MAX_PENDING_APPROVALS", 512), 2_000)),
   });
+  const workerMesh = createWorkerMeshBroker({
+    ingestionRuntime,
+    offlineRepairCapsulePath: deps.offlineRepairCapsulePath,
+    offlineRepairArtifactsDir: deps.offlineRepairArtifactsDir,
+    enqueueOpsCommandWithPersistence,
+  });
+
+  function actorForRequest(req: AuthenticatedRequest) {
+    return {
+      userId: req.auth?.userId ?? null,
+      role: req.auth?.role ?? null,
+    };
+  }
+
+  async function runRuntimeWorkerTick(req: AuthenticatedRequest): Promise<void> {
+    const memory = getTrackedRuntimeMemoryPressureSnapshot("ops-control", {
+      route: "/api/ops/command/latest",
+    });
+    await workerMesh.dispatch(
+      createWorkerTaskEnvelope({
+        lane: "runtime",
+        kind: "telemetry-refresh",
+        priority: "low",
+        source: "runtime",
+        actor: actorForRequest(req),
+        memory: {
+          level: memory.level,
+        },
+        payload: {
+          mode: ingestionRuntime.getStatus().mode,
+        },
+      }),
+      { followHandoffs: true },
+    );
+  }
 
   function plannerCircuitOpen(): boolean {
     return plannerCircuit.openUntilMs > Date.now();
@@ -898,6 +1027,84 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
       opsCommandRuntime.notePlanner({ circuitOpen: true });
     }
   }
+
+  app.get(
+    "/api/ops/command/latest",
+    requireRole("operator"),
+    withAsyncMiddleware(async (req: AuthenticatedRequest, res) => {
+      await runRuntimeWorkerTick(req);
+
+      const lookbackMs = parseLookback(req.query.lookback, 30 * 60 * 1000);
+      const limit = Math.max(1, Math.min(Number(req.query.limit ?? 96), 240));
+      const horizonMinutes = Math.max(5, Math.min(Number(req.query.horizonMinutes ?? 30), 240));
+      const latest = getLatestCanonical();
+      const sequence = filterByLookback(getCanonicalFeed(), lookbackMs, limit);
+      const canonicalLatest = latest ?? sequence[sequence.length - 1] ?? null;
+
+      if (!canonicalLatest) {
+        res.status(404).json({ error: "No canonical feed data yet" });
+        return;
+      }
+
+      const sourceStatus =
+        getSourceStatus().length > 0 ? getSourceStatus() : await hydratePersistedSourceHealthState();
+      const threatSummary = buildThreatSummaryPayload(
+        sequence.length > 0 ? sequence : [canonicalLatest],
+        lookbackMs,
+        "memory",
+        horizonMinutes,
+      );
+      const memory = getTrackedRuntimeMemoryPressureSnapshot("ops-control", {
+        route: "/api/ops/control/status",
+      });
+      const queue = workerMesh.getQueue();
+      const workers = workerMesh.listWorkers(memory);
+
+      res.json({
+        updatedAt: new Date().toISOString(),
+        session: {
+          authRequired: true,
+          authenticated: Boolean(req.auth?.userId ?? req.auth?.email ?? req.auth?.role),
+          role: req.auth?.role ?? null,
+          clearance: req.auth?.clearance ?? null,
+          userId: req.auth?.userId ?? null,
+          email: req.auth?.email ?? null,
+          emailVerified: true,
+          features: featuresForRole(req.auth?.role),
+        },
+        sourceStatus,
+        canonicalLatest,
+        mmsLatest: getLatestMms() ?? null,
+        auroraLatest: getAuroraMap() ?? null,
+        threatSummary,
+        dtnIslStatus: await loadDtnIslStatus(),
+        cybertigerStatus: null,
+        statusChips: [
+          {
+            id: "memory",
+            label: "memory",
+            tone: memory.level === "critical" ? "critical" : memory.level === "constrained" ? "warn" : "ok",
+            value: `${memory.freeMb} MB`,
+          },
+          {
+            id: "workers",
+            label: "workers",
+            tone: workers.some((worker) => worker.state === "degraded") ? "warn" : "ok",
+            value: `${workers.filter((worker) => worker.enabled).length} active`,
+          },
+          {
+            id: "approvals",
+            label: "approvals",
+            tone: queue.queuedApprovals.length > 0 ? "warn" : "info",
+            value: String(queue.queuedApprovals.length),
+          },
+        ],
+        workers,
+        queuedApprovals: queue.queuedApprovals,
+        brokerPolicy: workerMesh.getPolicy(memory),
+      });
+    }),
+  );
 
   app.post(
     "/api/ops/command",
@@ -932,6 +1139,19 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
       );
       if (powerState.constrained && isHeavyCommand(commandTypeRaw)) {
         opsCommandRuntime.notePlanner({ batteryThrottle: true });
+        recordOperationalLimitContext({
+          kind: "battery",
+          source: "ops-command",
+          detail: {
+            route: "/api/ops/command",
+            commandType: commandTypeRaw,
+            batteryPercent: powerState.batteryPercent,
+            charging: powerState.charging,
+            powerSource: powerState.powerSource,
+            thermalConstrained: powerState.thermalConstrained,
+            reason: powerState.reason,
+          },
+        });
       }
 
       if (execute && commandNeedsMissionClearance(commandTypeRaw) && !hasMissionClearance(req.auth?.clearance)) {
@@ -990,7 +1210,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
   );
 
   app.post(
-    "/api/ops/command/deepseek",
+    "/api/ops/command/model",
     requireRole("operator"),
     withAsyncMiddleware(async (req: AuthenticatedRequest, res) => {
       const body = req.body as {
@@ -1005,6 +1225,16 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
       const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
       if (!prompt) {
         res.status(400).json({ error: "prompt is required" });
+        return;
+      }
+
+      const memoryGovernor = getTrackedRuntimeMemoryPressureSnapshot("ops-control", {
+        route: "/api/ops/control/plan",
+      });
+      if (memoryGovernor.level === "critical") {
+        res.status(503).json({
+          error: "Model planner is disabled while RAM is critical",
+        });
         return;
       }
 
@@ -1028,6 +1258,18 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
       const profile = resolvePlannerModelProfile(requestedModel, powerState);
       if (powerState.constrained) {
         opsCommandRuntime.notePlanner({ batteryThrottle: true });
+        recordOperationalLimitContext({
+          kind: "battery",
+          source: "ops-command-model",
+          detail: {
+            route: "/api/ops/command/model",
+            batteryPercent: powerState.batteryPercent,
+            charging: powerState.charging,
+            powerSource: powerState.powerSource,
+            thermalConstrained: powerState.thermalConstrained,
+            reason: powerState.reason,
+          },
+        });
       }
       if (plannerCircuitOpen()) {
         opsCommandRuntime.notePlanner({ failure: true });
@@ -1065,13 +1307,15 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
           : undefined,
       });
 
-      const planningSystemPrompt = [
-        "You are DeepSeek command planner for Gauss mission operations.",
-        `Choose exactly one command from: ${ALLOWED_OPS_COMMAND_TYPES.join(", ")}.`,
-        "Return ONLY valid JSON object with keys: command_type, payload, reason, confidence.",
-        "Do not return markdown, explanation, or extra fields.",
-        "If uncertain, choose log-health-check.",
-      ].join(" ");
+      const planningSystemPrompt = buildGovernedModelSystemPrompt({
+        role: "You are Model command planner for Gauss mission operations.",
+        directives: [
+          `Choose exactly one command from: ${ALLOWED_OPS_COMMAND_TYPES.join(", ")}.`,
+          "Return ONLY valid JSON object with keys: command_type, payload, reason, confidence.",
+          "Do not return markdown, explanation, or extra fields.",
+          "If uncertain, choose log-health-check.",
+        ],
+      });
 
       const planningUserPrompt = [
         `Operator request: ${prompt}`,
@@ -1106,7 +1350,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
         registerPlannerFailure();
         opsCommandRuntime.notePlanner({ failure: true });
         res.status(502).json({
-          error: "DeepSeek command planning request failed",
+          error: "Model command planning request failed",
           detail: error instanceof Error ? error.message : String(error),
         });
         return;
@@ -1117,7 +1361,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
         registerPlannerFailure();
         opsCommandRuntime.notePlanner({ failure: true });
         res.status(502).json({
-          error: "DeepSeek command planning failed",
+          error: "Model command planning failed",
           detail: `HTTP ${plannerResult.status}: ${plannerResult.rawText.slice(0, 240)}`,
         });
         return;
@@ -1130,7 +1374,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
         registerPlannerFailure();
         opsCommandRuntime.notePlanner({ failure: true });
         res.status(502).json({
-          error: "DeepSeek command planning returned invalid JSON envelope",
+          error: "Model command planning returned invalid JSON envelope",
         });
         return;
       }
@@ -1138,12 +1382,12 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
       const content = extractChatContent(parsedResponse);
       if (!content) {
         res.status(502).json({
-          error: "DeepSeek command planning response had no parseable message content",
+          error: "Model command planning response had no parseable message content",
         });
         return;
       }
 
-      const plan = parseDeepSeekCommandPlan(content);
+      const plan = parseModelCommandPlan(content);
       if (!plan) {
         registerPlannerFailure();
         opsCommandRuntime.notePlanner({ parseFailure: true, failure: true });
@@ -1209,7 +1453,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
       const { job, deduped } = await enqueueOpsCommandWithPersistence({
         commandType: plan.command_type,
         payload: plan.payload,
-        source: "deepseek",
+        source: "external-model",
         simulate,
         idempotencyKey,
         requestedBy: req.auth?.userId ?? null,
@@ -1230,7 +1474,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
   );
 
   app.post(
-    "/api/ops/command/deepseek/run/plan",
+    "/api/ops/command/model/run/plan",
     requireRole("operator"),
     requireClearance("mission"),
     withAsyncMiddleware(async (req: AuthenticatedRequest, res) => {
@@ -1247,6 +1491,15 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
       const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
       if (!prompt) {
         res.status(400).json({ error: "prompt is required" });
+        return;
+      }
+      const memoryGovernor = getTrackedRuntimeMemoryPressureSnapshot("ops-control", {
+        route: "/api/ops/control/safe-plan",
+      });
+      if (memoryGovernor.level === "critical") {
+        res.status(503).json({
+          error: "Model safe planner is disabled while RAM is critical",
+        });
         return;
       }
       const chatUrl = resolveLocalEngineChatUrl();
@@ -1294,14 +1547,16 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
           : undefined,
       });
 
-      const planningSystemPrompt = [
-        "You are a safe command planner for Gauss mission operations.",
-        "Return ONLY valid JSON object with keys: executable, args, reason, confidence, risk.",
-        "Never return markdown, prose, or code fences.",
-        `Executable MUST be one of: ${allowlistHint}.`,
-        "Args must be minimal, diagnostics-only, and never destructive.",
-        "If uncertain, choose executable=pmset args=['-g','batt'] risk='low'.",
-      ].join(" ");
+      const planningSystemPrompt = buildGovernedModelSystemPrompt({
+        role: "You are a safe command planner for Gauss mission operations.",
+        directives: [
+          "Return ONLY valid JSON object with keys: executable, args, reason, confidence, risk.",
+          "Never return markdown, prose, or code fences.",
+          `Executable MUST be one of: ${allowlistHint}.`,
+          "Args must be minimal, diagnostics-only, and never destructive.",
+          "If uncertain, choose executable=pmset args=['-g','batt'] risk='low'.",
+        ],
+      });
       const planningUserPrompt = [
         `Operator request: ${prompt}`,
         `Trend summary: ${JSON.stringify(safePlannerTrendSummary)}`,
@@ -1331,7 +1586,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
         opsCommandRuntime.notePlanner({ failure: true });
         registerPlannerFailure();
         res.status(502).json({
-          error: "DeepSeek safe command planning request failed",
+          error: "Model safe command planning request failed",
           detail: error instanceof Error ? error.message : String(error),
         });
         return;
@@ -1341,7 +1596,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
         opsCommandRuntime.notePlanner({ failure: true });
         registerPlannerFailure();
         res.status(502).json({
-          error: "DeepSeek safe command planning failed",
+          error: "Model safe command planning failed",
           detail: `HTTP ${plannerResult.status}: ${plannerResult.rawText.slice(0, 240)}`,
         });
         return;
@@ -1357,10 +1612,10 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
         return;
       }
       const content = extractChatContent(parsedResponse);
-      let plan: DeepSeekSafeCommandPlan | null = null;
+      let plan: SafeCommandPlan | null = null;
       let fallbackUsed = false;
       if (content) {
-        plan = parseDeepSeekSafeCommandPlan(content);
+        plan = parseSafeCommandPlan(content);
       }
       if (!plan) {
         opsCommandRuntime.notePlanner({ failure: true, parseFailure: true });
@@ -1392,7 +1647,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
       const approval = safeCommandApprovalVault.issue(proposal);
 
       const audit = await insertSafeCommandAuditLog({
-        command_type: "deepseek-safe-command-plan",
+        command_type: "safe-command-plan",
         payload: {
           planner: "deepseek",
           model: profile.model,
@@ -1438,7 +1693,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
   );
 
   app.post(
-    "/api/ops/command/deepseek/run/execute",
+    "/api/ops/command/model/run/execute",
     requireRole("operator"),
     requireClearance("mission"),
     withAsyncMiddleware(async (req: AuthenticatedRequest, res) => {
@@ -1471,7 +1726,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
         }
         proposal = peeked.proposal;
       } else {
-        const parsedPlan = parseDeepSeekSafeCommandPlan(asRecord(body.plan));
+        const parsedPlan = parseSafeCommandPlan(asRecord(body.plan));
         if (!parsedPlan) {
           res.status(400).json({ error: "plan is required when approval flow is disabled" });
           return;
@@ -1492,7 +1747,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
       const validation = validateSafeCommandPlan(resolvedProposal.plan, allowlist);
       if (!validation.ok) {
         const audit = await insertSafeCommandAuditLog({
-          command_type: "deepseek-safe-command-execute",
+          command_type: "safe-command-execute",
           payload: {
             stage: "blocked",
             reason: validation.reason,
@@ -1520,7 +1775,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
       }
 
       const preAudit = await insertSafeCommandAuditLog({
-        command_type: "deepseek-safe-command-execute",
+        command_type: "model-safe-command-execute",
         payload: {
           stage: "preflight",
           simulate,
@@ -1574,7 +1829,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
         });
 
       const resultAudit = await insertSafeCommandAuditLog({
-        command_type: "deepseek-safe-command-execute",
+        command_type: "model-safe-command-execute",
         payload: {
           stage: "result",
           simulate,
@@ -1645,6 +1900,126 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
     });
   });
 
+  app.get("/api/ops/control/workers", requireRole("operator"), (_req: AuthenticatedRequest, res) => {
+    const memory = getTrackedRuntimeMemoryPressureSnapshot("ops-control", {
+      route: "/api/ops/control/workers",
+    });
+    res.json({
+      workers: workerMesh.listWorkers(memory),
+      brokerPolicy: workerMesh.getPolicy(memory),
+    });
+  });
+
+  app.get(
+    "/api/ops/control/delegation/queue",
+    requireRole("operator"),
+    (_req: AuthenticatedRequest, res) => {
+      const memory = getTrackedRuntimeMemoryPressureSnapshot("ops-control", {
+        route: "/api/ops/control/delegation/queue",
+      });
+      res.json({
+        ...workerMesh.getQueue(),
+        brokerPolicy: workerMesh.getPolicy(memory),
+      });
+    },
+  );
+
+  app.post(
+    "/api/ops/control/delegation/dispatch",
+    requireRole("operator"),
+    withAsyncMiddleware(async (req: AuthenticatedRequest, res) => {
+      const body = req.body as {
+        workerId?: unknown;
+        lane?: unknown;
+        kind?: unknown;
+        priority?: unknown;
+        source?: unknown;
+        payload?: unknown;
+        relatedArtifacts?: unknown;
+      };
+
+      const lane = parseWorkerLane(body.lane) ?? "runtime";
+      const kind = parseWorkerTaskKind(body.kind);
+      if (!kind) {
+        res.status(400).json({ error: "kind must be a supported worker task kind" });
+        return;
+      }
+
+      const task = createWorkerTaskEnvelope({
+        lane,
+        kind,
+        priority: parseWorkerTaskPriority(body.priority) ?? "medium",
+        source: parseWorkerTaskSource(body.source) ?? "command-ui",
+        actor: actorForRequest(req),
+        payload: asRecord(body.payload),
+        relatedArtifacts: Array.isArray(body.relatedArtifacts)
+          ? body.relatedArtifacts.filter((item): item is string => typeof item === "string")
+          : [],
+        requestedWorkerId: parseWorkerId(body.workerId),
+      });
+
+      const execution = await workerMesh.dispatch(task, { followHandoffs: true });
+      const memory = getTrackedRuntimeMemoryPressureSnapshot("ops-control", {
+        route: "/api/ops/control/delegation/dispatch",
+      });
+      res.status(202).json({
+        task,
+        result: execution.result,
+        workers: workerMesh.listWorkers(memory),
+        queuedApprovals: workerMesh.getQueue().queuedApprovals,
+        brokerPolicy: workerMesh.getPolicy(memory),
+      });
+    }),
+  );
+
+  app.post(
+    "/api/ops/control/delegation/approve",
+    requireRole("operator"),
+    requireClearance("mission"),
+    withAsyncMiddleware(async (req: AuthenticatedRequest, res) => {
+      const body = req.body as { taskId?: unknown };
+      const taskId = typeof body.taskId === "string" ? body.taskId.trim() : "";
+      if (!taskId) {
+        res.status(400).json({ error: "taskId is required" });
+        return;
+      }
+      const execution = await workerMesh.approve({ taskId });
+      const memory = getTrackedRuntimeMemoryPressureSnapshot("ops-control", {
+        route: "/api/ops/control/delegation/approve",
+      });
+      res.json({
+        result: execution.result,
+        workers: workerMesh.listWorkers(memory),
+        queuedApprovals: workerMesh.getQueue().queuedApprovals,
+        brokerPolicy: workerMesh.getPolicy(memory),
+      });
+    }),
+  );
+
+  app.post(
+    "/api/ops/control/delegation/reject",
+    requireRole("operator"),
+    requireClearance("mission"),
+    (req: AuthenticatedRequest, res) => {
+      const body = req.body as { taskId?: unknown };
+      const taskId = typeof body.taskId === "string" ? body.taskId.trim() : "";
+      if (!taskId) {
+        res.status(400).json({ error: "taskId is required" });
+        return;
+      }
+      const execution = workerMesh.reject({ taskId });
+      const memory = getTrackedRuntimeMemoryPressureSnapshot("ops-control", {
+        route: "/api/ops/control/delegation/reject",
+      });
+      res.json({
+        result: execution.result,
+        workers: workerMesh.listWorkers(memory),
+        queuedApprovals: workerMesh.getQueue().queuedApprovals,
+        brokerPolicy: workerMesh.getPolicy(memory),
+      });
+    },
+  );
+
   app.get("/api/ops/command/log", withAsyncMiddleware(async (_req: AuthenticatedRequest, res) => {
     const limit = Math.max(1, Math.min(Number(_req.query.limit ?? 50), 500));
     const rows = await getCommandLogLatest(limit);
@@ -1660,12 +2035,41 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
     res.json(lastTriadReport);
   });
 
+  app.post("/api/ops/exogenous", requireRole("operator"), (req: AuthenticatedRequest, res) => {
+    const context = req.body;
+    if (!context || typeof context !== "object") {
+      return res.status(400).json({ error: "Missing exogenous context payload" });
+    }
+    setExogenousContext(context);
+    res.json({ ok: true });
+  });
+
+  app.get("/api/ops/exogenous", requireRole("operator"), (_req: AuthenticatedRequest, res) => {
+    res.json(getExogenousContext() || {});
+  });
+
+  app.get("/api/ops/threat-summary", requireRole("operator"), async (_req: AuthenticatedRequest, res) => {
+    res.json(await loadDtnIslStatus());
+  });
+
   app.get("/api/ops/network/audit", requireRole("operator"), async (_req: AuthenticatedRequest, res) => {
     res.json(await loadDtnIslStatus());
   });
 
   app.get("/api/ops/runtime/status", requireRole("operator"), (_req: AuthenticatedRequest, res) => {
     res.json(ingestionRuntime.getStatus());
+  });
+
+  app.get("/api/ops/runtime/kali-supervisor", requireRole("operator"), (_req: AuthenticatedRequest, res) => {
+    const report = readKaliSupervisorReport();
+    if (!report) {
+      res.status(404).json({
+        error: "Kali supervisor report is unavailable or invalid",
+        report_path: kaliSupervisorReportPath(),
+      });
+      return;
+    }
+    res.json(report);
   });
 
   app.post("/api/ops/runtime/mode", requireRole("operator"), (req: AuthenticatedRequest, res) => {
@@ -1800,13 +2204,15 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
       } else if (!isLocalEngineUrl(chatUrl) && strictLocalInference) {
         fallbackReason = "Local-only repair planning rejected a non-local chat engine URL.";
       } else {
-        const planningSystemPrompt = [
-          capsule.prompt_contract?.role ?? "You are DeepSeek running fully offline on Gauss.",
-          "Return ONLY valid JSON object with keys: risk, summary, touched_files, validation_plan, unified_diff, scope_reason.",
-          "touched_files must stay within the allowed batch files.",
-          "unified_diff must be a single string in unified diff format and may be empty if you must refuse.",
-          "Do not return markdown fences or prose outside the JSON object.",
-        ].join(" ");
+        const planningSystemPrompt = buildGovernedModelSystemPrompt({
+          role: capsule.prompt_contract?.role ?? "You are Model running fully offline on Gauss.",
+          directives: [
+            "Return ONLY valid JSON object with keys: risk, summary, touched_files, validation_plan, unified_diff, scope_reason.",
+            "touched_files must stay within the allowed batch files.",
+            "unified_diff must be a single string in unified diff format and may be empty if you must refuse.",
+            "Do not return markdown fences or prose outside the JSON object.",
+          ],
+        });
         const planningUserPrompt = [
           `Repair batch: ${JSON.stringify(batch)}`,
           `Pairing contract: ${JSON.stringify(pairing)}`,
@@ -1855,7 +2261,7 @@ export function mountOpsControlRoutes(app: express.Application, deps: OpsControl
               : null;
             if (parsedProposal) {
               proposal = parsedProposal;
-              plannerMode = "local-deepseek";
+              plannerMode = "external-model";
               resetPlannerCircuit();
             } else {
               registerPlannerFailure();

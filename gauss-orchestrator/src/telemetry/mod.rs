@@ -11,11 +11,15 @@ use crate::config::OrchestratorConfig;
 
 pub mod ccsds;
 pub mod decoder_registry;
+pub mod ecc;
+pub mod fused_tensor;
 pub mod ingest_client;
 pub mod mapping;
 pub mod physics_validation;
 pub mod quality;
+pub mod radiation;
 pub mod xtce;
+pub mod yamcs;
 
 /// Result of decode + map only (no physics, no ingest). Used by the HTTP decode API.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -145,28 +149,22 @@ pub async fn process_packet_file(
         None
     };
 
-    let (packets_after_physics, physics_adjusted_count, physics_rejected_count) =
-        if config.physics_validation {
-            let result = physics_validation::validate_and_clamp(
-                mapped_packets,
-                config.physics_clamp,
-            );
-            for _ in 0..result.rejected_count {
-                all_errors.push(DecodeError {
-                    code: "physics_rejected".to_string(),
-                    reason: "Packet out of physics bounds and clamp disabled".to_string(),
-                    file: path.display().to_string(),
-                    offset: 0,
-                });
-            }
-            (
-                result.packets,
-                result.adjusted_count,
-                result.rejected_count,
-            )
-        } else {
-            (mapped_packets, 0, 0)
-        };
+    let (packets_after_physics, physics_adjusted_count, physics_rejected_count) = if config
+        .physics_validation
+    {
+        let result = physics_validation::validate_and_clamp(mapped_packets, config.physics_clamp);
+        for _ in 0..result.rejected_count {
+            all_errors.push(DecodeError {
+                code: "physics_rejected".to_string(),
+                reason: "Packet out of physics bounds and clamp disabled".to_string(),
+                file: path.display().to_string(),
+                offset: 0,
+            });
+        }
+        (result.packets, result.adjusted_count, result.rejected_count)
+    } else {
+        (mapped_packets, 0, 0)
+    };
 
     let (packets_to_ingest, sigma_flagged_count) = if config.physics_sigma_reject {
         let (filtered, flagged) = physics_validation::apply_sigma_filter(
@@ -177,7 +175,8 @@ pub async fn process_packet_file(
         for _ in 0..flagged {
             all_errors.push(DecodeError {
                 code: "sigma_flagged".to_string(),
-                reason: "Packet beyond 3-sigma from batch mean (ORCHESTRATOR_PHYSICS_SIGMA_REJECT)".to_string(),
+                reason: "Packet beyond 3-sigma from batch mean (ORCHESTRATOR_PHYSICS_SIGMA_REJECT)"
+                    .to_string(),
                 file: path.display().to_string(),
                 offset: 0,
             });
@@ -231,10 +230,7 @@ pub async fn process_packet_file(
                     let mut hasher = Sha256::new();
                     hasher.update(&bytes);
                     let digest = hasher.finalize();
-                    let checksum: String = digest
-                        .iter()
-                        .map(|b| format!("{:02x}", b))
-                        .collect();
+                    let checksum: String = digest.iter().map(|b| format!("{:02x}", b)).collect();
                     tracing::info!(
                         run_id = %run_id,
                         sha256 = %checksum,
@@ -242,7 +238,8 @@ pub async fn process_packet_file(
                     );
                 }
             }
-            let response = ingest_client::post_ingest_packets(client, config, &ingest_request).await?;
+            let response =
+                ingest_client::post_ingest_packets(client, config, &ingest_request).await?;
             accepted_count += response.accepted_count;
             rejected_count += response.rejected_count;
             for err in response.errors {
@@ -307,8 +304,7 @@ pub fn decode_and_map_packets(
         );
     }
     let path = Path::new(decoder_registry::INLINE_DECODE_PATH);
-    let decode_batch =
-        decoder_registry::decode_packet_bytes(path, bytes, format, config);
+    let decode_batch = decoder_registry::decode_packet_bytes(path, bytes, format, config);
     let dictionary = xtce::load_xtce_dictionary(Path::new(&config.xtce_path))?;
     let apid_map = mapping::load_apid_map(Path::new(&config.apid_map_path), &dictionary)?;
     let (mapped_packets, mapping_errors) =

@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-08-20T09:22:52.115Z",
+  "rootDir": "/Users/josh/Documents/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/network",
+  "policyVersion": "orbital-stewardship-v1",
+  "overridesPath": "/Users/josh/Documents/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/network/.gauss-doc-trust-overrides.json",
+  "totals": {
+    "files": 2,
+    "supported": 2,
+    "approved": 2,
+    "indexAllowed": 2,
+    "needsReview": 0,
+    "rejected": 0
+  },
+  "documents": [
+    {
+      "path": "connectivity-feed.jsonl",
+      "sha256": "988af0ecaed73c5dc46e2923f2e1837c1b742aa5c9de67931a3d8caef1319307",
+      "sizeBytes": 2396,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Operator-approved local connectivity and security observations."
+      ]
+    },
+    {
+      "path": "connectivity-latest.json",
+      "sha256": "104705cb9f35321770851779ccde0666589421ce9cf13b06b9971c4d2d184c44",
+      "sizeBytes": 306,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Operator-approved local connectivity and security observations."
+      ]
+    }
+  ]
+}

@@ -72,9 +72,9 @@ pub fn validate_and_clamp(
         let mut density = density_opt.unwrap_or(5.0);
         let mut bz = bz_opt.unwrap_or(0.0);
 
-        let oob = speed < SPEED_MIN || speed > SPEED_MAX
-            || density < DENSITY_MIN || density > DENSITY_MAX
-            || bz < BZ_MIN || bz > BZ_MAX
+        let oob = !(SPEED_MIN..=SPEED_MAX).contains(&speed)
+            || !(DENSITY_MIN..=DENSITY_MAX).contains(&density)
+            || !(BZ_MIN..=BZ_MAX).contains(&bz)
             || !speed.is_finite()
             || !density.is_finite()
             || !bz.is_finite();
@@ -96,7 +96,11 @@ pub fn validate_and_clamp(
             adjusted_count += 1;
         }
 
-        if let Some(sw) = pkt.canonical_point.get_mut("solarWind").and_then(Value::as_object_mut) {
+        if let Some(sw) = pkt
+            .canonical_point
+            .get_mut("solarWind")
+            .and_then(Value::as_object_mut)
+        {
             sw.insert("speed".to_string(), Value::from(speed));
             sw.insert("density".to_string(), Value::from(density));
         }
@@ -110,10 +114,7 @@ pub fn validate_and_clamp(
 
         if oob && clamp {
             if let Some(q) = pkt.quality_flags.as_object_mut() {
-                q.insert(
-                    "physics_out_of_range".to_string(),
-                    Value::from(true),
-                );
+                q.insert("physics_out_of_range".to_string(), Value::from(true));
             }
         }
 
@@ -169,13 +170,19 @@ pub fn apply_sigma_filter(
         let sw = p.canonical_point.get("solarWind");
         let mf = p.canonical_point.get("magneticField");
         speed_vals.push(
-            sw.and_then(|o| o.get("speed")).and_then(|v| v.as_f64()).unwrap_or(400.0),
+            sw.and_then(|o| o.get("speed"))
+                .and_then(|v| v.as_f64())
+                .unwrap_or(400.0),
         );
         density_vals.push(
-            sw.and_then(|o| o.get("density")).and_then(|v| v.as_f64()).unwrap_or(5.0),
+            sw.and_then(|o| o.get("density"))
+                .and_then(|v| v.as_f64())
+                .unwrap_or(5.0),
         );
         bz_vals.push(
-            mf.and_then(|o| o.get("z")).and_then(|v| v.as_f64()).unwrap_or(0.0),
+            mf.and_then(|o| o.get("z"))
+                .and_then(|v| v.as_f64())
+                .unwrap_or(0.0),
         );
     }
 
@@ -193,9 +200,18 @@ pub fn apply_sigma_filter(
     for mut pkt in packets {
         let sw = pkt.canonical_point.get("solarWind");
         let mf = pkt.canonical_point.get("magneticField");
-        let speed = sw.and_then(|o| o.get("speed")).and_then(|v| v.as_f64()).unwrap_or(400.0);
-        let density = sw.and_then(|o| o.get("density")).and_then(|v| v.as_f64()).unwrap_or(5.0);
-        let bz = mf.and_then(|o| o.get("z")).and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let speed = sw
+            .and_then(|o| o.get("speed"))
+            .and_then(|v| v.as_f64())
+            .unwrap_or(400.0);
+        let density = sw
+            .and_then(|o| o.get("density"))
+            .and_then(|v| v.as_f64())
+            .unwrap_or(5.0);
+        let bz = mf
+            .and_then(|o| o.get("z"))
+            .and_then(|v| v.as_f64())
+            .unwrap_or(0.0);
 
         let speed_oob = (speed - speed_mean).abs() > 3.0 * speed_sigma;
         let density_oob = (density - density_mean).abs() > 3.0 * density_sigma;
@@ -270,7 +286,7 @@ mod tests {
     #[test]
     fn sigma_filter_drops_outlier() {
         let in_bounds: Vec<_> = (0..10)
-            .map(|i| mk_packet(400.0 + f64::from(i as i32), 5.0, 0.0))
+            .map(|i| mk_packet(400.0 + f64::from(i), 5.0, 0.0))
             .collect();
         let mut packets = in_bounds.clone();
         packets.push(mk_packet(5000.0, 5.0, 0.0)); // 3-sigma outlier in speed

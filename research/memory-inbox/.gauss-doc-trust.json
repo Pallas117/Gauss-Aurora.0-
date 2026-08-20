@@ -1,0 +1,54 @@
+{
+  "generatedAt": "2026-08-20T09:06:16.185Z",
+  "rootDir": "/Users/josh/Documents/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/research/memory-inbox",
+  "policyVersion": "orbital-stewardship-v1",
+  "overridesPath": "/Users/josh/Documents/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/research/memory-inbox/.gauss-doc-trust-overrides.json",
+  "totals": {
+    "files": 2,
+    "supported": 1,
+    "approved": 1,
+    "indexAllowed": 1,
+    "needsReview": 1,
+    "rejected": 0
+  },
+  "documents": [
+    {
+      "path": ".gauss-memory-imports.json",
+      "sha256": "7464ac1d5eb239c3c9ae1a56c73c1cac49b5e386a6f92a890afc3f5fc1a32dd6",
+      "sizeBytes": 487,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Hidden workspace/tooling artifact.",
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "On-Orbit-Intelligence_-Spacecraft-Edge-Hardware-and-Neural-Network-Optimization-Techniques.md",
+      "sha256": "e31c7c5ef65a0d44960a3155023225cd231940503aec7a5ae6162c74b16a7078",
+      "sizeBytes": 8077,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "unknown",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Explicit operator approval received for local indexing and retrieval."
+      ]
+    }
+  ]
+}

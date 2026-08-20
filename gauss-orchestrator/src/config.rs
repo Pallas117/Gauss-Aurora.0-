@@ -137,7 +137,9 @@ pub fn load_config() -> OrchestratorConfig {
                 !["0", "false", "off", "no"].contains(&s.as_str())
             })
             .unwrap_or(true),
-        refinement_api_url: std::env::var("ORCHESTRATOR_REFINEMENT_API_URL").ok().filter(|s| !s.trim().is_empty()),
+        refinement_api_url: std::env::var("ORCHESTRATOR_REFINEMENT_API_URL")
+            .ok()
+            .filter(|s| !s.trim().is_empty()),
         physics_sigma_reject: std::env::var("ORCHESTRATOR_PHYSICS_SIGMA_REJECT")
             .ok()
             .map(|v| {
@@ -156,9 +158,15 @@ pub fn load_config() -> OrchestratorConfig {
                 !["0", "false", "off", "no"].contains(&s.as_str())
             })
             .unwrap_or(true),
-        lancedb_url: std::env::var("ORCHESTRATOR_LANCEDB_URL").ok().filter(|s| !s.trim().is_empty()),
-        decode_api_bind: std::env::var("ORCHESTRATOR_DECODE_API_BIND").ok().filter(|s| !s.trim().is_empty()),
-        pass_store_path: std::env::var("ORCHESTRATOR_PASS_STORE_PATH").ok().filter(|s| !s.trim().is_empty()),
+        lancedb_url: std::env::var("ORCHESTRATOR_LANCEDB_URL")
+            .ok()
+            .filter(|s| !s.trim().is_empty()),
+        decode_api_bind: std::env::var("ORCHESTRATOR_DECODE_API_BIND")
+            .ok()
+            .filter(|s| !s.trim().is_empty()),
+        pass_store_path: std::env::var("ORCHESTRATOR_PASS_STORE_PATH")
+            .ok()
+            .filter(|s| !s.trim().is_empty()),
         antenna_command_timeout_secs: std::env::var("ORCHESTRATOR_ANTENNA_COMMAND_TIMEOUT_SECS")
             .ok()
             .and_then(|v| v.parse().ok())
@@ -173,7 +181,9 @@ pub fn load_config() -> OrchestratorConfig {
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(1000),
-        ssa_api_bind: std::env::var("ORCHESTRATOR_SSA_API_BIND").ok().filter(|s| !s.trim().is_empty()),
+        ssa_api_bind: std::env::var("ORCHESTRATOR_SSA_API_BIND")
+            .ok()
+            .filter(|s| !s.trim().is_empty()),
         ingest_retry_count: std::env::var("ORCHESTRATOR_INGEST_RETRY_COUNT")
             .ok()
             .and_then(|v| v.parse().ok())
@@ -251,7 +261,10 @@ mod tests {
         }
 
         let cfg = load_config();
-        assert_eq!(cfg.local_engine_url, "http://127.0.0.1:8089/v1/chat/completions");
+        assert_eq!(
+            cfg.local_engine_url,
+            "http://127.0.0.1:8089/v1/chat/completions"
+        );
         assert_eq!(cfg.local_engine_model, "local-model");
         assert!(!cfg.decode_enabled);
         assert_eq!(cfg.ingest_retry_count, 3);
@@ -274,7 +287,10 @@ mod tests {
         ];
         let snapshot = save_env(&keys);
 
-        std::env::set_var("ORCHESTRATOR_LOCAL_ENGINE_URL", "http://127.0.0.1:9999/v1/chat/completions");
+        std::env::set_var(
+            "ORCHESTRATOR_LOCAL_ENGINE_URL",
+            "http://127.0.0.1:9999/v1/chat/completions",
+        );
         std::env::set_var("ORCHESTRATOR_CHAT_MODEL", "test-model");
         std::env::set_var("ORCHESTRATOR_DECODE_ENABLED", "true");
         std::env::set_var("ORCHESTRATOR_INGEST_RETRY_COUNT", "7");
@@ -283,7 +299,10 @@ mod tests {
         std::env::set_var("ORCHESTRATOR_DAILY_SUMMARY_USE_LOCAL", "no");
 
         let cfg = load_config();
-        assert_eq!(cfg.local_engine_url, "http://127.0.0.1:9999/v1/chat/completions");
+        assert_eq!(
+            cfg.local_engine_url,
+            "http://127.0.0.1:9999/v1/chat/completions"
+        );
         assert_eq!(cfg.local_engine_model, "test-model");
         assert!(cfg.decode_enabled);
         assert_eq!(cfg.ingest_retry_count, 7);

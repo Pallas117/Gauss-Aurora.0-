@@ -10,7 +10,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "react-router-dom";
 import { appRouter } from "@/app/routes";
 import { warnIfSupabaseEnvMissing } from "@/lib/auth-env-check";
-import { MissionSnapshotProvider } from "@/hooks/useMissionSnapshot";
 
 const RouterFallback = () => (
   <div className="p-6 text-sm text-muted-foreground">Loading mission modules…</div>
@@ -28,13 +27,11 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <MissionSnapshotProvider>
-              <BootGuard>
-                <Suspense fallback={<RouterFallback />}>
-                  <RouterProvider router={appRouter} />
-                </Suspense>
-              </BootGuard>
-            </MissionSnapshotProvider>
+            <BootGuard>
+              <Suspense fallback={<RouterFallback />}>
+                <RouterProvider router={appRouter} />
+              </Suspense>
+            </BootGuard>
           </TooltipProvider>
         </QueryClientProvider>
       </GaussThemeProvider>

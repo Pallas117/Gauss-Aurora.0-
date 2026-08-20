@@ -6,6 +6,7 @@ import type {
   CanonicalSpaceWeatherPoint,
   MissionPassWindow,
   MMSReconVectorPoint,
+  SpaceDomainAnalysis,
   VectorOverlaySnapshot,
 } from "@/lib/types/space-weather";
 import type { PowerProfileMode } from "@/hooks/usePowerProfile";
@@ -35,6 +36,10 @@ export interface SpaceSceneProps {
   powerMode?: PowerProfileMode;
   passWindows?: MissionPassWindow[];
   showPassOverlays?: boolean;
+  ssaAnalysis?: SpaceDomainAnalysis | null;
+  ssaTrend?: number[];
+  recentCriticalConjunctionCount?: number;
+  motionReduced?: boolean;
 }
 
 type ProjectedPoint = {
@@ -102,7 +107,7 @@ function projectVisualizationPoint(
       x,
       y,
       size: 4 + risk * 7,
-      color: risk > 0.82 ? "#FF4D00" : risk > 0.55 ? "#FF9A3C" : "#CCFF00",
+      color: risk > 0.82 ? "#FF4D00" : risk > 0.55 ? "#FF9A3C" : "#D4AF37",
       label: `${orbitType} risk ${Math.round(risk * 100)}%`,
       opacity: 0.45 + risk * 0.45,
       point,
@@ -116,7 +121,7 @@ function projectVisualizationPoint(
     x,
     y,
     size: 3 + fluxNorm * 6,
-    color: fluxNorm > 0.8 ? "#FF4D00" : fluxNorm > 0.45 ? "#FFE066" : "#CCFF00",
+    color: fluxNorm > 0.8 ? "#FF4D00" : fluxNorm > 0.45 ? "#FFE066" : "#D4AF37",
     label: `${orbitType} flux ${Math.round(flux)}`,
     opacity: 0.38 + fluxNorm * 0.4,
     point,
@@ -155,28 +160,50 @@ function buildPassArc(index: number, total: number, priority: number): string {
   return `M ${start.x} ${start.y} A ${radius} ${radius * 0.44} 0 0 1 ${end.x} ${end.y}`;
 }
 
+function buildTrendSparkline(values: number[]): string {
+  if (values.length === 0) {
+    return "";
+  }
+  if (values.length === 1) {
+    return `0,22 90,22`;
+  }
+  return values
+    .map((value, index) => {
+      const x = (index / Math.max(values.length - 1, 1)) * 90;
+      const y = 22 - clamp01(value) * 20;
+      return `${round(x)},${round(y)}`;
+    })
+    .join(" ");
+}
+
+function severityTone(severity: SpaceDomainAnalysis["severity"] | null | undefined): string {
+  if (severity === "critical") return "#FF4D00";
+  if (severity === "warning") return "#FF9A3C";
+  return "#D4AF37";
+}
+
 function buildStats(props: SpaceSceneProps) {
   const stormTier = props.canonicalPoint?.alerts.stormTier ?? "quiet";
   return [
     {
       label: "Storm",
       value: stormTier.toUpperCase(),
-      tone: stormTier === "severe" ? "#FF4D00" : stormTier === "warning" ? "#FF9A3C" : "#CCFF00",
+      tone: stormTier === "severe" ? "#FF4D00" : stormTier === "warning" ? "#FF9A3C" : "#D4AF37",
     },
     {
       label: "Compression",
       value: `${Math.round(clamp01(props.magnetopauseCompression) * 100)}%`,
-      tone: "#CCFF00",
+      tone: "#D4AF37",
     },
     {
       label: "Reconnection",
       value: `${Math.round(clamp01(props.reconnectionStrength) * 100)}%`,
-      tone: props.reconnectionStrength > 0.7 ? "#FF4D00" : "#CCFF00",
+      tone: props.reconnectionStrength > 0.7 ? "#FF4D00" : "#D4AF37",
     },
     {
       label: "Mode",
       value: (props.powerMode ?? "balanced").toUpperCase(),
-      tone: props.powerMode === "low-power" ? "#FF9A3C" : "#CCFF00",
+      tone: props.powerMode === "low-power" ? "#FF9A3C" : "#D4AF37",
     },
   ];
 }
@@ -232,6 +259,10 @@ export const SpaceScene = ({
   powerMode,
   passWindows,
   showPassOverlays,
+  ssaAnalysis,
+  ssaTrend,
+  recentCriticalConjunctionCount = 0,
+  motionReduced = false,
 }: SpaceSceneProps) => {
   const filteredData = useMemo(() => {
     if (!Array.isArray(data) || data.length === 0) {
@@ -282,6 +313,9 @@ export const SpaceScene = ({
   const beltGlow = 0.14 + clamp01(beltIntensity) * 0.3;
   const magnetosphereCompression = 0.72 + clamp01(magnetopauseCompression) * 0.42;
   const passArcCount = showPassOverlays ? passWindows?.length ?? 0 : 0;
+  const ssaHeat = clamp01(ssaAnalysis?.metrics.maxRiskScore ?? 0);
+  const ssaTone = severityTone(ssaAnalysis?.severity);
+  const trendPath = buildTrendSparkline(ssaTrend ?? []);
 
   return (
     <div className="relative h-full w-full overflow-hidden rounded-[28px] bg-[#050505] text-white">
@@ -291,7 +325,7 @@ export const SpaceScene = ({
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(circle at 50% 45%, rgba(204,255,0,0.08), transparent 32%), radial-gradient(circle at 70% 20%, rgba(255,77,0,0.10), transparent 28%), linear-gradient(180deg, #050505 0%, #020202 100%)",
+            `radial-gradient(circle at 50% 45%, rgba(212,175,55,${round(0.06 + ssaHeat * 0.08)}), transparent 32%), radial-gradient(circle at 70% 20%, rgba(255,77,0,${round(0.06 + ssaHeat * 0.18)}), transparent 28%), linear-gradient(180deg, #050505 0%, #020202 100%)`,
         }}
       />
 
@@ -328,7 +362,7 @@ export const SpaceScene = ({
       >
         <defs>
           <marker id="gauss-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-            <path d="M0,0 L8,4 L0,8 Z" fill="#CCFF00" />
+            <path d="M0,0 L8,4 L0,8 Z" fill="#D4AF37" />
           </marker>
           <marker id="gauss-alert-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
             <path d="M0,0 L8,4 L0,8 Z" fill="#FF4D00" />
@@ -342,25 +376,64 @@ export const SpaceScene = ({
         </g>
 
         {layers.orbitRings !== false && (
-          <g fill="none" stroke="#CCFF00" strokeOpacity="0.18">
+          <g fill="none" stroke={ssaTone} strokeOpacity={0.18 + ssaHeat * 0.22}>
             <ellipse cx={CENTER_X} cy={CENTER_Y} rx={orbitRadius("LEO")} ry={orbitRadius("LEO") * 0.58} />
             <ellipse cx={CENTER_X} cy={CENTER_Y} rx={orbitRadius("MEO")} ry={orbitRadius("MEO") * 0.5} />
             <ellipse cx={CENTER_X} cy={CENTER_Y} rx={orbitRadius("GEO")} ry={orbitRadius("GEO") * 0.42} />
           </g>
         )}
 
+        {ssaAnalysis && recentCriticalConjunctionCount > 0 ? (
+          <g>
+            <ellipse
+              cx={CENTER_X}
+              cy={CENTER_Y}
+              rx={orbitRadius("MEO") + 16}
+              ry={(orbitRadius("MEO") + 16) * 0.5}
+              fill="none"
+              stroke="#FF4D00"
+              strokeOpacity={0.22}
+              strokeWidth={2.2}
+            >
+              {!motionReduced ? (
+                <animate
+                  attributeName="stroke-opacity"
+                  values="0.12;0.5;0.12"
+                  dur="3.5s"
+                  repeatCount="indefinite"
+                />
+              ) : null}
+            </ellipse>
+          </g>
+        ) : null}
+
+        {ssaAnalysis?.changed && !motionReduced ? (
+          <circle
+            cx={CENTER_X}
+            cy={CENTER_Y}
+            r="112"
+            fill="none"
+            stroke={ssaTone}
+            strokeOpacity={0.28}
+            strokeWidth={2}
+          >
+            <animate attributeName="r" values="104;156;104" dur="1.8s" repeatCount="1" />
+            <animate attributeName="stroke-opacity" values="0.36;0;0.36" dur="1.8s" repeatCount="1" />
+          </circle>
+        ) : null}
+
         {layers.magnetosphere && (
           <path
             d={`M ${CENTER_X - 280 * magnetosphereCompression} ${CENTER_Y} C ${CENTER_X - 130} ${CENTER_Y - 180}, ${CENTER_X + 180 * magnetosphereCompression} ${CENTER_Y - 145}, ${CENTER_X + 310 * magnetosphereCompression} ${CENTER_Y} C ${CENTER_X + 180 * magnetosphereCompression} ${CENTER_Y + 145}, ${CENTER_X - 130} ${CENTER_Y + 180}, ${CENTER_X - 280 * magnetosphereCompression} ${CENTER_Y}`}
-            fill="rgba(204,255,0,0.04)"
-            stroke="#CCFF00"
+            fill="rgba(212,175,55,0.04)"
+            stroke="#D4AF37"
             strokeOpacity={0.42}
             strokeWidth={2}
           />
         )}
 
         {layers.fieldLines && (
-          <g fill="none" stroke="#CCFF00" strokeOpacity="0.26">
+          <g fill="none" stroke="#D4AF37" strokeOpacity="0.26">
             {[94, 132, 170].map((spread) => (
               <path
                 key={spread}
@@ -381,7 +454,7 @@ export const SpaceScene = ({
                 rx={188 + index * 34}
                 ry={(188 + index * 34) * 0.46}
                 fill="none"
-                stroke="#CCFF00"
+                stroke="#D4AF37"
                 strokeOpacity={0.08 + index * 0.05}
               >
                 <animate
@@ -403,13 +476,13 @@ export const SpaceScene = ({
 
         {layers.earth && (
           <g>
-            <circle cx={CENTER_X} cy={CENTER_Y} r="68" fill="#081223" stroke="#CCFF00" strokeOpacity="0.22" />
-            <circle cx={CENTER_X} cy={CENTER_Y} r="74" fill="none" stroke="#CCFF00" strokeOpacity={beltGlow} />
+            <circle cx={CENTER_X} cy={CENTER_Y} r="68" fill="#081223" stroke="#D4AF37" strokeOpacity="0.22" />
+            <circle cx={CENTER_X} cy={CENTER_Y} r="74" fill="none" stroke="#D4AF37" strokeOpacity={beltGlow} />
           </g>
         )}
 
         {layers.belts && (
-          <g fill="none" stroke="#CCFF00">
+          <g fill="none" stroke="#D4AF37">
             <ellipse cx={CENTER_X} cy={CENTER_Y} rx="102" ry="58" strokeOpacity={0.14 + beltGlow} />
             <ellipse cx={CENTER_X} cy={CENTER_Y} rx="142" ry="76" strokeOpacity={0.1 + beltGlow * 0.8} />
           </g>
@@ -422,7 +495,7 @@ export const SpaceScene = ({
               y1={CENTER_Y}
               x2={CENTER_X + vectorOverlay.solarWindDirection.x * 92}
               y2={CENTER_Y - vectorOverlay.solarWindDirection.z * 68}
-              stroke="#CCFF00"
+              stroke="#D4AF37"
               strokeOpacity="0.62"
               strokeWidth="2"
               markerEnd="url(#gauss-arrow)"
@@ -464,7 +537,7 @@ export const SpaceScene = ({
               y1={vector.origin.y}
               x2={vector.target.x}
               y2={vector.target.y}
-              stroke={vector.confidence > 0.72 ? "#FF4D00" : "#CCFF00"}
+              stroke={vector.confidence > 0.72 ? "#FF4D00" : "#D4AF37"}
               strokeOpacity={0.46 + clamp01(vector.confidence) * 0.36}
               strokeWidth={2}
               markerEnd={vector.confidence > 0.72 ? "url(#gauss-alert-arrow)" : "url(#gauss-arrow)"}
@@ -478,7 +551,7 @@ export const SpaceScene = ({
             <path
               d={buildPassArc(index, all.length, pass.priority)}
               fill="none"
-              stroke={pass.status === "active" ? "#FF4D00" : pass.status === "scheduled" ? "#FFE066" : "#CCFF00"}
+              stroke={pass.status === "active" ? "#FF4D00" : pass.status === "scheduled" ? "#FFE066" : "#D4AF37"}
               strokeOpacity="0.72"
               strokeWidth="3"
               strokeLinecap="round"
@@ -488,18 +561,36 @@ export const SpaceScene = ({
         ))}
 
         <g transform={`translate(${VIEWBOX_WIDTH - 220} 34)`}>
-          <rect width="186" height="116" rx="18" fill="#050505" fillOpacity="0.78" stroke="#FFFFFF" strokeOpacity="0.12" />
+          <rect width="186" height="148" rx="18" fill="#050505" fillOpacity="0.78" stroke="#FFFFFF" strokeOpacity="0.12" />
           <text x="16" y="26" fill="#FFFFFF" fillOpacity="0.48" fontSize="11" fontFamily="JetBrains Mono, monospace" letterSpacing="2.2">
             LIVE INPUTS
           </text>
-          <text x="16" y="50" fill="#CCFF00" fontSize="16" fontFamily="Inter, system-ui, sans-serif">
-            {canonicalPoint?.alerts.reason ?? "Awaiting node"}
+          <text x="16" y="50" fill={ssaTone} fontSize="16" fontFamily="Inter, system-ui, sans-serif">
+            {ssaAnalysis?.headline ?? canonicalPoint?.alerts.reason ?? "Awaiting node"}
           </text>
           <text x="16" y="76" fill="#FFFFFF" fillOpacity="0.68" fontSize="12" fontFamily="JetBrains Mono, monospace">
             Bz {round(canonicalPoint?.magneticField.z ?? 0)} nT
           </text>
           <text x="16" y="96" fill="#FFFFFF" fillOpacity="0.68" fontSize="12" fontFamily="JetBrains Mono, monospace">
             Kp {round(canonicalPoint?.indices.kp ?? 0)}
+          </text>
+          <text x="16" y="116" fill="#FFFFFF" fillOpacity="0.48" fontSize="11" fontFamily="JetBrains Mono, monospace" letterSpacing="1.6">
+            SSA TREND
+          </text>
+          <rect x="16" y="122" width="90" height="22" rx="6" fill="#FFFFFF" fillOpacity="0.04" />
+          {trendPath ? (
+            <polyline
+              points={trendPath}
+              transform="translate(16 122)"
+              fill="none"
+              stroke={ssaTone}
+              strokeWidth="2"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          ) : null}
+          <text x="116" y="136" fill="#FFFFFF" fillOpacity="0.68" fontSize="12" fontFamily="JetBrains Mono, monospace">
+            {ssaAnalysis ? `${Math.round(ssaAnalysis.metrics.learnedLaneScore * 100)}%` : "n/a"}
           </text>
         </g>
       </svg>

@@ -3,6 +3,7 @@
 
 use crate::anonymization;
 use crate::config::OrchestratorConfig;
+use crate::model_governance::governed_prompt;
 use reqwest::Client;
 use serde_json::json;
 use std::path::Path;
@@ -42,9 +43,7 @@ async fn run_surya_step(
         .into_os_string()
         .into_string()
         .map_err(|_| "invalid path")?;
-    let source_size_bytes = std::fs::metadata(source_path)
-        .map(|m| m.len())
-        .unwrap_or(0);
+    let source_size_bytes = std::fs::metadata(source_path).map(|m| m.len()).unwrap_or(0);
 
     if let Some(ref base) = config.surya_service_url {
         let url = format!("{}/surya/forecast", base.trim_end_matches('/'));
@@ -98,13 +97,23 @@ async fn run_deepseek_step(
         .map_err(|_| "invalid path")?;
     let surya_ctx = serde_json::to_string(surya_output).unwrap_or_default();
     let surya_ctx = surya_ctx.chars().take(500).collect::<String>();
+    let system_prompt = governed_prompt(
+        "You are the Gauss space-ops co-pilot. Your recommendation must follow spacecraft operations norms and probability-based reasoning. Reason ethically: prioritize crew and asset safety; treat Earth and its fields as one system; state uncertainty when present; be transparent; align with equitable, sustainable, data-backed outcomes. Communicate in a calm, precise, mission-focused voice; you are a partner to the human operator in a system built to save lives and enable an equitable, sustainable space future.",
+        &[
+            "Use only NOMINAL, MONITOR, or INITIATE SHIELDING, with a brief rationale.",
+            "When uncertain, say so and suggest what would clarify (e.g. additional telemetry or time window).",
+        ],
+    );
     let prompt = format!(
-        "You are the Gauss space-ops co-pilot. Your recommendation must follow spacecraft operations norms and probability-based reasoning: use only NOMINAL, MONITOR, or INITIATE SHIELDING, with a brief rationale. Reason ethically: prioritize crew and asset safety; treat Earth and its fields as one system; state uncertainty when present; be transparent; align with equitable, sustainable, data-backed outcomes. Communicate in a calm, precise, mission-focused voice; you are a partner to the human operator in a system built to save lives and enable an equitable, sustainable space future. Base your answer on the physics/telemetry context below.\n\nContext: {}\nCSV path: {}\n\nProvide a brief mission assessment (2-4 sentences). Output: one of NOMINAL / MONITOR / INITIATE SHIELDING and one-line rationale. When uncertain, say so and suggest what would clarify (e.g. additional telemetry or time window).",
+        "Base your answer on the physics/telemetry context below.\n\nContext: {}\nCSV path: {}\n\nProvide a brief mission assessment (2-4 sentences). Output: one of NOMINAL / MONITOR / INITIATE SHIELDING and one-line rationale.",
         surya_ctx, path_str
     );
     let payload = json!({
         "model": config.local_engine_model,
-        "messages": [{ "role": "user", "content": prompt }],
+        "messages": [
+            { "role": "system", "content": system_prompt },
+            { "role": "user", "content": prompt }
+        ],
         "max_tokens": 300
     });
     let timeout = Duration::from_secs(config.http_timeout_seconds.saturating_mul(2).max(30));
@@ -115,7 +124,10 @@ async fn run_deepseek_step(
     if let Some(ref key) = config.local_engine_api_key {
         req = req.bearer_auth(key);
     }
-    let res = req.send().await.map_err(|e| format!("deepseek request failed: {}", e))?;
+    let res = req
+        .send()
+        .await
+        .map_err(|e| format!("deepseek request failed: {}", e))?;
     let status = res.status();
     let body = res
         .text()
@@ -185,7 +197,11 @@ pub async fn trigger_triad(
         .map_err(|e| format!("triad response body read failed: {}", e))?;
 
     if !status.is_success() {
-        return Err(format!("triad pipeline returned {}: {}", status, &text[..text.len().min(256)]));
+        return Err(format!(
+            "triad pipeline returned {}: {}",
+            status,
+            &text[..text.len().min(256)]
+        ));
     }
     Ok(text)
 }
@@ -294,6 +310,9 @@ fn save_daily_summary(summary: &str) -> Result<(), std::io::Error> {
     std::fs::create_dir_all(dir)?;
     let path = dir.join("daily-summary.txt");
     let ts = chrono::Utc::now().to_rfc3339();
-    let content = format!("--- Daily Mission Summary ---\n{}\n\nGenerated: {}\n", summary, ts);
+    let content = format!(
+        "--- Daily Mission Summary ---\n{}\n\nGenerated: {}\n",
+        summary, ts
+    );
     std::fs::write(path, content)
 }

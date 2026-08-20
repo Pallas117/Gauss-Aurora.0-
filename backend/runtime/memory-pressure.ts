@@ -6,19 +6,26 @@ import {
 
 export type RuntimeMemoryPressureLevel = "nominal" | "constrained" | "critical";
 
-export interface RuntimeMemoryPressureSnapshot {
+export interface MemoryGovernorHealth {
   level: RuntimeMemoryPressureLevel;
+  freeMb: number;
+  suspendedSubsystems: string[];
+  svgLiteForced: boolean;
+}
+
+export interface RuntimeMemoryPressureSnapshot extends MemoryGovernorHealth {
   signals: string[];
   totalRamGb: number;
   freeRamGb: number;
   usedRamGb: number;
   freeRatio: number;
   thresholds: {
-    constrainedFreeMb: number;
-    criticalFreeMb: number;
-    constrainedFreeRatio: number;
-    criticalFreeRatio: number;
+    nominalMinFreeMb: number;
+    criticalMaxFreeMb: number;
   };
+  publicPollMs: number;
+  protectedPollMs: number;
+  hiddenPollMs: number;
   ceiling: MemoryCeilingStatus;
 }
 
@@ -26,16 +33,23 @@ type RuntimeMemoryPressureInput = {
   totalMemBytes: number;
   freeMemBytes: number;
   ceiling: MemoryCeilingStatus;
-  constrainedFreeMb?: number;
-  criticalFreeMb?: number;
-  constrainedFreeRatio?: number;
-  criticalFreeRatio?: number;
+  nominalMinFreeMb?: number;
+  criticalMaxFreeMb?: number;
 };
 
-const DEFAULT_CONSTRAINED_FREE_MB = 3072;
-const DEFAULT_CRITICAL_FREE_MB = 1536;
-const DEFAULT_CONSTRAINED_FREE_RATIO = 0.22;
-const DEFAULT_CRITICAL_FREE_RATIO = 0.12;
+const DEFAULT_NOMINAL_MIN_FREE_MB = 1500;
+const DEFAULT_CRITICAL_MAX_FREE_MB = 500;
+const PUBLIC_POLL_MS = {
+  nominal: 5_000,
+  constrained: 15_000,
+  critical: 30_000,
+} as const;
+const PROTECTED_POLL_MS = {
+  nominal: 10_000,
+  constrained: 20_000,
+  critical: 30_000,
+} as const;
+const HIDDEN_POLL_MS = 30_000;
 
 function round(value: number): number {
   return Math.round(value * 100) / 100;
@@ -58,10 +72,8 @@ export function resolveRuntimeMemoryPressure(
   const usedMemBytes = Math.max(0, totalMemBytes - freeMemBytes);
   const freeRatio = freeMemBytes / totalMemBytes;
   const freeMb = freeMemBytes / (1024 * 1024);
-  const constrainedFreeMb = input.constrainedFreeMb ?? DEFAULT_CONSTRAINED_FREE_MB;
-  const criticalFreeMb = input.criticalFreeMb ?? DEFAULT_CRITICAL_FREE_MB;
-  const constrainedFreeRatio = input.constrainedFreeRatio ?? DEFAULT_CONSTRAINED_FREE_RATIO;
-  const criticalFreeRatio = input.criticalFreeRatio ?? DEFAULT_CRITICAL_FREE_RATIO;
+  const nominalMinFreeMb = input.nominalMinFreeMb ?? DEFAULT_NOMINAL_MIN_FREE_MB;
+  const criticalMaxFreeMb = input.criticalMaxFreeMb ?? DEFAULT_CRITICAL_MAX_FREE_MB;
 
   const signals: string[] = [];
   let level: RuntimeMemoryPressureLevel = "nominal";
@@ -70,38 +82,53 @@ export function resolveRuntimeMemoryPressure(
     level = "critical";
     signals.push("ceiling-overrun");
   }
-  if (freeMb <= criticalFreeMb) {
+
+  if (freeMb < criticalMaxFreeMb) {
     level = "critical";
     signals.push("free-mb-critical");
-  } else if (freeMb <= constrainedFreeMb && level !== "critical") {
+  } else if (freeMb <= nominalMinFreeMb && level !== "critical") {
     level = "constrained";
     signals.push("free-mb-constrained");
-  }
-  if (freeRatio <= criticalFreeRatio) {
-    level = "critical";
-    signals.push("free-ratio-critical");
-  } else if (freeRatio <= constrainedFreeRatio && level === "nominal") {
-    level = "constrained";
-    signals.push("free-ratio-constrained");
   }
 
   if (signals.length === 0) {
     signals.push("headroom-healthy");
   }
 
+  const suspendedSubsystems =
+    level === "nominal"
+      ? []
+      : level === "constrained"
+        ? [
+            "rag-refresh",
+            "optional-enrichers",
+            "startup-chat-check",
+          ]
+        : [
+            "rag-refresh",
+            "optional-enrichers",
+            "startup-chat-check",
+            "background-reconcile",
+            "projection-refresh",
+          ];
+
   return {
     level,
+    freeMb: round(freeMb),
+    suspendedSubsystems,
+    svgLiteForced: level !== "nominal",
     signals,
     totalRamGb: round(totalMemBytes / (1024 * 1024 * 1024)),
     freeRamGb: round(freeMemBytes / (1024 * 1024 * 1024)),
     usedRamGb: round(usedMemBytes / (1024 * 1024 * 1024)),
     freeRatio: round(freeRatio),
     thresholds: {
-      constrainedFreeMb,
-      criticalFreeMb,
-      constrainedFreeRatio,
-      criticalFreeRatio,
+      nominalMinFreeMb,
+      criticalMaxFreeMb,
     },
+    publicPollMs: PUBLIC_POLL_MS[level],
+    protectedPollMs: PROTECTED_POLL_MS[level],
+    hiddenPollMs: HIDDEN_POLL_MS,
     ceiling: input.ceiling,
   };
 }
@@ -113,21 +140,24 @@ export function getRuntimeMemoryPressureSnapshot(
     totalMemBytes: os.totalmem(),
     freeMemBytes: os.freemem(),
     ceiling: getMemoryCeilingStatus(ceilingMb),
-    constrainedFreeMb: readEnvNumber(
-      "MEMORY_PRESSURE_CONSTRAINED_FREE_MB",
-      DEFAULT_CONSTRAINED_FREE_MB,
+    nominalMinFreeMb: readEnvNumber(
+      "MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB",
+      DEFAULT_NOMINAL_MIN_FREE_MB,
     ),
-    criticalFreeMb: readEnvNumber(
-      "MEMORY_PRESSURE_CRITICAL_FREE_MB",
-      DEFAULT_CRITICAL_FREE_MB,
-    ),
-    constrainedFreeRatio: readEnvNumber(
-      "MEMORY_PRESSURE_CONSTRAINED_FREE_RATIO",
-      DEFAULT_CONSTRAINED_FREE_RATIO,
-    ),
-    criticalFreeRatio: readEnvNumber(
-      "MEMORY_PRESSURE_CRITICAL_FREE_RATIO",
-      DEFAULT_CRITICAL_FREE_RATIO,
+    criticalMaxFreeMb: readEnvNumber(
+      "MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB",
+      DEFAULT_CRITICAL_MAX_FREE_MB,
     ),
   });
+}
+
+export function toMemoryGovernorHealth(
+  snapshot: RuntimeMemoryPressureSnapshot,
+): MemoryGovernorHealth {
+  return {
+    level: snapshot.level,
+    freeMb: snapshot.freeMb,
+    suspendedSubsystems: snapshot.suspendedSubsystems,
+    svgLiteForced: snapshot.svgLiteForced,
+  };
 }

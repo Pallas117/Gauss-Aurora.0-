@@ -34,8 +34,11 @@ import {
 } from "../utils.js";
 import { assertSourceStatusResponseContract } from "../contracts/heliophysics-contract.js";
 import { getSpaceDomainSnapshot } from "../ssa/space-domain-store.js";
+import { resolveSpaceDomainAvailability } from "../ssa/availability.js";
+import { getSpaceDomainAnalysis } from "../ssa/live-analysis.js";
 import { buildSpaceDomainSummary } from "../ssa/ssa-features.js";
 import { toPublicSpaceDomainSnapshot } from "../ssa/space-domain-public.js";
+import { getTrackedRuntimeMemoryPressureSnapshot } from "../runtime/limit-context-recorder.js";
 import type {
     CanonicalSpaceWeatherPoint,
     MMSReconVectorPoint,
@@ -254,7 +257,12 @@ export function mountFeedRoutes(app: Router) {
         const threatSummary = buildThreatSummaryPayload(sequence, lookbackMs, source, horizonMinutes);
         const sourceStatus =
             getSourceStatus().length > 0 ? getSourceStatus() : await hydratePersistedSourceHealthState();
-        const spaceDomainSnapshot = getSpaceDomainSnapshot();
+        const memorySnapshot = getTrackedRuntimeMemoryPressureSnapshot("feed-route", {
+          route: "/api/feed/dashboard/latest",
+        });
+        const { snapshot: spaceDomainSnapshot, availability: spaceDomainAvailability } =
+            resolveSpaceDomainAvailability(getSpaceDomainSnapshot(), memorySnapshot);
+        const spaceDomainSummary = buildSpaceDomainSummary(spaceDomainSnapshot);
         const vectorOverlay = buildVectorOverlaySnapshot({
             canonicalLatest,
             mmsLatest: mmsLatest ?? null,
@@ -271,7 +279,12 @@ export function mountFeedRoutes(app: Router) {
             sourceStatus,
             spaceDomain: {
                 snapshot: toPublicSpaceDomainSnapshot(spaceDomainSnapshot),
-                summary: buildSpaceDomainSummary(spaceDomainSnapshot),
+                availability: spaceDomainAvailability,
+                summary: spaceDomainSummary,
+                analysis: getSpaceDomainAnalysis(spaceDomainSummary, {
+                    memorySnapshot,
+                    availability: spaceDomainAvailability,
+                }),
             },
             vectorOverlay,
             freshness: {

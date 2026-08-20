@@ -5,19 +5,51 @@ test.beforeEach(async ({ page }) => {
   await mockUiApis(page);
 });
 
+test("smoke: public SDA analysis renders without login", async ({ page }) => {
+  await page.route(/\/api\/auth\/session/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        authRequired: true,
+        authenticated: false,
+        role: null,
+        clearance: null,
+        userId: null,
+        email: null,
+        emailVerified: false,
+      }),
+    });
+  });
+
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/sda$/);
+  await expect(page.getByText(/public sda analysis/i)).toBeVisible();
+  await expect(page.getByRole("button", { name: /login for mission control/i })).toBeVisible();
+});
+
 test("smoke: command shell routes, auth modal, and feedback actions", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveURL(/\/command$/);
-
-  await expect(page.getByRole("heading", { name: /command snapshot/i })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /live 5s telemetry stream/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /^sda/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /^systems/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /^intel/i })).toBeVisible();
-
-  await page.goto("/sda");
   await expect(page).toHaveURL(/\/sda$/);
+
   await expect(page.getByRole("heading", { name: /sda visualization/i })).toBeVisible();
+  await expect(page.getByText(/public sda analysis/i)).toBeVisible();
+  await expect(page.getByRole("button", { name: /login for mission control|open mission control/i })).toBeVisible();
+
+  const missionControlButton = page.getByRole("button", { name: /login for mission control|open mission control/i });
+  await missionControlButton.click();
+  const authHeading = page.getByRole("heading", { name: /mission access portal/i });
+  if (await authHeading.count()) {
+    await expect(authHeading).toBeVisible();
+    await page.keyboard.press("Escape");
+  } else {
+    await expect(page).toHaveURL(/\/command$/);
+    const primaryNav = page.getByRole("navigation", { name: /primary/i });
+    await expect(primaryNav.getByRole("link", { name: "SDA HUD", exact: true })).toBeVisible();
+    await expect(primaryNav.getByRole("link", { name: "Systems Infra", exact: true })).toBeVisible();
+    await expect(primaryNav.getByRole("link", { name: "Intel RAG", exact: true })).toBeVisible();
+    await page.goto("/sda");
+  }
 
   await page.goto("/systems");
   await expect(page).toHaveURL(/\/systems$/);
@@ -40,7 +72,7 @@ test("smoke: command shell routes, auth modal, and feedback actions", async ({ p
 
   await page.goto("/heliophysics");
   await expect(page).toHaveURL(/\/heliophysics$/);
-  await expect(page.getByRole("heading", { name: /gauss aurora mission console/i })).toBeVisible();
+  await expect(page.getByTestId("gauss-shell-content")).toBeVisible();
 
   await page.goto("/command");
   const feedbackMessage = page.getByPlaceholder(
@@ -49,6 +81,13 @@ test("smoke: command shell routes, auth modal, and feedback actions", async ({ p
   await feedbackMessage.fill("Command shell navigation and cards are responsive.");
   const sendFeedback = page.getByRole("button", { name: /send feedback/i }).first();
   await expect(sendFeedback).toBeEnabled();
+  const feedbackResponsePromise = page.waitForResponse(
+    (response) =>
+      /\/api\/feedback$/.test(response.url()) &&
+      response.request().method() === "POST",
+  );
   await sendFeedback.click();
-  await expect(page.getByText(/feedback received/i).first()).toBeVisible();
+  const feedbackResponse = await feedbackResponsePromise;
+  expect(feedbackResponse.status()).toBe(201);
+  await expect(feedbackMessage).toHaveValue("");
 });

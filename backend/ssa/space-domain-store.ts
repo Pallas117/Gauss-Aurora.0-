@@ -1,5 +1,6 @@
 import type { ConjunctionRecord } from "./conjunction-interop.js";
-import type { RiskZone, SatelliteObject } from "./open-catalog-client.js";
+import type { RiskZone, SatelliteCatalogCoverage, SatelliteObject } from "./open-catalog-client.js";
+import { noteSpaceDomainSnapshot, resetSpaceDomainAvailabilityState } from "./availability.js";
 
 const MAX_RISK_ZONES = 50;
 const MAX_SATELLITE_OBJECTS = 200;
@@ -15,6 +16,7 @@ export interface SatelliteObjectsSnapshot {
   highValue: SatelliteObject[];
   unidentified: SatelliteObject[];
   updatedAt: string;
+  coverage: SatelliteCatalogCoverage;
 }
 
 export interface ConjunctionEventsSnapshot {
@@ -45,20 +47,41 @@ export function setRiskZoneSnapshot(zones: RiskZone[]): void {
     riskZones: zones.slice(0, MAX_RISK_ZONES),
     updatedAt: new Date().toISOString(),
   };
+  noteSpaceDomainSnapshot(getSpaceDomainSnapshot());
 }
 
 export function getRiskZoneSnapshot(): RiskZoneSnapshot | null {
   return riskZoneSnapshot;
 }
 
-export function setSatelliteObjectsSnapshot(objects: SatelliteObject[]): void {
+export function setSatelliteObjectsSnapshot(objects: SatelliteObject[], coverage?: SatelliteCatalogCoverage): void {
   const capped = objects.slice(0, MAX_SATELLITE_OBJECTS);
+  const observedAt = new Date().toISOString();
+  const objectClassCounts = capped.reduce((counts, object) => {
+    const objectClass = object.objectClass ?? (object.unidentified ? "unknown" : "spacecraft");
+    counts[objectClass] += 1;
+    return counts;
+  }, { spacecraft: 0, rocket_body: 0, debris: 0, unknown: 0 } as SatelliteCatalogCoverage["objectClassCounts"]);
   satelliteObjectsSnapshot = {
     objects: capped,
     highValue: capped.filter((object) => object.highValue),
     unidentified: capped.filter((object) => object.unidentified),
-    updatedAt: new Date().toISOString(),
+    updatedAt: observedAt,
+    coverage: coverage ?? {
+      sourceUrls: [],
+      sourceFailures: [],
+      complete: false,
+      truncated: capped.length >= MAX_SATELLITE_OBJECTS,
+      catalogObjects: objects.length,
+      parsedObjects: objects.length,
+      propagatedObjects: objects.length,
+      returnedObjects: capped.length,
+      objectLimit: MAX_SATELLITE_OBJECTS,
+      fetchedAt: observedAt,
+      objectClassCounts,
+    },
   };
+  noteSpaceDomainSnapshot(getSpaceDomainSnapshot());
 }
 
 export function getSatelliteObjectsSnapshot(): SatelliteObjectsSnapshot | null {
@@ -71,12 +94,14 @@ export function appendConjunctionRecord(record: ConjunctionRecord): void {
     conjunctionEvents = conjunctionEvents.slice(conjunctionEvents.length - MAX_CONJUNCTION_EVENTS);
   }
   conjunctionUpdatedAt = record.ingestedAt ?? new Date().toISOString();
+  noteSpaceDomainSnapshot(getSpaceDomainSnapshot());
 }
 
 export function setConjunctionRecords(records: ConjunctionRecord[]): void {
   const sorted = [...records].sort((a, b) => Date.parse(a.ingestedAt) - Date.parse(b.ingestedAt));
   conjunctionEvents = sorted.slice(-MAX_CONJUNCTION_EVENTS);
   conjunctionUpdatedAt = conjunctionEvents[conjunctionEvents.length - 1]?.ingestedAt ?? null;
+  noteSpaceDomainSnapshot(getSpaceDomainSnapshot());
 }
 
 export function getConjunctionEvents(limit = MAX_CONJUNCTION_EVENTS): ConjunctionRecord[] {
@@ -111,4 +136,5 @@ export function resetSpaceDomainStore(): void {
   satelliteObjectsSnapshot = null;
   conjunctionEvents = [];
   conjunctionUpdatedAt = null;
+  resetSpaceDomainAvailabilityState();
 }

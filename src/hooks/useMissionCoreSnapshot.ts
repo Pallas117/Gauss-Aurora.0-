@@ -1,5 +1,8 @@
 import { useCallback, useMemo } from "react";
-import type { MissionCoreSnapshotResponse } from "@/lib/types/space-weather";
+import type {
+  BackendMemoryPressureLevel,
+  MissionCoreSnapshotResponse,
+} from "@/lib/types/space-weather";
 import { fetchMissionCoreLatest } from "@/lib/api/heliophysics-proxy";
 import { getAccessToken } from "@/lib/api/auth";
 import { useRealtimeFeed } from "@/hooks/useRealtimeFeed";
@@ -8,6 +11,7 @@ const POLL_INTERVAL_MS = 10_000;
 
 export interface UseMissionCoreSnapshotOptions {
   enabled?: boolean;
+  governorLevel?: BackendMemoryPressureLevel;
 }
 
 export interface UseMissionCoreSnapshotResult {
@@ -21,6 +25,7 @@ export function useMissionCoreSnapshot(
   options: UseMissionCoreSnapshotOptions = {},
 ): UseMissionCoreSnapshotResult {
   const { enabled = true } = options;
+  const governorLevel = options.governorLevel;
 
   const fetcher = useCallback(async () => {
     const token = await getAccessToken();
@@ -35,6 +40,13 @@ export function useMissionCoreSnapshot(
     initialData: null,
     intervalMs: POLL_INTERVAL_MS,
     enabled,
+    governor: {
+      level: governorLevel,
+      nominalMs: 10_000,
+      constrainedMs: 20_000,
+      criticalMs: 30_000,
+      hiddenMs: 30_000,
+    },
     trendSampling: {
       selectMetric: (data) => {
         if (!data) {

@@ -1,0 +1,10 @@
+import "../contracts/heliophysics-contract.test.ts";
+import "../contracts/mission-core-contract.test.ts";
+import "../contracts/packet-ingest-contract.test.ts";
+import "../ethics/foundational-reasoning.test.ts";
+import "../ethics/model-governance.test.ts";
+import "../ethics/orbital-stewardship.test.ts";
+import "../learning/gaussian-hypothesis-cycle.test.ts";
+import "../learning/local-model-wireup-cycle.test.ts";
+import "../physics/mms-probability-helpers.test.ts";
+import "../physics/mms-probability.test.ts";

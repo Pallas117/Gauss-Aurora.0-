@@ -1,0 +1,7 @@
+interface:
+  display_name: "Gauss Mesh Network"
+  short_description: "Build and verify bounded private mesh networking"
+  default_prompt: "Use $gauss-mesh-network to diagnose, build, or verify the Gauss private mesh and Turing shared-compute network with explicit approval boundaries."
+
+policy:
+  allow_implicit_invocation: true

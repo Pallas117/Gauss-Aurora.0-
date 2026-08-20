@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -14,6 +14,9 @@ import { FeedbackPanel } from "@/components/heliophysics/FeedbackPanel";
 import { SolarWindSpeedChart } from "@/components/heliophysics/SolarWindSpeedChart";
 import { SuryaStubPanel } from "@/components/heliophysics/SuryaStubPanel";
 import { ThreatActionCards } from "@/components/heliophysics/ThreatActionCards";
+import { MhdEffectsScene } from "@/components/heliophysics/MhdEffectsScene";
+import { CesiumMhdScene } from "@/components/heliophysics/CesiumMhdScene";
+import { SatelliteRiskPanel } from "@/components/heliophysics/SatelliteRiskPanel";
 import { MissionHeader } from "@/components/heliophysics/MissionHeader";
 import { AuthSessionCard } from "@/components/heliophysics/AuthSessionCard";
 import { OperationalSummaryCard } from "@/components/heliophysics/OperationalSummaryCard";
@@ -22,16 +25,13 @@ import { SourceHealthCard } from "@/components/heliophysics/SourceHealthCard";
 import { GaussRagPanel } from "@/components/GaussRagPanel";
 import { MissionSurfaceLinks } from "@/components/MissionSurfaceLinks";
 import { GlassPanel } from "@/components/orbit/GlassPanel";
-import { LiteSdaScene } from "@/components/sda/LiteSdaScene";
 import { useAuroraMap } from "@/hooks/useAuroraMap";
-import { useBackendHealth } from "@/hooks/useBackendHealth";
 import { useMMSReconnection } from "@/hooks/useMMSReconnection";
 import { useMissionSnapshot } from "@/hooks/useMissionSnapshot";
 import { useMissionCoreSnapshot } from "@/hooks/useMissionCoreSnapshot";
 import { usePowerProfile } from "@/hooks/usePowerProfile";
 import { useOfflineMode } from "@/hooks/useOfflineMode";
 import { useSolarWind5s } from "@/hooks/useSolarWind5s";
-import { useRiskZones } from "@/hooks/useRiskZones";
 import { useSuryaForecast } from "@/hooks/useSuryaForecast";
 import { useNowcastPlayback } from "@/hooks/useNowcastPlayback";
 import {
@@ -40,7 +40,6 @@ import {
   getViteEnv,
   hasMissionClearance,
   nowcastPredictionToCanonicalPoint,
-  nowcastPredictionToVisualizationPoints,
 } from "@/lib/heliophysics-utils";
 import {
   suryaActivityFromResponse,
@@ -48,17 +47,19 @@ import {
 } from "@/lib/suryaRadiation";
 import { getApiBaseUrl } from "@/lib/api/base-url";
 import type { LayerVisibility } from "@/components/types";
-import type { VisualizationPoint } from "@/lib/types/radiation";
-import {
-  prioritizeVisualizationPoints,
-  withVisualizationPriority,
-} from "@/lib/visual-priority";
 
-
-const SpaceScene = lazy(() => import("@/components/scene/SpaceScene"));
+type HistoricalScenario = {
+  id: string;
+  name: string;
+  eventDate: string;
+  kpIndex: number;
+  tidDoseKrad: number | null;
+  tidDoseStatus: "not_observed" | "scenario_proxy";
+  eventDurationHours: number;
+  affectedSystems: string[];
+};
 
 const HeliophysicsDashboard = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const location = useLocation();
   const baseUrl = getApiBaseUrl();
   const stripeCheckoutUrl = (getViteEnv("VITE_STRIPE_CHECKOUT_URL") ?? (typeof process !== "undefined" ? process.env?.VITE_STRIPE_CHECKOUT_URL : undefined) ?? "").toString().trim();
@@ -72,9 +73,11 @@ const HeliophysicsDashboard = () => {
   });
   const [billingMessage, setBillingMessage] = useState<string | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [historicalScenarios, setHistoricalScenarios] = useState<HistoricalScenario[]>([]);
+  const [historicalScenarioId, setHistoricalScenarioId] = useState("");
+  const [historicalScenarioLoading, setHistoricalScenarioLoading] = useState(false);
 
   const mission = useMissionSnapshot();
-  const backendHealth = useBackendHealth();
   const offline = useOfflineMode({
     lastSuccessfulSyncAt:
       mission.lastSuccessfulSyncAt ??
@@ -112,44 +115,37 @@ const HeliophysicsDashboard = () => {
     (mission.session?.role === "operator" || mission.session?.role === "admin") &&
     hasMissionClearance(mission.session?.clearance) &&
     !offline.isOffline;
-  const useLiteHelioScene =
-    powerProfile === "low-power" || backendHealth.memoryLevel !== "nominal";
-  const liteHelioReason =
-    backendHealth.memoryLevel === "critical"
-      ? "Backend RAM is critical: heliophysics scene has shifted to SVG mode."
-      : backendHealth.memoryLevel === "constrained"
-        ? "Backend RAM is constrained: reduced scene load to keep telemetry responsive."
-        : "Low-power mode is active: the heliophysics scene is using the lightweight renderer.";
-
   const aurora = useAuroraMap({ enabled: canViewProtectedFeeds });
   const suryaStubEnabled =
     (getViteEnv("VITE_FEATURE_SURYA_STUB") ?? (typeof process !== "undefined" ? process.env?.VITE_FEATURE_SURYA_STUB : undefined)) === "true";
   const suryaEnabled =
     suryaStubEnabled ||
     getViteEnv("VITE_FEATURE_SURYA_3D_LIVE") === "true";
-  const debrisEnabled =
-    String(getViteEnv("VITE_FEATURE_DEBRIS_3D") ?? "true").toLowerCase() !== "false" ||
-    (mission.session?.features?.debris ?? false);
   const surya = useSuryaForecast();
-  const { riskZones } = useRiskZones({
-    enabled: debrisEnabled && canViewProtectedFeeds,
-  });
   const missionCore = useMissionCoreSnapshot({ enabled: canViewProtectedFeeds });
   const [showPassOverlays, setShowPassOverlays] = useState(false);
+
+  useEffect(() => {
+    let disposed = false;
+    setHistoricalScenarioLoading(true);
+    if (typeof fetch !== "function") {
+      setHistoricalScenarioLoading(false);
+      return () => { disposed = true; };
+    }
+    void fetch(`${baseUrl}/api/physics/scenarios`, { signal: AbortSignal.timeout(8_000) })
+      .then((response) => response.ok ? response.json() as Promise<{ scenarios?: HistoricalScenario[] }> : Promise.reject(new Error(`scenario API ${response.status}`)))
+      .then((payload) => {
+        if (disposed) return;
+        setHistoricalScenarios(Array.isArray(payload.scenarios) ? payload.scenarios : []);
+      })
+      .catch(() => { if (!disposed) setHistoricalScenarios([]); })
+      .finally(() => { if (!disposed) setHistoricalScenarioLoading(false); });
+    return () => { disposed = true; };
+  }, [baseUrl]);
 
   const mms = useMMSReconnection({ enabled: canViewProtectedFeeds });
   const threatSummary = mission.snapshot?.threatSummary ?? null;
   const sourceStatus = mission.snapshot?.sourceStatus ?? [];
-  const mmsVectorsForScene = useMemo(() => {
-    if (mms.vectors.length > 0) {
-      return mms.vectors;
-    }
-    if (mission.snapshot?.mmsLatest) {
-      return [mission.snapshot.mmsLatest];
-    }
-    return [];
-  }, [mission.snapshot?.mmsLatest, mms.vectors]);
-
   const suryaActivity = suryaEnabled ? suryaActivityFromResponse(surya.data) : 0;
   const suryaRadiationPoints = useMemo(
     () => (suryaEnabled ? suryaForecastToRadiationPoints(surya.data) : []),
@@ -161,35 +157,30 @@ const HeliophysicsDashboard = () => {
   const nowcastActivePrediction =
     nowcastPredictionCount > 0 ? manualNowcast?.predictions[nowcastFrameIndex] ?? null : null;
   const nowcastFrameNumber = nowcastPredictionCount > 0 ? nowcastFrameIndex + 1 : 0;
-  const nowcastVisualizationPoints = useMemo(
-    () => nowcastPredictionToVisualizationPoints(manualNowcast, nowcastFrameIndex),
-    [manualNowcast, nowcastFrameIndex],
-  );
+  const historicalScenario = historicalScenarios.find((scenario) => scenario.id === historicalScenarioId) ?? null;
+  const historicalBasePoint = useMemo(() => {
+    if (!latest || !historicalScenario) return latest;
+    return {
+      ...latest,
+      timestamp: `${historicalScenario.eventDate}T00:00:00.000Z`,
+      indices: { ...latest.indices, kp: historicalScenario.kpIndex },
+      alerts: {
+        ...latest.alerts,
+        stormTier: historicalScenario.kpIndex >= 8 ? "severe" as const : "warning" as const,
+        reason: `Historical replay: ${historicalScenario.name}; TID ${historicalScenario.tidDoseStatus.replace("_", " ")}`,
+      },
+      quality: { ...latest.quality, lowConfidence: true, stale: false },
+    };
+  }, [latest, historicalScenario]);
   const sceneCanonicalPoint = useMemo(() => {
-    if (!latest) {
+    if (!historicalBasePoint) {
       return null;
     }
     if (!nowcastActivePrediction) {
-      return latest;
+      return historicalBasePoint;
     }
-    return nowcastPredictionToCanonicalPoint(latest, nowcastActivePrediction);
-  }, [latest, nowcastActivePrediction]);
-
-  const sceneData = useMemo(() => {
-    const radiation: VisualizationPoint[] = [...suryaRadiationPoints, ...nowcastVisualizationPoints];
-    let risk = debrisEnabled ? riskZones : [];
-    if (risk.length > 0 && powerProfile === "low-power") {
-      risk = prioritizeVisualizationPoints(
-        risk.filter((r) => r.orbitType === "GEO"),
-        25,
-      );
-    }
-    const combined = prioritizeVisualizationPoints(
-      [...radiation, ...risk].map((point) => withVisualizationPriority(point)),
-      50,
-    );
-    return combined.length > 0 ? combined : undefined;
-  }, [suryaRadiationPoints, nowcastVisualizationPoints, debrisEnabled, riskZones, powerProfile]);
+    return nowcastPredictionToCanonicalPoint(historicalBasePoint, nowcastActivePrediction);
+  }, [historicalBasePoint, nowcastActivePrediction]);
 
   const visual = useMemo(() => {
     const pressure = sceneCanonicalPoint?.solarWind.dynamicPressure ?? 2;
@@ -213,6 +204,9 @@ const HeliophysicsDashboard = () => {
 
     return { magnetopauseCompression, beltIntensity, reconnectionStrength };
   }, [sceneCanonicalPoint, suryaEnabled, suryaActivity, nowcastActivePrediction]);
+  const cesiumMhdEnabled =
+    powerProfile !== "low-power" &&
+    getViteEnv("VITE_FEATURE_CESIUM_MHD") !== "false";
 
   useEffect(() => {
     if (suryaEnabled) surya.fetchForecast();
@@ -287,13 +281,14 @@ const HeliophysicsDashboard = () => {
   };
 
   return (
-    <main className="min-h-screen w-full bg-background text-foreground">
+    <main className="min-h-screen w-full bg-background text-foreground" data-testid="heliophysics-page">
       <MissionHeader
         pollingPaused={mission.pollingPaused}
         isOffline={offline.isOffline}
         usingCachedData={mission.usingCachedData}
         staleData={offline.staleData}
         stormTier={sceneCanonicalPoint?.alerts.stormTier ?? "unknown"}
+        lastSuccessfulSyncAt={mission.lastSuccessfulSyncAt}
       />
 
       <section className="grid gap-4 p-4 lg:p-6 2xl:grid-cols-[minmax(0,1.7fr)_minmax(360px,1fr)]">
@@ -301,6 +296,20 @@ const HeliophysicsDashboard = () => {
           <MissionSurfaceLinks compact />
 
           <GlassPanel className="relative h-[58vh] min-h-[420px] overflow-hidden rounded-lg border bg-card p-0">
+            <div className="absolute inset-x-3 top-3 z-20 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-2 font-mono text-[10px]">
+              <label htmlFor="historical-scenario" className="uppercase tracking-widest text-[#CCFF00]">SCENARIO REPLAY</label>
+              <select
+                id="historical-scenario"
+                value={historicalScenarioId}
+                onChange={(event) => setHistoricalScenarioId(event.target.value)}
+                disabled={historicalScenarioLoading}
+                className="max-w-full rounded border border-white/15 bg-[#050505]/90 px-2 py-1 text-[10px] text-white/80"
+              >
+                <option value="">Live canonical feed</option>
+                {historicalScenarios.map((scenario) => <option key={scenario.id} value={scenario.id}>{scenario.name} · Kp {scenario.kpIndex}</option>)}
+              </select>
+              {historicalScenario ? <span className="text-[#F6C453]">API replay · TID {historicalScenario.tidDoseStatus.replace("_", " ")}</span> : null}
+            </div>
             {suryaEnabled && suryaRadiationPoints.length > 0 ? (
               <TooltipProvider>
                 <Tooltip>
@@ -333,26 +342,23 @@ const HeliophysicsDashboard = () => {
                 </Tooltip>
               </TooltipProvider>
             ) : null}
-            {useLiteHelioScene ? (
-              <LiteSdaScene reason={liteHelioReason} />
-            ) : (
-              <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Loading 3D scene…</div>}>
-                <SpaceScene
-                  layers={layers}
-                  magnetopauseCompression={visual.magnetopauseCompression}
-                  beltIntensity={visual.beltIntensity}
-                  reconnectionStrength={visual.reconnectionStrength}
-                  mmsVectors={mmsVectorsForScene}
-                  canonicalPoint={sceneCanonicalPoint}
-                  vectorOverlay={mission.snapshot?.vectorOverlay}
-                  data={sceneData}
-                  canvasRef={canvasRef}
-                  powerMode={powerProfile}
-                  passWindows={missionCore.data?.passes}
-                  showPassOverlays={showPassOverlays && (missionCore.data?.passes?.length ?? 0) > 0}
-                />
-              </Suspense>
-            )}
+            <MhdEffectsScene
+              layers={layers}
+              canonicalPoint={sceneCanonicalPoint}
+              pressureCompression={visual.magnetopauseCompression}
+              beltIntensity={visual.beltIntensity}
+              reconnectionStrength={visual.reconnectionStrength}
+              stale={offline.staleData || mission.usingCachedData}
+              offline={offline.isOffline}
+              lowPower={powerProfile === "low-power"}
+            />
+            {cesiumMhdEnabled ? (
+              <CesiumMhdScene
+                canonicalPoint={sceneCanonicalPoint}
+                stale={offline.staleData || mission.usingCachedData}
+                offline={offline.isOffline}
+              />
+            ) : null}
           </GlassPanel>
 
           <div className="grid gap-4 xl:grid-cols-2">
@@ -368,6 +374,9 @@ const HeliophysicsDashboard = () => {
               error={auroraError}
             />
           </div>
+
+          {/* Fleet exposure remains live while the MHD scene may be replaying history. */}
+          <SatelliteRiskPanel canonicalPoint={latest} />
 
           <div className="grid gap-4 xl:grid-cols-2">
             <GlassPanel className="p-0">

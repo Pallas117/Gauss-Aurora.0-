@@ -49,11 +49,15 @@ test("inferNowcast skips remote inference when gate marks sequence non-urgent", 
   const originalFetch = globalThis.fetch;
   const originalInferUrl = process.env.LOCAL_INFER_URL;
   const originalGate = process.env.GAUSS_PREINFERENCE_GATE_ENABLED;
+  const originalNominalMin = process.env.MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB;
+  const originalCriticalMax = process.env.MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB;
   let fetchCalls = 0;
 
   try {
     process.env.LOCAL_INFER_URL = "http://127.0.0.1:65534";
     process.env.GAUSS_PREINFERENCE_GATE_ENABLED = "true";
+    process.env.MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB = "0";
+    process.env.MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB = "0";
     globalThis.fetch = (async () => {
       fetchCalls += 1;
       throw new Error("fetch should not be called for calm sequence");
@@ -66,6 +70,8 @@ test("inferNowcast skips remote inference when gate marks sequence non-urgent", 
     globalThis.fetch = originalFetch;
     process.env.LOCAL_INFER_URL = originalInferUrl;
     process.env.GAUSS_PREINFERENCE_GATE_ENABLED = originalGate;
+    process.env.MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB = originalNominalMin;
+    process.env.MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB = originalCriticalMax;
   }
 });
 
@@ -73,11 +79,15 @@ test("inferNowcast attempts remote inference when gate marks sequence urgent", a
   const originalFetch = globalThis.fetch;
   const originalInferUrl = process.env.LOCAL_INFER_URL;
   const originalGate = process.env.GAUSS_PREINFERENCE_GATE_ENABLED;
+  const originalNominalMin = process.env.MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB;
+  const originalCriticalMax = process.env.MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB;
   let fetchCalls = 0;
 
   try {
     process.env.LOCAL_INFER_URL = "http://127.0.0.1:65534";
     process.env.GAUSS_PREINFERENCE_GATE_ENABLED = "true";
+    process.env.MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB = "0";
+    process.env.MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB = "0";
     globalThis.fetch = (async () => {
       fetchCalls += 1;
       throw new Error("simulated inference endpoint down");
@@ -98,5 +108,7 @@ test("inferNowcast attempts remote inference when gate marks sequence urgent", a
     globalThis.fetch = originalFetch;
     process.env.LOCAL_INFER_URL = originalInferUrl;
     process.env.GAUSS_PREINFERENCE_GATE_ENABLED = originalGate;
+    process.env.MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB = originalNominalMin;
+    process.env.MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB = originalCriticalMax;
   }
 });

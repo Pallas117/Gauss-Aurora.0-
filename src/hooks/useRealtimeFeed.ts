@@ -3,9 +3,11 @@ import {
   appendTrendSample,
   getAdaptivePollInterval,
   getTrendAwarePollInterval,
+  getGovernorAwarePollInterval,
   type TrendPollOptions,
   type TrendSample,
 } from "@/lib/power/polling";
+import type { BackendMemoryPressureLevel } from "@/lib/types/space-weather";
 
 export interface UseRealtimeFeedOptions<T> {
   fetcher: () => Promise<T>;
@@ -13,9 +15,17 @@ export interface UseRealtimeFeedOptions<T> {
   intervalMs?: number;
   enabled?: boolean;
   mapError?: (error: unknown) => string;
+  resolveIntervalMs?: (data: T, baseIntervalMs: number, samples: TrendSample[]) => number | null | undefined;
   trendSampling?: TrendPollOptions & {
     selectMetric: (data: T) => number | null;
     selectTimestampMs?: (data: T) => number | null;
+  };
+  governor?: {
+    level?: BackendMemoryPressureLevel;
+    nominalMs?: number;
+    constrainedMs?: number;
+    criticalMs?: number;
+    hiddenMs?: number;
   };
 }
 
@@ -35,7 +45,9 @@ export function useRealtimeFeed<T>({
   intervalMs = DEFAULT_INTERVAL_MS,
   enabled = true,
   mapError,
+  resolveIntervalMs,
   trendSampling,
+  governor,
 }: UseRealtimeFeedOptions<T>): UseRealtimeFeedState<T> {
   const [data, setData] = useState<T>(initialData);
   const [loading, setLoading] = useState<boolean>(enabled);
@@ -44,12 +56,19 @@ export function useRealtimeFeed<T>({
 
   const mountedRef = useRef(true);
   const fetcherRef = useRef(fetcher);
+  const dataRef = useRef(data);
   const trendSamplesRef = useRef<TrendSample[]>([]);
   const trendSamplingRef = useRef(trendSampling);
+  const resolveIntervalMsRef = useRef(resolveIntervalMs);
+  const governorRef = useRef(governor);
 
   useEffect(() => {
     fetcherRef.current = fetcher;
   }, [fetcher]);
+
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   useEffect(() => {
     trendSamplingRef.current = trendSampling;
@@ -59,16 +78,24 @@ export function useRealtimeFeed<T>({
   }, [trendSampling]);
 
   useEffect(() => {
+    resolveIntervalMsRef.current = resolveIntervalMs;
+  }, [resolveIntervalMs]);
+
+  useEffect(() => {
+    governorRef.current = governor;
+  }, [governor]);
+
+  useEffect(() => {
     return () => {
       mountedRef.current = false;
     };
   }, []);
 
-  const refresh = useCallback(async () => {
+  const load = useCallback(async (): Promise<T | null> => {
     try {
       const next = await fetcherRef.current();
       if (!mountedRef.current) {
-        return;
+        return null;
       }
       setData(next);
       const trendConfig = trendSamplingRef.current;
@@ -85,9 +112,10 @@ export function useRealtimeFeed<T>({
       }
       setError(null);
       setLastUpdated(new Date());
+      return next;
     } catch (err) {
       if (!mountedRef.current) {
-        return;
+        return null;
       }
       const mapped = mapError ? mapError(err) : err instanceof Error ? err.message : "Fetch failed";
       setError(mapped);
@@ -97,6 +125,10 @@ export function useRealtimeFeed<T>({
       }
     }
   }, [mapError]);
+
+  const refresh = useCallback(async () => {
+    await load();
+  }, [load]);
 
   useEffect(() => {
     if (!enabled) {
@@ -109,15 +141,23 @@ export function useRealtimeFeed<T>({
     let timer: number | null = null;
 
     const run = async () => {
-      await refresh();
+      const next = await load();
       if (!active) {
         return;
       }
+      const resolvedInterval = resolveIntervalMsRef.current?.(
+        next ?? dataRef.current,
+        getGovernorAwarePollInterval(intervalMs, governorRef.current),
+        trendSamplesRef.current,
+      );
+      const governorBaseMs = getGovernorAwarePollInterval(intervalMs, governorRef.current);
       timer = window.setTimeout(
         run,
-        trendSamplingRef.current
-          ? getTrendAwarePollInterval(intervalMs, trendSamplesRef.current, trendSamplingRef.current)
-          : getAdaptivePollInterval(intervalMs),
+        resolvedInterval && Number.isFinite(resolvedInterval) && resolvedInterval > 0
+          ? Math.round(resolvedInterval)
+          : trendSamplingRef.current
+            ? getTrendAwarePollInterval(governorBaseMs, trendSamplesRef.current, trendSamplingRef.current)
+            : getAdaptivePollInterval(governorBaseMs),
       );
     };
 
@@ -129,7 +169,7 @@ export function useRealtimeFeed<T>({
         window.clearTimeout(timer);
       }
     };
-  }, [enabled, intervalMs, refresh]);
+  }, [enabled, intervalMs, load]);
 
   return {
     data,

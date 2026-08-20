@@ -1,0 +1,44 @@
+{
+  "documents": {
+    "offline-fetch-self-repair.latest.json": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "reasons": ["Operator-approved local offline repair evidence for memory retrieval."]
+    },
+    "overnight-20260303-232431.jsonl": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "reasons": ["Operator-approved local hardware and runtime telemetry evidence."]
+    },
+    "overnight-20260303-232619.jsonl": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "reasons": ["Operator-approved local hardware and runtime telemetry evidence."]
+    },
+    "picoclaw-offline-sync.latest.json": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "reasons": ["Operator-approved local offline automation evidence."]
+    },
+    "smoke-overnight-2.jsonl": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "internal",
+      "owner": "operator-approved",
+      "retentionPolicy": "source_attribution",
+      "reasons": ["Operator-approved local hardware and runtime telemetry evidence."]
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gauss.local/schema/gauss-radiation-envelope-v1.json",
+  "title": "Gauss radiation assurance envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "modelVersion", "tidKradSiEstimate", "tidLimitKradSi", "dddMargin", "seeRatePerDay", "letThresholdMevCm2Mg", "selStatus", "shieldingMmAl", "qualificationReference", "scrubIntervalS", "checkpointHash", "actionPolicy", "capturedAtUnixS", "maxAgeS"],
+  "properties": {
+    "schema": { "const": "gauss-radiation-envelope-v1" },
+    "modelVersion": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "tidKradSiEstimate": { "type": "number", "minimum": 0, "maximum": 1000000 },
+    "tidLimitKradSi": { "type": "number", "exclusiveMinimum": 0, "maximum": 1000000 },
+    "dddMargin": { "type": "number", "minimum": 0, "maximum": 1 },
+    "seeRatePerDay": { "type": "number", "minimum": 0, "maximum": 1000000 },
+    "letThresholdMevCm2Mg": { "type": "number", "exclusiveMinimum": 0, "maximum": 1000000 },
+    "selStatus": { "enum": ["qualified", "screened", "unknown"] },
+    "shieldingMmAl": { "type": "number", "minimum": 0, "maximum": 1000 },
+    "qualificationReference": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "scrubIntervalS": { "type": "integer", "minimum": 1, "maximum": 86400 },
+    "checkpointHash": { "type": "string", "pattern": "^sha256:[0-9a-fA-F]{8,128}$" },
+    "actionPolicy": { "enum": ["nominal", "degraded", "abstain"] },
+    "capturedAtUnixS": { "type": "integer", "minimum": 0 },
+    "maxAgeS": { "type": "integer", "minimum": 1, "maximum": 31536000 }
+  }
+}

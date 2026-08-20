@@ -1,78 +1,37 @@
-#!/usr/bin/env node
 /**
- * Minimal Gauss RAG stub server for local dev.
- * Listens on port 3002 (or GAUSS_RAG_PORT). Replace with a real RAG/LanceDB service for production.
+ * Gauss RAG stub: health check for the local RAG service.
+ * If GAUSS_RAG_URL is not set, exits 0 with a skip notice.
  */
 
-import http from "node:http";
+const RAG_URL = (process.env.GAUSS_RAG_URL ?? process.env.VITE_GAUSS_RAG_URL ?? "").trim().replace(/\/$/, "");
 
-const PORT = Number(process.env.GAUSS_RAG_PORT ?? 3002);
-const HOST = process.env.GAUSS_RAG_HOST ?? "127.0.0.1";
+async function main(): Promise<void> {
+  if (!RAG_URL) {
+    console.log("[SKIP] GAUSS_RAG_URL not set — RAG stub skipped.");
+    process.exit(0);
+  }
 
-let chunkCount = 0;
-
-function sendJson(res: http.ServerResponse, status: number, payload: unknown): void {
-  const body = JSON.stringify(payload);
-  res.statusCode = status;
-  res.setHeader("Content-Type", "application/json");
-  res.setHeader("Content-Length", Buffer.byteLength(body));
-  res.end(body);
+  console.log(`[INFO] Gauss RAG stub: probing ${RAG_URL}`);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  try {
+    const res = await fetch(`${RAG_URL}/health`, {
+      signal: controller.signal,
+      headers: { Accept: "application/json" },
+    });
+    clearTimeout(timeout);
+    if (res.ok) {
+      console.log(`[PASS] Gauss RAG service healthy at ${RAG_URL}`);
+      process.exit(0);
+    }
+    console.error(`[FAIL] Gauss RAG returned HTTP ${res.status}`);
+    process.exit(1);
+  } catch (err) {
+    clearTimeout(timeout);
+    console.warn(`[WARN] Gauss RAG unreachable at ${RAG_URL}: ${err instanceof Error ? err.message : String(err)}`);
+    console.log("       Start with: npm run dev:rag");
+    process.exit(0); // RAG is optional; warn but don't hard-fail
+  }
 }
 
-const server = http.createServer((req, res) => {
-  const url = req.url ?? "";
-  const path = url.split("?")[0];
-
-  if (req.method === "GET" && path === "/api/rag/status") {
-    sendJson(res, 200, { ok: true, chunkCount });
-    return;
-  }
-
-  if (req.method === "POST" && path === "/api/rag/index") {
-    let raw = "";
-    req.on("data", (chunk) => {
-      raw += chunk.toString("utf8");
-    });
-    req.on("end", () => {
-      try {
-        const body = raw ? (JSON.parse(raw) as { dir?: string }) : {};
-        if (body.dir) chunkCount = 1; // stub: pretend we indexed one chunk
-      } catch {
-        sendJson(res, 400, { ok: false, error: "Invalid JSON" });
-        return;
-      }
-      sendJson(res, 200, { ok: true });
-    });
-    return;
-  }
-
-  if (req.method === "POST" && path === "/api/rag/query") {
-    let raw = "";
-    req.on("data", (chunk) => {
-      raw += chunk.toString("utf8");
-    });
-    req.on("end", () => {
-      try {
-        const body = raw ? (JSON.parse(raw) as { query?: string }) : {};
-        const q = (body.query ?? "").trim();
-        sendJson(res, 200, {
-          ok: true,
-          answer: q
-            ? `Stub RAG: received "${q}". Run a real Gauss RAG server (e.g. LanceDB) on port 3002 for grounded answers.`
-            : "Stub RAG: no query. Start the real RAG service for mission-aware answers.",
-          sources: [],
-        });
-      } catch {
-        sendJson(res, 400, { ok: false, error: "Invalid JSON" });
-      }
-    });
-    return;
-  }
-
-  sendJson(res, 404, { error: "Not found" });
-});
-
-server.listen(PORT, HOST, () => {
-  console.log(`[gauss-rag-stub] listening on http://${HOST}:${PORT}`);
-  console.log("[gauss-rag-stub] endpoints: GET /api/rag/status, POST /api/rag/index, POST /api/rag/query");
-});
+void main();

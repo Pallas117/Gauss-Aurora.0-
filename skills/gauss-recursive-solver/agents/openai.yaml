@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gauss Recursive Solver"
+  short_description: "Solve complex repo issues via recursive decomposition"
+  default_prompt: "Use $gauss-recursive-solver to break down and solve a repository issue recursively."

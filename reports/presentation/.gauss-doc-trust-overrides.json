@@ -1,0 +1,20 @@
+{
+  "documents": {
+    "Gauss_Aurora_Investor_Deck_pptxgenjs.pptx": {
+      "approvalStatus": "approved",
+      "redactionStatus": "not_required",
+      "sensitivity": "internal",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "reasons": ["Operator-approved local pitch deck for retrieval demonstration."]
+    },
+    "Gauss_Aurora_Investor_Deck_v2.pptx": {
+      "approvalStatus": "approved",
+      "redactionStatus": "not_required",
+      "sensitivity": "internal",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "reasons": ["Operator-approved local pitch deck for retrieval demonstration."]
+    }
+  }
+}

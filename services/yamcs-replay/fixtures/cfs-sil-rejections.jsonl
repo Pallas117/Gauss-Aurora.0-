@@ -1,0 +1,2 @@
+{"schema":"gauss-cfs-sil-replay-v1","case":"fixed-memory-rejection","accepted":false,"command_inhibited":true,"reason":"bounded-memory-capacity-exhausted","observed_at":"2026-08-19T00:00:03Z","provenance_refs":["cfs:sil:memory-gate","replay:cfs-fixed-memory-rejection"]}
+{"schema":"gauss-cfs-sil-replay-v1","case":"command-inhibited","accepted":false,"command_inhibited":true,"reason":"operator-command-authority-disabled","observed_at":"2026-08-19T00:00:04Z","provenance_refs":["cfs:sil:command-gate","replay:command-inhibited"]}

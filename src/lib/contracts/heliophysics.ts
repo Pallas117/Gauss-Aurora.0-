@@ -70,6 +70,27 @@ export const canonicalSpaceWeatherPointSchema = z.object({
       clockAngleRad: numberSchema.optional(),
     })
     .optional(),
+  radiation: z
+    .object({
+      protonFlux10MeV: numberSchema,
+      electronFlux2MeV: numberSchema,
+      observedAt: timestampSchema,
+      source: z.string(),
+      platform: z.enum(["primary", "secondary"]).optional(),
+    })
+    .optional(),
+  supplementalRadiation: z
+    .array(z.object({
+      observedAt: timestampSchema,
+      source: z.string(),
+      dataset: z.string(),
+      platform: z.string().optional(),
+      protonFlux: numberSchema,
+      electronFlux: numberSchema,
+      protonEnergy: z.string(),
+      electronEnergy: z.string(),
+    }))
+    .optional(),
 });
 
 export const mmsReconVectorPointSchema = z.object({
@@ -377,9 +398,75 @@ const publicSpaceDomainSnapshotSchema = z.object({
   }),
 });
 
+const spaceDomainAvailabilitySchema = z.object({
+  mode: z.enum(["live", "projected", "warming"]),
+  lastLiveAt: timestampSchema.nullable(),
+  dataAgeSeconds: z.number().nullable(),
+  reason: z.enum(["ok", "ingest_empty", "ingest_stale", "memory_suppressed"]),
+  projectionMethod: z.enum(["sgp4", "hold"]).nullable(),
+});
+
+const spaceDomainAnalysisSchema = z.object({
+  generatedAt: timestampSchema,
+  cadenceSeconds: z.number().int().positive(),
+  source: z.enum(["deterministic", "hybrid"]),
+  severity: z.enum(["quiet", "watch", "warning", "critical"]),
+  headline: z.string(),
+  summary: z.string(),
+  confidence: numberSchema,
+  changed: z.boolean(),
+  changedSignals: z.array(z.string()),
+  metrics: z.object({
+    learnedLaneScore: numberSchema,
+    maxRiskScore: numberSchema,
+    maxCollisionProbability: numberSchema.nullable(),
+    minMissDistanceM: numberSchema.nullable(),
+    conjunctionCount: z.number().int().nonnegative(),
+  }),
+  model: z.object({
+    used: z.boolean(),
+    modelId: z.string().nullable(),
+    generatedAt: timestampSchema.nullable(),
+  }),
+});
+
+const sevenZoneEvidenceSchema = z.object({
+  source: z.string(),
+  observedAt: timestampSchema.nullable(),
+  provenanceRefs: z.array(z.string()),
+  quality: z.enum(["unknown", "low", "high"]).optional(),
+});
+
+const sevenZoneResultSchema = z.object({
+  id: z.enum(["A", "B", "C", "D", "E", "F", "G"]),
+  name: z.string(),
+  applicability: z.enum(["required", "advisory", "not_applicable"]),
+  state: z.enum(["nominal", "degraded", "unknown", "blocked"]),
+  evidence: z.array(sevenZoneEvidenceSchema),
+  reasons: z.array(z.string()),
+  blockers: z.array(z.string()),
+});
+
+export const sevenZoneAssessmentSchema = z.object({
+  schema: z.literal("gauss-seven-zone-v1"),
+  assessmentId: z.string(),
+  generatedAt: timestampSchema,
+  missionId: z.string(),
+  deploymentScope: z.enum(["ground_only", "simulator", "hosted_payload", "flight_candidate"]),
+  mode: z.enum(["environmental_screening", "mission_qualification"]),
+  qualificationEvidence: z.boolean(),
+  zones: z.array(sevenZoneResultSchema).length(7),
+  aggregateState: z.enum(["nominal", "degraded", "unknown", "blocked"]),
+  decision: z.enum(["qualified", "screened", "unknown", "blocked"]),
+  blockers: z.array(z.string()),
+  limitations: z.array(z.string()),
+});
+
 export const spaceDomainResponseSchema = z.object({
   snapshot: publicSpaceDomainSnapshotSchema,
+  availability: spaceDomainAvailabilitySchema,
   summary: spaceDomainSummarySchema,
+  analysis: spaceDomainAnalysisSchema,
 });
 
 export const threatSummaryResponseSchema = z.object({
@@ -551,6 +638,14 @@ export function parseAuthSessionResponse(payload: unknown) {
 
 export function parseDashboardLatestResponse(payload: unknown) {
   return parseWithContract(dashboardLatestResponseSchema, payload, "dashboard latest");
+}
+
+export function parseSpaceDomainResponse(payload: unknown) {
+  return parseWithContract(spaceDomainResponseSchema, payload, "space-domain");
+}
+
+export function parseSevenZoneAssessment(payload: unknown) {
+  return parseWithContract(sevenZoneAssessmentSchema, payload, "seven-zone assessment");
 }
 
 export function parseMissionCoreSnapshotResponse(payload: unknown) {

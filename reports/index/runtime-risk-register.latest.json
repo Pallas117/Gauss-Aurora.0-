@@ -1,0 +1,12 @@
+{
+  "generatedAt": "2026-05-08T07:53:15.737Z",
+  "count": 1,
+  "risks": [
+    {
+      "id": "power-drain-audit",
+      "severity": "low",
+      "source": "reports/progress/power-drain-audit.latest.json",
+      "summary": "power status=unknown"
+    }
+  ]
+}

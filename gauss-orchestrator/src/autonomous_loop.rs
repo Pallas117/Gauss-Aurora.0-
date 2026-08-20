@@ -50,13 +50,15 @@ pub struct AutonomousEval {
 fn read_work_queue_simple(path: &Path) -> WorkQueue {
     let content = match fs::read_to_string(path) {
         Ok(c) => c,
-        Err(_) => return WorkQueue {
-            timestamp: String::new(),
-            total_estimated_minutes: 0,
-            min_safe_battery_percent: 25,
-            scheduling_buffer_minutes: 0,
-            items: Vec::new(),
-        },
+        Err(_) => {
+            return WorkQueue {
+                timestamp: String::new(),
+                total_estimated_minutes: 0,
+                min_safe_battery_percent: 25,
+                scheduling_buffer_minutes: 0,
+                items: Vec::new(),
+            }
+        }
     };
     serde_json::from_str(&content).unwrap_or_else(|_| WorkQueue {
         timestamp: String::new(),
@@ -75,6 +77,22 @@ fn project_root_for_file(file: &str) -> &'static str {
     }
 }
 
+fn read_json_value(path: &Path) -> Option<serde_json::Value> {
+    let content = fs::read_to_string(path).ok()?;
+    serde_json::from_str(&content).ok()
+}
+
+fn read_audit_pass(path: &Path) -> Option<u64> {
+    read_json_value(path)?.get("totals")?.get("pass")?.as_u64()
+}
+
+fn read_backprop_progress(path: &Path) -> Option<f64> {
+    read_json_value(path)?
+        .get("readiness")?
+        .get("overall")?
+        .as_f64()
+}
+
 /// Run the small-batch patch loop: read queue, sort, for each batch apply fixes (Rust only),
 /// run backprop, evaluate, append to log, notify.
 pub async fn run_patch_batch_loop(
@@ -91,7 +109,9 @@ pub async fn run_patch_batch_loop(
 
     // Sort by priority (desc), then estimated_minutes (asc)
     queue.items.sort_by(|a, b| {
-        b.priority.cmp(&a.priority).then_with(|| a.estimated_minutes.cmp(&b.estimated_minutes))
+        b.priority
+            .cmp(&a.priority)
+            .then_with(|| a.estimated_minutes.cmp(&b.estimated_minutes))
     });
 
     let mut batch_index = 0usize;
@@ -105,6 +125,15 @@ pub async fn run_patch_batch_loop(
         let to = (from + batch_size).min(queue.items.len());
         let batch_items: Vec<WorkQueueItem> = queue.items[from..to].to_vec();
         batch_index += 1;
+
+        // Capture the baseline before applying this batch.  The reports are
+        // intentionally optional because a first run may not have produced
+        // either artifact yet; in that case the evaluation records `null`
+        // rather than inventing a starting point.
+        let audit_path = Path::new("reports/progress/requirements-audit.latest.json");
+        let backprop_path = Path::new("reports/context/latest-backprop.json");
+        let pass_before = read_audit_pass(audit_path);
+        let progress_before = read_backprop_progress(backprop_path);
 
         let mut issues_attempted = 0usize;
         let mut issues_fixed = 0usize;
@@ -132,29 +161,8 @@ pub async fn run_patch_batch_loop(
         let _ = run_shell("npm run context:backprop");
 
         // Evaluate: read audit and backprop if present; store for AutonomousEval (self-learning)
-        let audit_path = Path::new("reports/progress/requirements-audit.latest.json");
-        let backprop_path = Path::new("reports/context/latest-backprop.json");
-        let pass_before: Option<u64> = None;
-        let mut pass_after: Option<u64> = None;
-        let progress_before: Option<f64> = None;
-        let mut progress_pct_after: Option<f64> = None;
-        if audit_path.exists() {
-            if let Ok(c) = fs::read_to_string(audit_path) {
-                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&c) {
-                    pass_after = v.get("totals").and_then(|t| t.get("pass")).and_then(|p| p.as_u64());
-                }
-            }
-        }
-        if backprop_path.exists() {
-            if let Ok(c) = fs::read_to_string(backprop_path) {
-                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&c) {
-                    progress_pct_after = v
-                        .get("readiness")
-                        .and_then(|r| r.get("overall"))
-                        .and_then(|n| n.as_f64());
-                }
-            }
-        }
+        let pass_after = read_audit_pass(audit_path);
+        let progress_pct_after = read_backprop_progress(backprop_path);
 
         let eval = AutonomousEval {
             timestamp: chrono::Utc::now().to_rfc3339(),
@@ -164,7 +172,7 @@ pub async fn run_patch_batch_loop(
             audit_pass_before: pass_before,
             audit_pass_after: pass_after,
             progress_pct_before: progress_before,
-            progress_pct_after: progress_pct_after,
+            progress_pct_after,
         };
         if let Ok(line) = serde_json::to_string(&eval) {
             if let Some(parent) = eval_log_path.parent() {
@@ -181,8 +189,44 @@ pub async fn run_patch_batch_loop(
             "Batch {}: attempted {} fixes, {} applied. Backprop done. Total fixed this cycle: {}.",
             batch_index, issues_attempted, issues_fixed, issues_fixed_total
         );
-        telegram.notify(&format!("<b>Autonomous patch batch</b>\n\n{}", msg)).await;
+        telegram
+            .notify(&format!("<b>Autonomous patch batch</b>\n\n{}", msg))
+            .await;
+        if let Some(slack) = crate::slack_connector::SlackConnector::from_env() {
+            let _ = slack.notify(&format!("[Gauss] Autonomous objective batch: {} Slack is notification-only; approvals remain separate.", msg)).await;
+        }
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn reads_audit_and_backprop_baselines() {
+        let dir = tempdir().expect("temp directory");
+        let audit = dir.path().join("audit.json");
+        let backprop = dir.path().join("backprop.json");
+        fs::write(&audit, r#"{"totals":{"pass":17,"warn":2,"fail":0}}"#).expect("audit report");
+        fs::write(&backprop, r#"{"readiness":{"overall":82.5}}"#).expect("backprop report");
+
+        assert_eq!(read_audit_pass(&audit), Some(17));
+        assert_eq!(read_backprop_progress(&backprop), Some(82.5));
+    }
+
+    #[test]
+    fn missing_or_malformed_reports_remain_unknown() {
+        let dir = tempdir().expect("temp directory");
+        let missing = dir.path().join("missing.json");
+        let malformed = dir.path().join("malformed.json");
+        fs::write(&malformed, "not-json").expect("malformed report");
+
+        assert_eq!(read_audit_pass(&missing), None);
+        assert_eq!(read_backprop_progress(&missing), None);
+        assert_eq!(read_audit_pass(&malformed), None);
+        assert_eq!(read_backprop_progress(&malformed), None);
+    }
 }

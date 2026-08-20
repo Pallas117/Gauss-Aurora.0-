@@ -105,6 +105,32 @@ describe("ops command contract", () => {
       statusChips: [
         { id: "feed", label: "feed", tone: "ok", value: "supabase" },
       ],
+      workers: [
+        {
+          id: "command-planner",
+          lane: "runtime",
+          enabled: true,
+          approval: "operator-gate",
+          state: "idle",
+          lastRunAt: now,
+          lastResult: {
+            workerId: "command-planner",
+            status: "completed",
+            summary: "Planner held steady.",
+            autoExecuted: false,
+            queuedApproval: false,
+            touchedSystems: ["planner"],
+            nextTasks: [],
+            artifacts: [],
+          },
+        },
+      ],
+      queuedApprovals: [],
+      brokerPolicy: {
+        memoryLevel: "nominal",
+        deepseekMode: "auto",
+        autoSafeOps: true,
+      },
     });
 
     expect(parsed.session.role).toBe("operator");

@@ -50,6 +50,35 @@ class TestTrustManifest(unittest.TestCase):
             self.assertIn("approved.md", chunk_paths)
             self.assertNotIn("blocked.md", chunk_paths)
 
+    def test_load_manifest_returns_none_for_missing_or_malformed(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gauss-rag-trust-missing-") as tmp:
+            root = Path(tmp)
+            missing = root / ".gauss-doc-trust.json"
+            self.assertIsNone(trust.load_manifest(missing))
+
+            malformed = root / "bad.json"
+            malformed.write_text("{not-json", encoding="utf-8")
+            self.assertIsNone(trust.load_manifest(malformed))
+
+    def test_index_allowed_rejects_path_traversal_like_keys(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="gauss-rag-trust-path-") as tmp:
+            root = Path(tmp)
+            manifest_path = trust.default_manifest_path(root)
+            manifest_path.write_text(
+                json.dumps(
+                    {
+                        "documents": [
+                            {"path": "safe/approved.md", "indexAllowed": True},
+                            {"path": "../escape.md", "indexAllowed": True},
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            manifest = trust.load_manifest(manifest_path)
+            self.assertTrue(trust.index_allowed(manifest, "safe/approved.md"))
+            self.assertFalse(trust.index_allowed(manifest, "escape.md"))
+
 
 if __name__ == "__main__":
     unittest.main()

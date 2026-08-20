@@ -381,6 +381,38 @@ export interface SpaceDomainSummary {
   };
 }
 
+export interface SpaceDomainAvailability {
+  mode: "live" | "projected" | "warming";
+  lastLiveAt: string | null;
+  dataAgeSeconds: number | null;
+  reason: "ok" | "ingest_empty" | "ingest_stale" | "memory_suppressed";
+  projectionMethod: "sgp4" | "hold" | null;
+}
+
+export interface SpaceDomainAnalysis {
+  generatedAt: string;
+  cadenceSeconds: number;
+  source: "deterministic" | "hybrid";
+  severity: "quiet" | "watch" | "warning" | "critical";
+  headline: string;
+  summary: string;
+  confidence: number;
+  changed: boolean;
+  changedSignals: string[];
+  metrics: {
+    learnedLaneScore: number;
+    maxRiskScore: number;
+    maxCollisionProbability: number | null;
+    minMissDistanceM: number | null;
+    conjunctionCount: number;
+  };
+  model: {
+    used: boolean;
+    modelId: string | null;
+    generatedAt: string | null;
+  };
+}
+
 export interface PublicSpaceDomainSnapshot {
   updatedAt: string | null;
   riskZones: RiskZoneSnapshotResponse | null;
@@ -393,7 +425,9 @@ export interface PublicSpaceDomainSnapshot {
 
 export interface SpaceDomainResponse {
   snapshot: PublicSpaceDomainSnapshot;
+  availability: SpaceDomainAvailability;
   summary: SpaceDomainSummary;
+  analysis: SpaceDomainAnalysis;
 }
 
 export type MissionObservationKind =
@@ -520,6 +554,107 @@ export interface DtnIslAuditStatus {
   last_error: string | null;
 }
 
+export type WorkerId =
+  | "telemetry-ingest"
+  | "ssa-analysis"
+  | "source-policy"
+  | "command-planner"
+  | "safe-executor"
+  | "service-reanimator"
+  | "offline-repair"
+  | "event-deposit";
+
+export type WorkerLane = "runtime" | "offline";
+export type WorkerApprovalMode = "none" | "safe-auto" | "operator-gate";
+export type WorkerActionClass = "observe" | "housekeeping" | "mission";
+export type WorkerTaskKind =
+  | "telemetry-refresh"
+  | "ssa-review"
+  | "source-adjustment"
+  | "command-request"
+  | "service-outage"
+  | "repair-batch"
+  | "event-lesson";
+export type WorkerTaskPriority = "low" | "medium" | "high";
+export type WorkerTaskSource =
+  | "runtime"
+  | "command-ui"
+  | "automation"
+  | "picoclaw"
+  | "offline-capsule";
+
+export interface WorkerTaskEnvelope {
+  id: string;
+  createdAt: string;
+  lane: WorkerLane;
+  kind: WorkerTaskKind;
+  priority: WorkerTaskPriority;
+  source: WorkerTaskSource;
+  actor: {
+    userId: string | null;
+    role: "viewer" | "operator" | "admin" | null;
+  };
+  memory: {
+    level: BackendMemoryPressureLevel;
+  };
+  payload: Record<string, unknown>;
+  relatedArtifacts: string[];
+  requestedWorkerId?: WorkerId | null;
+  parentTaskId?: string | null;
+}
+
+export interface WorkerResult {
+  workerId: WorkerId;
+  status: "completed" | "deferred" | "blocked" | "failed";
+  summary: string;
+  autoExecuted: boolean;
+  queuedApproval: boolean;
+  touchedSystems: string[];
+  nextTasks: Array<{
+    workerId: WorkerId;
+    reason: string;
+  }>;
+  artifacts: string[];
+  metrics?: Record<string, number>;
+}
+
+export interface WorkerStatusSnapshot {
+  id: WorkerId;
+  lane: WorkerLane;
+  enabled: boolean;
+  approval: WorkerApprovalMode;
+  state: "idle" | "running" | "degraded" | "suspended";
+  lastRunAt: string | null;
+  lastResult: WorkerResult | null;
+}
+
+export interface QueuedWorkerApproval {
+  taskId: string;
+  workerId: WorkerId;
+  summary: string;
+  risk: "low" | "medium" | "high";
+  createdAt: string;
+}
+
+export interface OpsDelegationQueueResponse {
+  pendingTasks: Array<{
+    taskId: string;
+    workerId: WorkerId;
+    summary: string;
+    state: "queued" | "running";
+    createdAt: string;
+  }>;
+  queuedApprovals: QueuedWorkerApproval[];
+  brokerPolicy?: {
+    memoryLevel: BackendMemoryPressureLevel;
+    autoSafeOps: true;
+  };
+}
+
+export interface OpsDelegationApprovalRequest {
+  taskId: string;
+}
+
 export interface OpsCommandSnapshotResponse {
   updatedAt: string;
   session: AuthSessionState;
@@ -547,6 +682,13 @@ export interface OpsCommandSnapshotResponse {
     }>;
   } | null;
   statusChips?: OpsCommandStatusChip[];
+  workers: WorkerStatusSnapshot[];
+  queuedApprovals: QueuedWorkerApproval[];
+  brokerPolicy: {
+    memoryLevel: BackendMemoryPressureLevel;
+    autoSafeOps: true;
+    plannerMode?: string;
+  };
 }
 
 export type OpsCommandType = "trigger-nowcast" | "schedule-pass" | "log-health-check";
@@ -563,7 +705,7 @@ export interface OpsCommandJob {
   jobId: string;
   commandType: OpsCommandType;
   payload: Record<string, unknown>;
-  source: "manual" | "deepseek";
+  source: "manual" | "external-model";
   status: OpsCommandJobStatus;
   simulate: boolean;
   idempotencyKey: string | null;
@@ -588,7 +730,7 @@ export interface OpsCommandQueueResponse {
   };
 }
 
-export interface DeepSeekPlannerResponse {
+export interface ModelPlannerResponse {
   command: OpsCommandPlan;
   log: Record<string, unknown>;
   job?: OpsCommandJob;
@@ -610,7 +752,7 @@ export interface OpsCommandMetricsResponse {
 
 export type SafeCommandRisk = "low" | "medium" | "high";
 
-export interface DeepSeekSafeCommandPlan {
+export interface SafeCommandPlan {
   executable: string;
   args: string[];
   reason: string | null;
@@ -618,18 +760,18 @@ export interface DeepSeekSafeCommandPlan {
   risk: SafeCommandRisk;
 }
 
-export interface DeepSeekSafeCommandProposal {
+export interface SafeCommandProposal {
   proposalId: string;
   requestedBy: string | null;
   promptDigest: string;
   createdAt: string;
   expiresAt: string;
   commandPreview: string;
-  plan: DeepSeekSafeCommandPlan;
+  plan: SafeCommandPlan;
 }
 
-export interface DeepSeekSafeCommandPlanResponse {
-  proposal: DeepSeekSafeCommandProposal;
+export interface ModelSafeCommandPlanResponse {
+  proposal: SafeCommandProposal;
   approval: {
     token: string;
     expires_at: string;
@@ -638,8 +780,8 @@ export interface DeepSeekSafeCommandPlanResponse {
   log: Record<string, unknown>;
 }
 
-export interface DeepSeekSafeCommandExecuteResponse {
-  proposal: DeepSeekSafeCommandProposal;
+export interface ModelSafeCommandExecuteResponse {
+  proposal: SafeCommandProposal;
   execution: {
     ok: boolean;
     exitCode: number | null;
@@ -656,26 +798,13 @@ export interface DeepSeekSafeCommandExecuteResponse {
 
 export type BackendMemoryPressureLevel = "nominal" | "constrained" | "critical";
 
+
 export interface BackendMemoryHealth {
   level: BackendMemoryPressureLevel;
-  signals: string[];
-  totalRamGb: number;
-  freeRamGb: number;
-  usedRamGb: number;
-  freeRatio: number;
-  thresholds: {
-    constrainedFreeMb: number;
-    criticalFreeMb: number;
-    constrainedFreeRatio: number;
-    criticalFreeRatio: number;
-  };
-  ceiling: {
-    ceilingMb: number;
-    overCeiling: boolean;
-    checkedAt: string | null;
-    cacheMs: number;
-    lastError: string | null;
-  };
+  freeMb: number;
+  suspendedSubsystems: string[];
+  svgLiteForced: boolean;
+  plannerMode?: string;
 }
 
 export interface BackendHealthResponse {

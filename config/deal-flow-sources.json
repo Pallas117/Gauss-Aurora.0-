@@ -1,0 +1,7 @@
+[
+  { "id": "spacenews", "name": "SpaceNews", "url": "https://spacenews.com/feed/", "kind": "rss" },
+  { "id": "techcrunch-ai", "name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "kind": "rss" },
+  { "id": "techcrunch-venture", "name": "TechCrunch Venture", "url": "https://techcrunch.com/category/venture/feed/", "kind": "rss" },
+  { "id": "venturebeat-ai", "name": "VentureBeat AI", "url": "https://venturebeat.com/category/ai/feed/", "kind": "rss" },
+  { "id": "crunchbase-news", "name": "Crunchbase News", "url": "https://news.crunchbase.com/feed/", "kind": "rss" }
+]

@@ -21,6 +21,15 @@ export function mountSecurityRoutes(app: Router, deps: {
             status: cyberTiger.getStatus(),
         });
     });
+    
+    app.post("/api/ops/cybertiger/check", requireRole("operator"), async (_req: AuthenticatedRequest, res: Response) => {
+        try {
+            await cyberTiger.runInternalAudit();
+            res.json({ ok: true, timestamp: new Date().toISOString() });
+        } catch (e) {
+            res.status(500).json({ error: e instanceof Error ? e.message : "Audit failed" });
+        }
+    });
 
     app.get(
         "/api/admin/users",

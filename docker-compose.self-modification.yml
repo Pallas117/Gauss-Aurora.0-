@@ -1,0 +1,41 @@
+# Proposal validation only. The image contains a source snapshot and never
+# mounts the host worktree. A patch is applied to /tmp/candidate, validated,
+# and discarded when the container exits.
+name: gauss-self-modification
+
+services:
+  validator:
+    build:
+      context: .
+      dockerfile: containers/self-modification/Dockerfile
+    command: ["sh", "/workspace/scripts/self-modification/container-entrypoint.sh"]
+    environment:
+      NODE_ENV: test
+      CI: "true"
+      SELF_MOD_VALIDATION_LEVEL: "standard"
+      NPM_CONFIG_CACHE: /tmp/npm-cache
+      GAUSS_RUNTIME_MODE: suspended
+      TURING_AUTOSCALER_ENABLED: "false"
+      TURING_RADIATION_SCHEDULER_ENABLED: "false"
+      TURING_NETWORK_INVENTORY_ENABLED: "false"
+    volumes:
+      - type: bind
+        source: ./reports/self-modification
+        target: /proposal
+        read_only: true
+      - type: bind
+        source: ./reports/self-modification
+        target: /output
+    network_mode: none
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 2048m
+    cpus: 2.0
+    tmpfs:
+      - /tmp
+      - /workspace/node_modules/.cache
+      - /workspace/node_modules/.vite-temp

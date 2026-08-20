@@ -9,6 +9,7 @@ import type {
   TuringDeviceStatus,
   TuringApprovalStatus,
 } from "./types.js";
+import { recordNetworkInventory, removeNetworkInventory } from "./network-inventory.js";
 
 const DEFAULT_STALE_MIN = 5;
 const DEFAULT_DEVICE_PORT = 8090;
@@ -48,7 +49,7 @@ function randomJoinCode(length: number): string {
 }
 function pruneExpiredJoinCodes(): void {
   const now = Date.now();
-  for (const [code, expiresAt] of joinCodes.entries()) {
+  for (const [code, expiresAt] of Array.from(joinCodes.entries())) {
     if (expiresAt <= now) joinCodes.delete(code);
   }
 }
@@ -103,6 +104,14 @@ function useJoinCode(code: string): boolean {
   return true;
 }
 
+export function hasValidJoinCode(code: string): boolean {
+  const raw = (code ?? "").trim().toUpperCase();
+  if (!raw) return false;
+  pruneExpiredJoinCodes();
+  const expiresAt = joinCodes.get(raw);
+  return expiresAt != null && expiresAt > Date.now();
+}
+
 /**
  * Generate a one-time join code (operator-only). Code is valid for JOIN_CODE_LIFETIME_MS.
  */
@@ -142,6 +151,7 @@ export function register(body: TuringDeviceRegistration): { id: string; created:
     existing.capabilities = Array.isArray(body.capabilities)
       ? body.capabilities.filter((c): c is string => typeof c === "string")
       : existing.capabilities;
+    existing.device_class = body.device_class ?? existing.device_class;
     existing.last_seen = new Date().toISOString();
     existing.status = "healthy";
     if (usedValidJoinCode) existing.approval_status = "approved";
@@ -157,6 +167,9 @@ export function register(body: TuringDeviceRegistration): { id: string; created:
     tailscale_ip,
     ram_mb: typeof body.ram_mb === "number" && body.ram_mb >= 0 ? body.ram_mb : null,
     ram_used_mb: null,
+    battery_percent: null,
+    charging: null,
+    power_source: null,
     capabilities: Array.isArray(body.capabilities)
       ? body.capabilities.filter((c): c is string => typeof c === "string")
       : [],
@@ -165,6 +178,9 @@ export function register(body: TuringDeviceRegistration): { id: string; created:
     load: null,
     current_jobs: null,
     approval_status,
+    device_class: body.device_class ?? "linux",
+    cache_healthy: null,
+    network_inventory_observed_at: null,
   };
   devices.set(id, device);
 
@@ -210,11 +226,36 @@ export function heartbeat(body: TuringHeartbeat): { id: string | null; ok: boole
   if (typeof body.current_jobs === "number" && body.current_jobs >= 0) {
     device.current_jobs = body.current_jobs;
   }
+  if (typeof body.cache_healthy === "boolean") {
+    device.cache_healthy = body.cache_healthy;
+  }
   if (typeof body.battery_percent === "number" && Number.isFinite(body.battery_percent)) {
     const clamped = Math.max(0, Math.min(100, body.battery_percent));
     device.battery_percent = clamped;
   }
+  if (typeof body.charging === "boolean") {
+    device.charging = body.charging;
+  }
+  if (body.power_source === "ac" || body.power_source === "battery" || body.power_source === "unknown") {
+    device.power_source = body.power_source;
+  }
+  if (body.network_inventory) {
+    const inventory = recordNetworkInventory(device.id, body.network_inventory);
+    if (inventory) {
+      device.network_inventory_observed_at = inventory.observed_at;
+    }
+  }
   return { id: device.id, ok: true };
+}
+
+function powerPriority(device: TuringDevice): number {
+  if (device.power_source === "ac" || device.charging === true) {
+    return 0;
+  }
+  if (device.battery_percent == null) {
+    return 1;
+  }
+  return 2;
 }
 
 /**
@@ -271,7 +312,11 @@ export function revokeDevice(deviceId: string): boolean {
  * Remove a device from the pool entirely (operator).
  */
 export function removeDevice(deviceId: string): boolean {
-  return devices.delete(deviceId);
+  const removed = devices.delete(deviceId);
+  if (removed) {
+    removeNetworkInventory(deviceId);
+  }
+  return removed;
 }
 
 /**
@@ -294,8 +339,11 @@ export function selectDeviceForCache(preferredDeviceId?: string | null): TuringD
     const preferred = list.find((d) => d.id === preferredDeviceId);
     if (preferred) return preferred;
   }
-  // Least used RAM first
-  list.sort((a, b) => (a.ram_used_mb ?? 0) - (b.ram_used_mb ?? 0));
+  list.sort((a, b) => {
+    const powerDelta = powerPriority(a) - powerPriority(b);
+    if (powerDelta !== 0) return powerDelta;
+    return (a.ram_used_mb ?? 0) - (b.ram_used_mb ?? 0);
+  });
   return list[0] ?? null;
 }
 
@@ -319,8 +367,11 @@ export function selectDeviceForCompute(
     const preferred = list.find((d) => d.id === preferredDeviceId);
     if (preferred) return preferred;
   }
-  // Lowest load / current_jobs first
-  list.sort((a, b) => (a.current_jobs ?? 0) - (b.current_jobs ?? 0));
+  list.sort((a, b) => {
+    const powerDelta = powerPriority(a) - powerPriority(b);
+    if (powerDelta !== 0) return powerDelta;
+    return (a.current_jobs ?? 0) - (b.current_jobs ?? 0);
+  });
   return list[0] ?? null;
 }
 

@@ -1,0 +1,349 @@
+{
+  "generatedAt": "2026-08-20T12:07:06.276Z",
+  "rootDir": "/Users/josh/Documents/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/presentation",
+  "policyVersion": "orbital-stewardship-v1",
+  "overridesPath": "/Users/josh/Documents/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/presentation/.gauss-doc-trust-overrides.json",
+  "totals": {
+    "files": 17,
+    "supported": 2,
+    "approved": 2,
+    "indexAllowed": 2,
+    "needsReview": 15,
+    "rejected": 0
+  },
+  "documents": [
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs.pptx",
+      "sha256": "90074c4b00438d13fd511daaa632e12ed6f6803b0ce2cd74dd1122f6d580c997",
+      "sizeBytes": 4096176,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "not_required",
+      "sensitivity": "internal",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Operator-approved local pitch deck for retrieval demonstration."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-1.png",
+      "sha256": "00248b1df521a7f4c28d9c09b689e9a17f077cec93f86239918379a6f6b4d5f2",
+      "sizeBytes": 228099,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-10.png",
+      "sha256": "419eee65568ae3d6c57393f2cd955835507092eb7875a1a2d3d33e7aa60fc968",
+      "sizeBytes": 220947,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-11.png",
+      "sha256": "1437cdfe8d7970b6f2c65f275a4e5b06f572fb86ee1edafb0a9a2e92ede7dc51",
+      "sizeBytes": 238834,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-12.png",
+      "sha256": "9e11cac8da5cc115328ad5a8a1b7e1f3fc6a09e352b864fce119b08ada185e42",
+      "sizeBytes": 103325,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-13.png",
+      "sha256": "28ad7a969720ccba4f4e89874cab9eb98306400111a0e2cba0da888aaa526cad",
+      "sizeBytes": 239580,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-14.png",
+      "sha256": "d83b3d7d028b1895334a4788e489ce669161aae0bdaf8a714ddfb6737a1b3d4f",
+      "sizeBytes": 267815,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-2.png",
+      "sha256": "4225c412113af8bc4aa639d06f88ee92f5b0760055f538ca4547741313b669e8",
+      "sizeBytes": 227094,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-3.png",
+      "sha256": "cdb92f6e773333c3b5cb242a6aaa78315aeff406ea9e67843beb5ee413f47440",
+      "sizeBytes": 334199,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-4.png",
+      "sha256": "dd532f26cc91ba5ecde465020e7a7195546cff5fb7c60f70f819d3f9a029e892",
+      "sizeBytes": 128656,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-5.png",
+      "sha256": "3d6935411639aee098f243f933b43a5da0a4ebef33e9431b708910c965365a3e",
+      "sizeBytes": 131628,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-6.png",
+      "sha256": "240249ebcefe1f715de350602c6a04b28b89b4d873357db3250911084ea160f7",
+      "sizeBytes": 236157,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-7.png",
+      "sha256": "3a0f0a5f1d91c7abe99f2313e7de18f1bb67620e51d6ce4960188160393449e3",
+      "sizeBytes": 314098,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-8.png",
+      "sha256": "2e034d3d556a1b4e66c799f84cb732c370e6aed518929cb1602eec6d71953b29",
+      "sizeBytes": 117534,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_pptxgenjs/slide-9.png",
+      "sha256": "536cff5556f8dac122db497819a8d2a0b2984461331224b75e972c1e5ae60e42",
+      "sizeBytes": 105420,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "skip",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Scraped page asset or non-document artifact.",
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_v2.pptx",
+      "sha256": "2284d4b43200c872426761c9f768aed3353e26d46b99965b5c4b443f766ed1cb",
+      "sizeBytes": 3638343,
+      "supported": true,
+      "approvalStatus": "approved",
+      "redactionStatus": "not_required",
+      "sensitivity": "internal",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "indexDecision": "index",
+      "indexAllowed": true,
+      "approvalSource": "override",
+      "reasons": [
+        "Operator-approved local pitch deck for retrieval demonstration."
+      ]
+    },
+    {
+      "path": "Gauss_Aurora_Investor_Deck_v2.pptx.inspect.ndjson",
+      "sha256": "de6f896751be93835c74fb4871ad496ee3e41e566b4e1856d9de5507d2839118",
+      "sizeBytes": 56364,
+      "supported": false,
+      "approvalStatus": "needs_review",
+      "redactionStatus": "pending_review",
+      "sensitivity": "unknown",
+      "owner": "unknown",
+      "retentionPolicy": "review_required",
+      "indexDecision": "review",
+      "indexAllowed": false,
+      "approvalSource": "heuristic",
+      "reasons": [
+        "Unsupported extraction format for current RAG pipeline.",
+        "Explicit approval is still required before indexing.",
+        "Redaction review is incomplete."
+      ]
+    }
+  ]
+}

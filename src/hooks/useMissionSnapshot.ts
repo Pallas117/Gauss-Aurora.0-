@@ -19,12 +19,15 @@ import {
 } from "@/lib/power/polling";
 import type { AuthSessionState, DashboardLatestResponse } from "@/lib/types/space-weather";
 
-const BASE_POLL_INTERVAL_MS = 5000;
-const BASE_SESSION_REFRESH_MS = 15000;
+const MISSION_POLL_INTERVAL_MS = 10000;
+const MISSION_SESSION_REFRESH_MS = 30000;
+const PUBLIC_SESSION_REFRESH_MS = 60000;
 const SESSION_CACHE_KEY = "mission:auth-session";
 const SNAPSHOT_CACHE_KEY = "mission:dashboard-latest";
 const SESSION_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const SNAPSHOT_CACHE_TTL_MS = 45 * 60 * 1000;
+
+type MissionSnapshotMode = "mission" | "public";
 
 function extractDashboardTrendMetric(snapshot: DashboardLatestResponse): number {
   const canonical = snapshot.canonicalLatest;
@@ -41,11 +44,13 @@ function extractDashboardTrendMetric(snapshot: DashboardLatestResponse): number 
 }
 
 function resolvePollIntervalMs(samples: TrendSample[]): number {
-  return getTrendAwarePollInterval(BASE_POLL_INTERVAL_MS, samples, { maxMultiplier: 3.25 });
+  return getTrendAwarePollInterval(MISSION_POLL_INTERVAL_MS, samples, { maxMultiplier: 3.25 });
 }
 
-function resolveSessionRefreshMs(): number {
-  return getAdaptivePollInterval(BASE_SESSION_REFRESH_MS);
+function resolveSessionRefreshMs(mode: MissionSnapshotMode): number {
+  return getAdaptivePollInterval(
+    mode === "public" ? PUBLIC_SESSION_REFRESH_MS : MISSION_SESSION_REFRESH_MS,
+  );
 }
 
 const DEFAULT_SESSION: AuthSessionState = {
@@ -98,12 +103,13 @@ export interface MissionSnapshotState {
 
 interface UseMissionSnapshotControllerOptions {
   enabled?: boolean;
+  mode?: MissionSnapshotMode;
 }
 
 function useMissionSnapshotController(
   options: UseMissionSnapshotControllerOptions = {},
 ): MissionSnapshotState {
-  const { enabled = true } = options;
+  const { enabled = true, mode = "mission" } = options;
   const [session, setSession] = useState<AuthSessionState | null>(null);
   const [snapshot, setSnapshot] = useState<DashboardLatestResponse | null>(null);
   const [loading, setLoading] = useState(enabled);
@@ -184,6 +190,13 @@ function useMissionSnapshotController(
     if (!enabled) {
       return;
     }
+    if (mode === "public") {
+      setSnapshot(null);
+      setLoading(false);
+      setError(null);
+      setPollingPaused(false);
+      return;
+    }
     const currentSession = sessionOverride ?? sessionRef.current ?? DEFAULT_SESSION;
 
     if (!isOnline()) {
@@ -241,7 +254,7 @@ function useMissionSnapshotController(
     } finally {
       setLoading(false);
     }
-  }, [enabled, loadCachedSnapshot]);
+  }, [enabled, loadCachedSnapshot, mode]);
 
   useEffect(() => {
     if (!enabled) {
@@ -253,7 +266,9 @@ function useMissionSnapshotController(
     const boot = async () => {
       const [cachedSession, cachedSnapshot] = await Promise.all([
         readOfflineCache<AuthSessionState>(SESSION_CACHE_KEY),
-        readOfflineCache<DashboardLatestResponse>(SNAPSHOT_CACHE_KEY),
+        mode === "mission"
+          ? readOfflineCache<DashboardLatestResponse>(SNAPSHOT_CACHE_KEY)
+          : Promise.resolve(null),
       ]);
       if (!mounted) {
         return;
@@ -262,7 +277,7 @@ function useMissionSnapshotController(
         setSession(cachedSession.data);
         sessionRef.current = cachedSession.data;
       }
-      if (cachedSnapshot?.data) {
+      if (mode === "mission" && cachedSnapshot?.data) {
         setSnapshot(cachedSnapshot.data);
         setUsingCachedData(true);
         setCachedAt(cachedSnapshot.cachedAt);
@@ -282,7 +297,11 @@ function useMissionSnapshotController(
       if (!mounted) {
         return;
       }
-      await refresh(nextSession);
+      if (mode === "mission") {
+        await refresh(nextSession);
+      } else {
+        setLoading(false);
+      }
     };
 
     void boot();
@@ -294,7 +313,7 @@ function useMissionSnapshotController(
       }
       sessionTimer = window.setTimeout(() => {
         void refreshSession().finally(scheduleSessionRefresh);
-      }, resolveSessionRefreshMs());
+      }, resolveSessionRefreshMs(mode));
     };
     scheduleSessionRefresh();
 
@@ -304,15 +323,18 @@ function useMissionSnapshotController(
         window.clearTimeout(sessionTimer);
       }
     };
-  }, [enabled, refresh, refreshSession]);
+  }, [enabled, mode, refresh, refreshSession]);
 
   const canPoll = useMemo(() => {
     if (!enabled) {
       return false;
     }
+    if (mode === "public") {
+      return false;
+    }
     const current = session ?? DEFAULT_SESSION;
     return !pollingPaused && (!current.authRequired || current.authenticated);
-  }, [enabled, pollingPaused, session]);
+  }, [enabled, mode, pollingPaused, session]);
 
   useEffect(() => {
     if (!canPoll) {
@@ -380,8 +402,14 @@ function useMissionSnapshotController(
 
 const MissionSnapshotContext = createContext<MissionSnapshotState | null>(null);
 
-export function MissionSnapshotProvider({ children }: { children: ReactNode }) {
-  const value = useMissionSnapshotController({ enabled: true });
+export function MissionSnapshotProvider({
+  children,
+  mode = "mission",
+}: {
+  children: ReactNode;
+  mode?: MissionSnapshotMode;
+}) {
+  const value = useMissionSnapshotController({ enabled: true, mode });
   return createElement(MissionSnapshotContext.Provider, { value }, children);
 }
 

@@ -1,0 +1,71 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=e3]:
+        - img [ref=e5]
+        - generic [ref=e7]:
+          - generic [ref=e8]: "Boot: Auth session"
+          - generic [ref=e9]: Sign in for full mission data and protected feeds.
+  - generic [ref=e11]:
+    - complementary [ref=e12]:
+      - generic [ref=e13]:
+        - img [ref=e14]
+        - generic [ref=e17]:
+          - paragraph [ref=e18]: GAUSS AURORA
+          - paragraph [ref=e19]: Mission Shell
+      - navigation "Primary" [ref=e20]:
+        - link "Command C2" [ref=e21] [cursor=pointer]:
+          - /url: /command
+          - img [ref=e22]
+          - generic [ref=e24]: Command
+          - generic [ref=e25]: C2
+        - link "SDA HUD" [ref=e26] [cursor=pointer]:
+          - /url: /sda
+          - img [ref=e27]
+          - generic [ref=e32]: SDA
+          - generic [ref=e33]: HUD
+        - link "Systems Infra" [ref=e34] [cursor=pointer]:
+          - /url: /systems
+          - img [ref=e35]
+          - generic [ref=e38]: Systems
+          - generic [ref=e39]: Infra
+        - link "Intel RAG" [ref=e40] [cursor=pointer]:
+          - /url: /intel
+          - img [ref=e41]
+          - generic [ref=e44]: Intel
+          - generic [ref=e45]: RAG
+        - link "Heliophysics Ops" [ref=e46] [cursor=pointer]:
+          - /url: /heliophysics
+          - img [ref=e47]
+          - generic [ref=e53]: Heliophysics
+          - generic [ref=e54]: Ops
+      - generic [ref=e55]:
+        - paragraph [ref=e56]: Security posture
+        - generic [ref=e57]:
+          - generic [ref=e58]: feed paused
+          - generic [ref=e59]: signed out
+          - generic [ref=e60]: sources healthy
+    - generic [ref=e61]:
+      - banner [ref=e62]:
+        - generic [ref=e63]:
+          - paragraph [ref=e64]: Unified operations
+          - heading "Mission Command Surface" [level=1] [ref=e65]
+        - generic [ref=e66]:
+          - 'button "Display options: accent and HUD glow" [ref=e67] [cursor=pointer]':
+            - img
+          - generic [ref=e68]: "tier: unknown"
+          - generic [ref=e69]:
+            - img [ref=e70]
+            - text: public
+      - main [ref=e72]:
+        - generic [ref=e73]: Awaiting Node...
+      - contentinfo [ref=e74]:
+        - generic [ref=e75]: Project Gauss mission shell
+        - generic [ref=e76]:
+          - link "Dev HUD" [ref=e77] [cursor=pointer]:
+            - /url: /ops/dev-hud
+          - 'link "Turing: 0 devices (0 healthy)" [ref=e78] [cursor=pointer]':
+            - /url: /ops/turing
+          - generic [ref=e79]: waiting for feed

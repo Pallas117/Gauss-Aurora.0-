@@ -64,6 +64,7 @@ test("document trust manifest only index-allows explicitly approved safe docs", 
     assert.ok(obsidian);
     assert.equal(obsidian?.indexAllowed, false);
     assert.equal(obsidian?.indexDecision, "skip");
+    assert.match(obsidian?.reasons.join(" ") ?? "", /hidden workspace\/tooling artifact/i);
 
     assert.ok(sensitivePdf);
     assert.equal(sensitivePdf?.supported, true);
@@ -71,6 +72,47 @@ test("document trust manifest only index-allows explicitly approved safe docs", 
     assert.equal(sensitivePdf?.approvalStatus, "needs_review");
 
     assert.equal(manifest.totals.indexAllowed, 1);
+  } finally {
+    fs.rmSync(rootDir, { recursive: true, force: true });
+  }
+});
+
+test("document trust override precedence can explicitly reject a supported file", () => {
+  const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "gauss-doc-trust-override-"));
+  try {
+    fs.mkdirSync(path.join(rootDir, "spacecraft-ops-probability"), { recursive: true });
+    fs.writeFileSync(
+      path.join(rootDir, "spacecraft-ops-probability", "sensitive.md"),
+      "# sensitive\n",
+      "utf8",
+    );
+    fs.writeFileSync(
+      path.join(rootDir, ".gauss-doc-trust-overrides.json"),
+      JSON.stringify(
+        {
+          documents: {
+            "spacecraft-ops-probability/sensitive.md": {
+              approvalStatus: "rejected",
+              redactionStatus: "ready",
+              sensitivity: "restricted",
+              owner: "gauss",
+              retentionPolicy: "review_required",
+              reasons: ["Explicitly blocked by operator review."],
+            },
+          },
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
+    const manifest = buildTrustManifest(rootDir);
+    const target = manifest.documents.find((document) => document.path.endsWith("sensitive.md"));
+    assert.ok(target);
+    assert.equal(target?.supported, true);
+    assert.equal(target?.approvalSource, "override");
+    assert.equal(target?.indexAllowed, false);
+    assert.equal(target?.indexDecision, "skip");
   } finally {
     fs.rmSync(rootDir, { recursive: true, force: true });
   }

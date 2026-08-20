@@ -31,7 +31,7 @@ const Index = () => {
             </h1>
             <p className="mt-3 max-w-2xl text-sm text-white/68">
               Split mission operations into dedicated route lanes instead of forcing every operator through one heavy surface.
-              This entry stays SVG-first so Judith can keep DeepSeek, ingest, and the operator shell alive together.
+              This entry stays SVG-first so Judith can keep AI planning, ingest, and the operator shell alive together.
             </p>
           </div>
 

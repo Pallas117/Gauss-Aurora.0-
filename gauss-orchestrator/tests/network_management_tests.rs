@@ -39,7 +39,10 @@ fn direct_route_selected_for_high_priority_same_segment() {
         })
         .expect("should route");
 
-    assert_eq!(plan.mode, gauss_orchestrator::network_management::RouteMode::Direct);
+    assert_eq!(
+        plan.mode,
+        gauss_orchestrator::network_management::RouteMode::Direct
+    );
     assert_eq!(plan.hops.len(), 1);
     assert_eq!(plan.hops[0].link_id, "isl-a-b");
 }

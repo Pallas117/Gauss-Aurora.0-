@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gauss.local/schemas/network-adapters-v1.json",
+  "title": "Gauss network adapter discovery",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ok", "protocol", "adapters", "generated_at"],
+  "properties": {
+    "ok": { "const": true },
+    "protocol": { "const": "gauss-network-adapters-v1" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "adapters": {
+      "type": "array",
+      "maxItems": 2,
+      "items": { "$ref": "#/$defs/adapter" }
+    }
+  },
+  "$defs": {
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "hostname", "address", "platform", "state", "authorization", "last_seen"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "hostname": { "type": ["string", "null"], "maxLength": 160 },
+        "address": { "type": ["string", "null"], "maxLength": 80 },
+        "platform": { "type": ["string", "null"], "maxLength": 80 },
+        "state": { "enum": ["online", "offline", "unknown"] },
+        "authorization": { "const": "unknown" },
+        "last_seen": { "type": ["string", "null"], "maxLength": 40 }
+      }
+    },
+    "adapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapter_id", "kind", "label", "state", "observed_at", "host", "nodes", "inventory", "signals"],
+      "properties": {
+        "adapter_id": { "enum": ["local-host", "tailscale-overlay"] },
+        "kind": { "enum": ["local", "tailscale"] },
+        "label": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "state": { "enum": ["ready", "degraded", "blocked"] },
+        "observed_at": { "type": ["string", "null"], "maxLength": 40 },
+        "host": { "$ref": "#/$defs/node" },
+        "nodes": { "type": "array", "maxItems": 257, "items": { "$ref": "#/$defs/node" } },
+        "inventory": { "type": ["object", "null"] },
+        "signals": { "type": "array", "maxItems": 64, "items": { "type": "string", "maxLength": 160 } }
+      }
+    }
+  }
+}

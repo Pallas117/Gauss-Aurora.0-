@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,6 +12,52 @@ interface SourceHealthCardProps {
     canonicalAge: number | string;
     mmsAge: number | string;
     auroraAge: number | string;
+}
+
+function AgeDisplay({ ageSeconds, label }: { ageSeconds: number | string; label: string }) {
+    const baseAge = typeof ageSeconds === "number"
+        ? ageSeconds
+        : parseFloat(ageSeconds as string);
+
+    // Tick up from the base age in real-time
+    const [displayAge, setDisplayAge] = useState<number | null>(
+        Number.isFinite(baseAge) ? baseAge : null,
+    );
+    const startRef = useRef<{ wall: number; base: number } | null>(null);
+
+    useEffect(() => {
+        if (!Number.isFinite(baseAge)) {
+            setDisplayAge(null);
+            return;
+        }
+        startRef.current = { wall: Date.now(), base: baseAge };
+        setDisplayAge(baseAge);
+        const id = setInterval(() => {
+            if (!startRef.current) return;
+            const elapsed = (Date.now() - startRef.current.wall) / 1000;
+            setDisplayAge(Math.round(startRef.current.base + elapsed));
+        }, 1000);
+        return () => clearInterval(id);
+    }, [baseAge]);
+
+    const age = displayAge;
+    const stale = age !== null && age > 90;
+    const warning = age !== null && age > 30 && age <= 90;
+    const colorClass = stale
+        ? "text-destructive"
+        : warning
+            ? "text-amber-400"
+            : "text-muted-foreground";
+
+    return (
+        <p className={`font-mono text-xs ${colorClass} flex items-center gap-1`}>
+            <span>{label}:</span>
+            <span>
+                {age !== null ? `${age}s` : "n/a"}
+            </span>
+            {stale && <span title="Data is stale (>90s)">⚠</span>}
+        </p>
+    );
 }
 
 export const SourceHealthCard = ({
@@ -70,10 +117,10 @@ export const SourceHealthCard = ({
                         </div>
                     ))}
                 </div>
-                <div className="space-y-1 text-xs text-muted-foreground font-mono">
-                    <p>Canonical age: {canonicalAge}s</p>
-                    <p>MMS age: {mmsAge}s</p>
-                    <p>Aurora age: {auroraAge}s</p>
+                <div className="space-y-1 rounded border border-border/40 bg-background/30 p-2">
+                    <AgeDisplay ageSeconds={canonicalAge} label="Canonical age" />
+                    <AgeDisplay ageSeconds={mmsAge} label="MMS age" />
+                    <AgeDisplay ageSeconds={auroraAge} label="Aurora age" />
                 </div>
             </CardContent>
         </Card>

@@ -1,4 +1,4 @@
-import type { OpsCommandType } from "./deepseek-command-bridge.js";
+import type { OpsCommandType } from "./model-command-bridge.js";
 import type {
   CanonicalSpaceWeatherPoint,
   NowcastInferenceResponse,
@@ -8,6 +8,8 @@ import type {
 type InferNowcastFn = (input: {
   horizonMinutes: number;
   sequence: CanonicalSpaceWeatherPoint[];
+}, options?: {
+  triggerMode?: "auto" | "manual";
 }) => Promise<NowcastInferenceResponse>;
 
 export interface OpsCommandExecutorDeps {
@@ -208,6 +210,8 @@ async function executeTriggerNowcast(
   const nowcast = await deps.inferNowcast({
     horizonMinutes,
     sequence,
+  }, {
+    triggerMode: "manual",
   });
 
   return {
@@ -332,7 +336,7 @@ async function executeSchedulePass(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          operator: asCommandText(payload.operator, "deepseek-model"),
+          operator: asCommandText(payload.operator, "external-model"),
           idempotency_key: options.idempotencyKey ?? undefined,
         }),
         signal: AbortSignal.timeout(10_000),

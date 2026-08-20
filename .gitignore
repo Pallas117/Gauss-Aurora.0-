@@ -20,11 +20,17 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Browser automation captures are disposable local evidence, not repository state.
+.playwright-cli/
+.playwright-mcp/
+
 # RAG vector DB (recreated on index)
 data/
 
 # Test and report artifacts
 test-results/
+output/
+reports/compliance/
 reports/fullstack/
 coverage/
 .pytest_cache/
@@ -53,3 +59,29 @@ supabase/.temp/
 
 # Legacy local temp folder inside repo
 research/legacy-v0-1/.vite/
+
+# Gauss: model weights and databases (never commit these)
+*.gguf
+*.ggml
+models/
+data/*.db
+data/*.duckdb
+logs/
+bun.lockb
+reports/progress/*.json
+reports/orchestrator/work-queue.json
+
+# Reproducible agent-manager data and artifact manifest; keep model weights out of Git.
+!ml/
+!ml/data/
+!ml/data/agent-manager-v1/
+!ml/data/agent-manager-v1/*.jsonl
+!ml/data/agent-manager-v1/README.md
+!artifacts/
+!artifacts/models/
+!artifacts/models/chat/
+!artifacts/models/chat/gauss-agent-manager-v1/
+artifacts/models/chat/gauss-agent-manager-v1/*
+!artifacts/models/chat/gauss-agent-manager-v1/adapter_config.json
+!artifacts/models/chat/gauss-agent-manager-v1/manifest.json
+!reports/progress/agent-manager-training.latest.json

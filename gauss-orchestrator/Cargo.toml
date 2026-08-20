@@ -5,6 +5,15 @@ edition = "2021"
 authors = ["Gauss Team"]
 description = "Sovereign AI Orchestrator: High-performance, low-RAM automation engine for telemetry routing"
 readme = "README.md"
+default-run = "gauss-orchestrator"
+
+[[bin]]
+name = "gauss-orchestrator"
+path = "src/main.rs"
+
+[[bin]]
+name = "recursive-solver"
+path = "src/bin/recursive_solver.rs"
 
 [dependencies]
 regex = "1.11"

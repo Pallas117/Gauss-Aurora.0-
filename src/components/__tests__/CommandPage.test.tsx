@@ -1,7 +1,11 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import CommandPage from "@/pages/CommandPage";
-import { planOpsCommandWithDeepSeek, queueOpsCommand } from "@/lib/api/heliophysics-proxy";
+import {
+  approveOpsDelegationTask,
+  planOpsCommandWithModel,
+  queueOpsCommand,
+} from "@/lib/api/heliophysics-proxy";
 
 jest.mock("@/lib/api/heliophysics-proxy", () => ({
   fetchOpsCommandJob: jest.fn(async () => ({
@@ -36,7 +40,17 @@ jest.mock("@/lib/api/heliophysics-proxy", () => ({
       consecutive_failures: 0,
     },
   })),
-  planOpsCommandWithDeepSeek: jest.fn(),
+  approveOpsDelegationTask: jest.fn(async () => ({
+    result: {
+      summary: "Approved mission action queued.",
+    },
+  })),
+  rejectOpsDelegationTask: jest.fn(async () => ({
+    result: {
+      summary: "Rejected mission action.",
+    },
+  })),
+  planOpsCommandWithModel: jest.fn(),
   queueOpsCommand: jest.fn(),
 }));
 
@@ -125,7 +139,60 @@ jest.mock("@/hooks/useMissionSnapshot", () => ({
 
 jest.mock("@/hooks/useOpsCommandSnapshot", () => ({
   useOpsCommandSnapshot: () => ({
-    data: null,
+    data: {
+      workers: [
+        {
+          id: "command-planner",
+          lane: "runtime",
+          enabled: true,
+          approval: "operator-gate",
+          state: "idle",
+          lastRunAt: new Date().toISOString(),
+          lastResult: {
+            workerId: "command-planner",
+            status: "completed",
+            summary: "Planner held steady.",
+            autoExecuted: false,
+            queuedApproval: false,
+            touchedSystems: ["planner"],
+            nextTasks: [],
+            artifacts: [],
+          },
+        },
+        {
+          id: "safe-executor",
+          lane: "runtime",
+          enabled: true,
+          approval: "safe-auto",
+          state: "idle",
+          lastRunAt: new Date().toISOString(),
+          lastResult: {
+            workerId: "safe-executor",
+            status: "completed",
+            summary: "Health check captured.",
+            autoExecuted: true,
+            queuedApproval: false,
+            touchedSystems: ["health"],
+            nextTasks: [],
+            artifacts: [],
+          },
+        },
+      ],
+      queuedApprovals: [
+        {
+          taskId: "approval-1",
+          workerId: "command-planner",
+          summary: "Review SSA warning and trigger a nowcast response.",
+          risk: "medium",
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      brokerPolicy: {
+        memoryLevel: "nominal",
+        externalModelMode: "auto",
+        autoSafeOps: true,
+      },
+    },
     loading: false,
     error: null,
     refresh: jest.fn(),
@@ -200,10 +267,12 @@ describe("CommandPage", () => {
     expect(screen.getByText(/storm warning/i)).toBeInTheDocument();
     expect(screen.getAllByText(/IMMEDIATE SOLAR_FLARE EVASION/i).length).toBeGreaterThan(0);
     expect(screen.getByTestId("feedback-panel-mock")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /worker mesh/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /approval queue/i })).toBeInTheDocument();
   });
 
   it("runs plan preview and queues simulate/execute from approved plan", async () => {
-    const planMock = planOpsCommandWithDeepSeek as jest.Mock;
+    const planMock = planOpsCommandWithModel as jest.Mock;
     const queueMock = queueOpsCommand as jest.Mock;
     planMock.mockResolvedValueOnce({
       command: {
@@ -269,6 +338,19 @@ describe("CommandPage", () => {
           simulate: false,
         }),
       );
+    });
+  });
+
+  it("approves queued worker proposals from the command page", async () => {
+    render(
+      <MemoryRouter>
+        <CommandPage />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getAllByRole("button", { name: /approve/i })[0]!);
+    await waitFor(() => {
+      expect(approveOpsDelegationTask).toHaveBeenCalledWith({ taskId: "approval-1" });
     });
   });
 });

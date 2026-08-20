@@ -1,25 +1,16 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
-const spaceSceneSpy = jest.fn();
 const useMissionSnapshotMock = jest.fn();
 const useOfflineModeMock = jest.fn();
 const useSolarWind5sMock = jest.fn();
 const useMMSReconnectionMock = jest.fn();
 const useAuroraMapMock = jest.fn();
-const useRiskZonesMock = jest.fn();
 const usePowerProfileMock = jest.fn();
 const useBackendHealthMock = jest.fn();
 const useMissionCoreSnapshotMock = jest.fn();
 const useSuryaForecastMock = jest.fn();
 const getAuthHeadersMock = jest.fn();
-
-jest.mock("@/components/scene/SpaceScene", () =>
-  function MockSpaceScene(props: unknown) {
-    spaceSceneSpy(props);
-    return <div data-testid="space-scene" />;
-  },
-);
 
 jest.mock("@/components/GaussRagPanel", () => ({
   GaussRagPanel: () => <div data-testid="rag-panel" />,
@@ -59,10 +50,6 @@ jest.mock("@/hooks/useMMSReconnection", () => ({
 
 jest.mock("@/hooks/useAuroraMap", () => ({
   useAuroraMap: () => useAuroraMapMock(),
-}));
-
-jest.mock("@/hooks/useRiskZones", () => ({
-  useRiskZones: () => useRiskZonesMock(),
 }));
 
 jest.mock("@/hooks/usePowerProfile", () => ({
@@ -238,13 +225,6 @@ function setupDefaultMocks() {
     error: null,
   });
 
-  useRiskZonesMock.mockReturnValue({
-    riskZones: [],
-    loading: false,
-    error: null,
-    refresh: jest.fn(),
-  });
-
   usePowerProfileMock.mockReturnValue({
     profile: "balanced",
     isLowPower: false,
@@ -256,30 +236,17 @@ function setupDefaultMocks() {
       timestamp: new Date().toISOString(),
       memory: {
         level: "nominal",
-        signals: ["headroom-healthy"],
-        totalRamGb: 8,
-        freeRamGb: 4,
-        usedRamGb: 4,
-        freeRatio: 0.5,
-        thresholds: {
-          constrainedFreeMb: 3072,
-          criticalFreeMb: 1536,
-          constrainedFreeRatio: 0.22,
-          criticalFreeRatio: 0.12,
-        },
-        ceiling: {
-          ceilingMb: 5800,
-          overCeiling: false,
-          checkedAt: new Date().toISOString(),
-          cacheMs: 2000,
-          lastError: null,
-        },
+        freeMb: 4096,
+        suspendedSubsystems: [],
+        svgLiteForced: false,
+        externalModelMode: "auto",
       },
     },
     loading: false,
     error: null,
     memoryLevel: "nominal",
-    memorySignals: ["headroom-healthy"],
+    deepseekMode: "auto",
+    svgLiteForced: false,
   });
 
   useMissionCoreSnapshotMock.mockReturnValue({
@@ -334,7 +301,7 @@ describe("HeliophysicsDashboard nowcast visualization mapping", () => {
       </MemoryRouter>,
     );
 
-    await waitFor(() => expect(screen.getByTestId("space-scene")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId("mhd-effects-scene")).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole("button", { name: /run 30m nowcast/i }));
 
@@ -345,14 +312,7 @@ describe("HeliophysicsDashboard nowcast visualization mapping", () => {
     expect(screen.getByTestId("nowcast-visual-signal")).toHaveTextContent("perturb 72.0");
     expect(screen.getByTestId("nowcast-horizon-frame")).toHaveTextContent("1/1");
 
-    await waitFor(() => {
-      const latestSceneProps = spaceSceneSpy.mock.calls.at(-1)?.[0] as {
-        canonicalPoint?: { alerts?: { stormTier?: string } };
-        data?: unknown[];
-      };
-      expect(latestSceneProps?.canonicalPoint?.alerts?.stormTier).toBe("severe");
-      expect((latestSceneProps?.data?.length ?? 0) > 0).toBe(true);
-    });
+    expect(screen.getByText(/RECONNECTION · Bz/i)).toBeInTheDocument();
 
     global.fetch = originalFetch;
   });
@@ -390,7 +350,7 @@ describe("HeliophysicsDashboard nowcast visualization mapping", () => {
       </MemoryRouter>,
     );
 
-    await waitFor(() => expect(screen.getByTestId("space-scene")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId("mhd-effects-scene")).toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: /run 30m nowcast/i }));
 
     await waitFor(() => expect(screen.getByTestId("nowcast-horizon-frame")).toHaveTextContent("1/2"));
@@ -398,65 +358,20 @@ describe("HeliophysicsDashboard nowcast visualization mapping", () => {
       timeout: 5000,
     });
 
-    await waitFor(() => {
-      const latestSceneProps = spaceSceneSpy.mock.calls.at(-1)?.[0] as {
-        canonicalPoint?: { alerts?: { stormTier?: string } };
-      };
-      expect(latestSceneProps?.canonicalPoint?.alerts?.stormTier).toBe("severe");
-    });
+    expect(screen.getByText(/RECONNECTION · Bz/i)).toBeInTheDocument();
 
     global.fetch = originalFetch;
   });
 
-  it("prioritizes high-risk visualization points before passing scene data to SpaceScene", async () => {
-    useRiskZonesMock.mockReturnValue({
-      riskZones: [
-        {
-          timestamp: "2026-03-05T12:00:00.000Z",
-          orbitType: "MEO",
-          altitude: 20200,
-          riskScore: 0.22,
-          objectCount: 4,
-        },
-        {
-          timestamp: "2026-03-05T12:03:00.000Z",
-          orbitType: "GEO",
-          altitude: 35786,
-          riskScore: 0.95,
-          objectCount: 26,
-        },
-        {
-          timestamp: "2026-03-05T12:02:00.000Z",
-          orbitType: "GEO",
-          altitude: 35786,
-          riskScore: 0.61,
-          objectCount: 12,
-        },
-      ],
-      loading: false,
-      error: null,
-      refresh: jest.fn(),
-    });
-
+  it("renders a stable SVG scene without the WebGL scene dependency", async () => {
     render(
       <MemoryRouter initialEntries={["/heliophysics"]}>
         <HeliophysicsDashboard />
       </MemoryRouter>,
     );
 
-    await waitFor(() => expect(screen.getByTestId("space-scene")).toBeInTheDocument());
-
-    await waitFor(() => {
-      const latestSceneProps = spaceSceneSpy.mock.calls.at(-1)?.[0] as {
-        data?: Array<{ riskScore?: number; visualPriorityScore?: number }>;
-      };
-      const sceneData = latestSceneProps?.data ?? [];
-      expect(sceneData).toHaveLength(3);
-      expect(sceneData[0]?.riskScore).toBe(0.95);
-      expect(sceneData[1]?.riskScore).toBe(0.61);
-      expect(sceneData[2]?.riskScore).toBe(0.22);
-      expect(sceneData.every((point) => typeof point.visualPriorityScore === "number")).toBe(true);
-    });
+    await waitFor(() => expect(screen.getByTestId("mhd-effects-scene")).toBeInTheDocument());
+    expect(screen.getByRole("img", { name: /schematic magnetohydrodynamic view/i })).toBeInTheDocument();
   });
 
   it("renders source policy and observed backend cost in the source health card", async () => {
@@ -466,7 +381,7 @@ describe("HeliophysicsDashboard nowcast visualization mapping", () => {
       </MemoryRouter>,
     );
 
-    await waitFor(() => expect(screen.getByTestId("space-scene")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId("mhd-effects-scene")).toBeInTheDocument());
 
     const policyCard = await screen.findByTestId("source-policy-noaa-swpc");
     expect(policyCard).toHaveTextContent("primary");

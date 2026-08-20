@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OpsLaneLinks } from "@/components/ops/OpsLaneLinks";
 import { useMissionSnapshot } from "@/hooks/useMissionSnapshot";
+import { useOpsWorkerMesh } from "@/hooks/useOpsWorkerMesh";
 import { usePowerProfile } from "@/hooks/usePowerProfile";
 import { getAuthHeaders } from "@/lib/api/auth";
 import {
@@ -78,6 +79,7 @@ function sourceDecisionVariant(
 export default function AutomationPage() {
   const mission = useMissionSnapshot();
   const { profile, isConstraintDetected, isLowPower } = usePowerProfile();
+  const workerMesh = useOpsWorkerMesh(mission.session?.authenticated === true);
 
   const [cyberTiger, setCyberTiger] = useState<CyberTigerStatusPayload | null>(null);
   const [cyberTigerError, setCyberTigerError] = useState<string | null>(null);
@@ -268,6 +270,49 @@ export default function AutomationPage() {
           >
             {lightsOutMode ? "Disable lights-out" : "Enable lights-out"}
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Specialist Workers</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="outline">
+              {workerMesh.queue.brokerPolicy?.memoryLevel ?? "nominal"} governor
+            </Badge>
+            <Badge variant="outline">
+              DeepSeek {workerMesh.queue.brokerPolicy?.deepseekMode ?? "auto"}
+            </Badge>
+            <Badge variant="secondary">
+              {workerMesh.workers.filter((worker) => worker.enabled).length} enabled
+            </Badge>
+          </div>
+          <div className="space-y-2">
+            {workerMesh.workers.map((worker) => (
+              <div
+                key={worker.id}
+                className="rounded border border-border/70 bg-background/40 p-2 text-xs"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-semibold">{worker.id}</span>
+                  <Badge variant={worker.state === "degraded" ? "destructive" : "outline"}>
+                    {worker.state}
+                  </Badge>
+                </div>
+                <p className="mt-1 text-muted-foreground">
+                  {worker.lastResult?.summary ?? "No worker result recorded yet."}
+                </p>
+                <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                  {worker.lane} · {worker.approval}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Safe-auto workers can self-heal bounded runtime issues. Mission actions still wait in the approval queue.
+          </p>
         </CardContent>
       </Card>
 

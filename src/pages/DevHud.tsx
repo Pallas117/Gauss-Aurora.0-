@@ -12,13 +12,18 @@ import { OpsLaneLinks } from "@/components/ops/OpsLaneLinks";
 import { useBackendHealth } from "@/hooks/useBackendHealth";
 import { useMissionSnapshot } from "@/hooks/useMissionSnapshot";
 import {
-  executeDeepSeekSafeCommand,
+  approveOpsDelegationTask,
+  dispatchOpsWorkerTask,
+  executeModelSafeCommand,
+  fetchOpsDelegationQueue,
+  fetchOpsWorkers,
   fetchOpsCommandMetrics,
-  planDeepSeekSafeCommand,
+  planModelSafeCommand,
   queueOpsCommand,
+  rejectOpsDelegationTask,
 } from "@/lib/api/heliophysics-proxy";
 import type {
-  DeepSeekSafeCommandPlanResponse,
+  ModelSafeCommandPlanResponse,
   OpsCommandMetricsResponse,
 } from "@/lib/types/space-weather";
 
@@ -36,8 +41,14 @@ type Milestone = {
 type TerminalCommand =
   | { kind: "help" }
   | { kind: "status" }
+  | { kind: "workers" }
+  | { kind: "approvals" }
   | { kind: "clear" }
   | { kind: "queue"; commandType: "log-health-check" | "trigger-nowcast" | "schedule-pass" }
+  | { kind: "dispatch"; workerKind: string }
+  | { kind: "approve"; taskId: string }
+  | { kind: "reject"; taskId: string }
+  | { kind: "restart-service" }
   | { kind: "plan-safe"; prompt: string }
   | { kind: "simulate-safe" }
   | { kind: "execute-safe" }
@@ -91,12 +102,17 @@ function splitCommand(raw: string): string[] {
 function parseTerminalCommand(raw: string): TerminalCommand {
   const [verb = "", ...rest] = splitCommand(raw);
   const prompt = rest.join(" ").trim();
+  const normalizedRest = rest.join(" ").trim().toLowerCase();
 
   switch (verb.toLowerCase()) {
     case "help":
       return { kind: "help" };
     case "status":
       return { kind: "status" };
+    case "workers":
+      return { kind: "workers" };
+    case "approvals":
+      return { kind: "approvals" };
     case "clear":
       return { kind: "clear" };
     case "log-health-check":
@@ -105,6 +121,22 @@ function parseTerminalCommand(raw: string): TerminalCommand {
       return { kind: "queue", commandType: "trigger-nowcast" };
     case "schedule-pass":
       return { kind: "queue", commandType: "schedule-pass" };
+    case "dispatch":
+      return prompt
+        ? { kind: "dispatch", workerKind: prompt }
+        : { kind: "unknown", message: "dispatch requires a worker kind" };
+    case "approve":
+      return prompt
+        ? { kind: "approve", taskId: prompt }
+        : { kind: "unknown", message: "approve requires a task id" };
+    case "reject":
+      return prompt
+        ? { kind: "reject", taskId: prompt }
+        : { kind: "unknown", message: "reject requires a task id" };
+    case "restart":
+      return normalizedRest === "service"
+        ? { kind: "restart-service" }
+        : { kind: "unknown", message: "restart service is the supported restart command" };
     case "plan-safe":
       return prompt
         ? { kind: "plan-safe", prompt }
@@ -133,7 +165,7 @@ export default function DevHud() {
     "[SYS] BYPASS_CLOUD_ACTIVE",
   ]);
   const [auditState, setAuditState] = useState<"running" | "complete">("running");
-  const [safePlan, setSafePlan] = useState<DeepSeekSafeCommandPlanResponse | null>(null);
+  const [safePlan, setSafePlan] = useState<ModelSafeCommandPlanResponse | null>(null);
   const [metrics, setMetrics] = useState<OpsCommandMetricsResponse | null>(null);
 
   const completedObjectives = useMemo(
@@ -222,14 +254,14 @@ export default function DevHud() {
         lane: "terminal",
       },
     });
-    const job = "job" in response ? response.job : null;
+    const job = (response && typeof response === "object" && "job" in response) ? (response.job as { jobId: string }) : null;
     appendLog(
       `[OPS] ${commandType.toUpperCase()} ${job ? `queued:${job.jobId}` : "logged"}`,
     );
   };
 
   const handlePlanSafe = async (prompt: string) => {
-    const response = await planDeepSeekSafeCommand({
+    const response = await planModelSafeCommand({
       prompt,
       context: {
         origin: "dev-hud",
@@ -246,13 +278,81 @@ export default function DevHud() {
       appendLog("[SAFE] No proposal available. Run plan-safe first.");
       return;
     }
-    const response = await executeDeepSeekSafeCommand({
+    const response = await executeModelSafeCommand({
       approval_token: safePlan.approval?.token,
-      plan: safePlan.proposal.plan,
+      plan: safePlan.proposal.plan as unknown as Record<string, unknown>,
       simulate,
     });
     appendLog(
       `[SAFE] ${simulate ? "SIM" : "EXEC"} ${response.execution.ok ? "OK" : "FAIL"} ${response.execution.commandPreview}`,
+    );
+  };
+
+  const handleWorkers = async () => {
+    const response = await fetchOpsWorkers();
+    appendLog(
+      `[WORKERS] ${response.workers.map((worker) => `${worker.id}:${worker.state}`).join(" | ")}`,
+    );
+  };
+
+  const handleApprovals = async () => {
+    const response = await fetchOpsDelegationQueue();
+    appendLog(
+      response.queuedApprovals.length > 0
+        ? `[APPROVALS] ${response.queuedApprovals.map((approval) => `${approval.taskId}:${approval.risk}`).join(" | ")}`
+        : "[APPROVALS] none pending",
+    );
+  };
+
+  const handleDispatch = async (workerKind: string) => {
+    const map: Record<string, { lane: "runtime" | "offline"; kind: string; workerId?: string; payload?: Record<string, unknown> }> = {
+      "telemetry-ingest": { lane: "runtime", kind: "telemetry-refresh", workerId: "telemetry-ingest" },
+      "ssa-analysis": { lane: "runtime", kind: "ssa-review", workerId: "ssa-analysis" },
+      "source-policy": { lane: "runtime", kind: "source-adjustment", workerId: "source-policy" },
+      "command-planner": {
+        lane: "runtime",
+        kind: "command-request",
+        workerId: "command-planner",
+        payload: {
+          prompt: "Assess current command state for operator action.",
+          manualRequested: true,
+        },
+      },
+      "safe-executor": {
+        lane: "runtime",
+        kind: "command-request",
+        workerId: "safe-executor",
+        payload: {
+          action: { kind: "log-health-check" },
+        },
+      },
+      "service-reanimator": { lane: "offline", kind: "service-outage", workerId: "service-reanimator" },
+      "offline-repair": { lane: "offline", kind: "repair-batch", workerId: "offline-repair" },
+      "event-deposit": { lane: "offline", kind: "event-lesson", workerId: "event-deposit" },
+    };
+
+    const normalized = workerKind.trim().toLowerCase();
+    const task = map[normalized];
+    if (!task) {
+      appendLog(`[ERR] unsupported worker: ${workerKind}`);
+      return;
+    }
+
+    const response = await dispatchOpsWorkerTask({
+      workerId: task.workerId,
+      lane: task.lane,
+      kind: task.kind,
+      payload: task.payload,
+    });
+    appendLog(`[DISPATCH] ${normalized} ${response.result.status.toUpperCase()} ${response.result.summary}`);
+  };
+
+  const handleApprovalAction = async (taskId: string, approved: boolean) => {
+    const response = approved
+      ? await approveOpsDelegationTask({ taskId })
+      : await rejectOpsDelegationTask({ taskId });
+    appendLog(
+      `[APPROVAL] ${approved ? "APPROVED" : "REJECTED"} ${taskId} ${response.result.summary}`,
     );
   };
 
@@ -271,7 +371,9 @@ export default function DevHud() {
       return;
     }
     if (parsed.kind === "help") {
-      appendLog("[HELP] status | log-health-check | trigger-nowcast | schedule-pass");
+      appendLog("[HELP] status | workers | approvals | dispatch <worker-kind>");
+      appendLog("[HELP] approve <task-id> | reject <task-id> | restart service");
+      appendLog("[HELP] log-health-check | trigger-nowcast | schedule-pass");
       appendLog("[HELP] plan-safe <prompt> | simulate-safe | execute-safe | clear");
       return;
     }
@@ -279,6 +381,28 @@ export default function DevHud() {
       appendLog(
         `[STATUS] backend=${backendHealth.health?.ok ? "healthy" : "degraded"} memory=${backendHealth.memoryLevel} session=${mission.session?.authenticated ? mission.session.role ?? "viewer" : "signed-out"}`,
       );
+      return;
+    }
+    if (parsed.kind === "workers") {
+      setBusy(true);
+      try {
+        await handleWorkers();
+      } catch (error) {
+        appendLog(`[ERR] ${error instanceof Error ? error.message : "workers failed"}`);
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+    if (parsed.kind === "approvals") {
+      setBusy(true);
+      try {
+        await handleApprovals();
+      } catch (error) {
+        appendLog(`[ERR] ${error instanceof Error ? error.message : "approvals failed"}`);
+      } finally {
+        setBusy(false);
+      }
       return;
     }
     if (parsed.kind === "unknown") {
@@ -290,6 +414,14 @@ export default function DevHud() {
     try {
       if (parsed.kind === "queue") {
         await handleQueueCommand(parsed.commandType);
+      } else if (parsed.kind === "dispatch") {
+        await handleDispatch(parsed.workerKind);
+      } else if (parsed.kind === "approve") {
+        await handleApprovalAction(parsed.taskId, true);
+      } else if (parsed.kind === "reject") {
+        await handleApprovalAction(parsed.taskId, false);
+      } else if (parsed.kind === "restart-service") {
+        await handleDispatch("service-reanimator");
       } else if (parsed.kind === "plan-safe") {
         await handlePlanSafe(parsed.prompt);
       } else if (parsed.kind === "simulate-safe") {

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gauss Development Loop"
+  short_description: "Run the Gauss development loop"
+  default_prompt: "Use $gauss-development-loop to prepare, verify, and hand off a Gauss change."

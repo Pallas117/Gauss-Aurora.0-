@@ -1,0 +1,24 @@
+{
+  "generatedAt": "2026-03-21T09:02:21.076Z",
+  "steps": [
+    {
+      "command": "node --env-file-if-exists=.env --import tsx backend/scripts/offline-repair-capsule.ts",
+      "ok": true,
+      "exitCode": 0,
+      "stdout": "OFFLINE_REPAIR_CAPSULE findings=11 offline_fixable=11 output=/Users/josh/Documents/Documents - Judith/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/orchestrator/offline-repair-capsule.latest.json",
+      "stderr": ""
+    },
+    {
+      "command": "node --env-file-if-exists=.env --import tsx backend/scripts/offline-repair-pairing.ts",
+      "ok": true,
+      "exitCode": 0,
+      "stdout": "OFFLINE_REPAIR_PAIRING active_batch=offline-batch-1 queue_depth=3 output=/Users/josh/Documents/Documents - Judith/lightbound/Gauss/Gauss AI/Gauss Aurora/reports/orchestrator/offline-repair-pairing.latest.json",
+      "stderr": ""
+    }
+  ],
+  "localChatEngine": {
+    "skipped": false,
+    "ok": false,
+    "message": "Request failed: fetch failed Start MLX DeepSeek: npm run dev:brain:mlx (or mlx_lm.server --model mlx-community/DeepSeek-R1-Distill-Qwen-1.5B-4bit --port 8088)"
+  }
+}

@@ -1,3 +1,5 @@
+import { getViteEnv } from "@/lib/heliophysics-utils";
+
 /**
  * Auth env check: warn when Supabase frontend env is missing or still placeholder.
  * Use for dev-only console warning and optional config banner.
@@ -10,8 +12,8 @@ export function getSupabaseEnvStatus(): {
   configured: boolean;
   reason?: string;
 } {
-  const url = (typeof import.meta !== 'undefined' ? import.meta?.env?.VITE_SUPABASE_URL : typeof process !== 'undefined' ? process.env?.VITE_SUPABASE_URL : undefined);
-  const key = (typeof import.meta !== 'undefined' ? import.meta?.env?.VITE_SUPABASE_PUBLISHABLE_KEY : typeof process !== 'undefined' ? process.env?.VITE_SUPABASE_PUBLISHABLE_KEY : undefined);
+  const url = getViteEnv("VITE_SUPABASE_URL");
+  const key = getViteEnv("VITE_SUPABASE_PUBLISHABLE_KEY");
 
   if (!url || typeof url !== "string" || url.trim().length === 0) {
     return { configured: false, reason: "VITE_SUPABASE_URL is missing." };
@@ -32,7 +34,10 @@ let warned = false;
 export function warnIfSupabaseEnvMissing(): void {
   if (warned) return;
   const { configured, reason } = getSupabaseEnvStatus();
-  if (!configured && (typeof import.meta !== 'undefined' ? import.meta?.env?.DEV : typeof process !== 'undefined' ? process.env?.DEV : undefined)) {
+  const isDev =
+    (typeof import.meta !== "undefined" ? Boolean(import.meta?.env?.DEV) : false) ||
+    (typeof process !== "undefined" ? Boolean(process.env?.DEV) : false);
+  if (!configured && isDev) {
     console.warn("[Auth] Supabase env not configured:", reason);
     warned = true;
   }

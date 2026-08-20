@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-03-06T17:27:30.912Z",
-  "capsule_generated_at": "2026-03-06T16:58:42.310Z",
+  "generated_at": "2026-03-21T09:02:21.017Z",
+  "capsule_generated_at": "2026-03-21T09:02:20.807Z",
   "active_batch_id": "offline-batch-1",
   "summary": {
     "generatedFrom": [
@@ -15,45 +15,46 @@
         "batchId": "offline-batch-1",
         "goal": "Reduce backend coupling before autonomous patch execution.",
         "targets": [
-          "backend/server.ts",
           "backend/routes/ops-control.ts",
-          "backend/scripts/full-stack-mission.ts"
+          "backend/scripts/full-stack-mission.ts",
+          "backend/worker/ingest-loop.ts"
         ],
         "validators": [
           "npm run -s lint",
           "npm test"
         ],
-        "modelObjective": "Propose the smallest coupling reduction inside backend/server.ts, backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts while preserving current contracts.",
-        "orchestratorObjective": "Freeze scope to backend/server.ts, backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts, run npm run -s lint, npm test, and fail closed if the patch widens or breaks validation."
+        "modelObjective": "Propose the smallest coupling reduction inside backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts, backend/worker/ingest-loop.ts while preserving current contracts.",
+        "orchestratorObjective": "Freeze scope to backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts, backend/worker/ingest-loop.ts, run npm run -s lint, npm test, and fail closed if the patch widens or breaks validation."
       },
       {
         "batchId": "offline-batch-2",
-        "goal": "Trim page-level runtime surfaces before adding more autonomous UI behavior.",
+        "goal": "Resolve locally fixable debt without network access.",
         "targets": [
-          "src/pages/HeliophysicsDashboard.tsx",
-          "src/pages/AutomationPage.tsx",
-          "src/pages/SDAPage.tsx"
+          "src/lib/types/space-weather.ts",
+          "src/lib/api/heliophysics-proxy.ts",
+          "src/imports/gauss-ui/src/app/components/ui/sidebar.tsx"
         ],
         "validators": [
           "npm run -s lint",
-          "npm run -s test:unit:ui",
           "npm run -s build"
         ],
-        "modelObjective": "Propose the smallest low-power runtime fix inside src/pages/HeliophysicsDashboard.tsx, src/pages/AutomationPage.tsx, src/pages/SDAPage.tsx without widening the surface area.",
-        "orchestratorObjective": "Freeze scope to src/pages/HeliophysicsDashboard.tsx, src/pages/AutomationPage.tsx, src/pages/SDAPage.tsx, run npm run -s lint, npm run -s test:unit:ui, npm run -s build, and fail closed if the patch widens or breaks validation."
+        "modelObjective": "Propose the smallest extraction or simplification inside src/lib/types/space-weather.ts, src/lib/api/heliophysics-proxy.ts, src/imports/gauss-ui/src/app/components/ui/sidebar.tsx while preserving UI behavior.",
+        "orchestratorObjective": "Freeze scope to src/lib/types/space-weather.ts, src/lib/api/heliophysics-proxy.ts, src/imports/gauss-ui/src/app/components/ui/sidebar.tsx, run npm run -s lint, npm run -s build, and fail closed if the patch widens or breaks validation."
       },
       {
         "batchId": "offline-batch-3",
         "goal": "Resolve locally fixable debt without network access.",
         "targets": [
-          "playwright.config.ts"
+          "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/playwright.config.ts",
+          "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/AutomationPage.tsx",
+          "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/SDAPage.tsx"
         ],
         "validators": [
           "npm run -s lint",
           "npm run -s build"
         ],
-        "modelObjective": "Propose the smallest low-power runtime fix inside playwright.config.ts without widening the surface area.",
-        "orchestratorObjective": "Freeze scope to playwright.config.ts, run npm run -s lint, npm run -s build, and fail closed if the patch widens or breaks validation."
+        "modelObjective": "Propose the smallest low-power runtime fix inside /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/playwright.config.ts, /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/AutomationPage.tsx, /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/SDAPage.tsx without widening the surface area.",
+        "orchestratorObjective": "Freeze scope to /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/playwright.config.ts, /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/AutomationPage.tsx, /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/SDAPage.tsx, run npm run -s lint, npm run -s build, and fail closed if the patch widens or breaks validation."
       }
     ],
     "operatorPolicy": [
@@ -93,24 +94,14 @@
           "id": "hotspot-1",
           "severity": "P2",
           "category": "architecture",
-          "title": "backend/server.ts is still oversized",
-          "target": "backend/server.ts",
-          "evidence": "2819 lines in a single TypeScript surface.",
-          "recommendation": "Split planner, audit, and mission routes into mounted modules before giving DeepSeek patch authority.",
-          "offlineFixable": true
-        },
-        {
-          "id": "hotspot-2",
-          "severity": "P2",
-          "category": "architecture",
           "title": "backend/routes/ops-control.ts is still oversized",
           "target": "backend/routes/ops-control.ts",
-          "evidence": "1885 lines in a single TypeScript surface.",
+          "evidence": "2305 lines in a single TypeScript surface.",
           "recommendation": "Reduce file scope before enabling autonomous patch application.",
           "offlineFixable": true
         },
         {
-          "id": "hotspot-3",
+          "id": "hotspot-2",
           "severity": "P2",
           "category": "architecture",
           "title": "backend/scripts/full-stack-mission.ts is still oversized",
@@ -118,21 +109,31 @@
           "evidence": "1091 lines in a single TypeScript surface.",
           "recommendation": "Reduce file scope before enabling autonomous patch application.",
           "offlineFixable": true
+        },
+        {
+          "id": "hotspot-3",
+          "severity": "P2",
+          "category": "architecture",
+          "title": "backend/worker/ingest-loop.ts is still oversized",
+          "target": "backend/worker/ingest-loop.ts",
+          "evidence": "957 lines in a single TypeScript surface.",
+          "recommendation": "Extract source policy, persistence, and cadence control into narrower worker modules.",
+          "offlineFixable": true
         }
       ],
       "pairing": {
         "strategy": "bounded-dual-lane-repair",
         "rationale": "Keep DeepSeek in a narrow backend patch lane with local-only validation. The model reasons inside the patch lane while the orchestrator owns scope, validation, and recording.",
         "targets": [
-          "backend/server.ts",
           "backend/routes/ops-control.ts",
-          "backend/scripts/full-stack-mission.ts"
+          "backend/scripts/full-stack-mission.ts",
+          "backend/worker/ingest-loop.ts"
         ],
         "model": {
           "actor": "model",
-          "objective": "Propose the smallest coupling reduction inside backend/server.ts, backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts while preserving current contracts.",
+          "objective": "Propose the smallest coupling reduction inside backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts, backend/worker/ingest-loop.ts while preserving current contracts.",
           "responsibilities": [
-            "Read only the bounded targets: backend/server.ts, backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts.",
+            "Read only the bounded targets: backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts, backend/worker/ingest-loop.ts.",
             "Return a unified diff that stays within 3 files and 180 changed lines.",
             "Prefer extraction, simplification, and clearer boundaries over new abstractions or dependencies.",
             "Use the validator sequence to shape the patch scope before proposing changes.",
@@ -152,9 +153,9 @@
         },
         "orchestrator": {
           "actor": "orchestrator",
-          "objective": "Freeze scope to backend/server.ts, backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts, run npm run -s lint, npm test, and fail closed if the patch widens or breaks validation.",
+          "objective": "Freeze scope to backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts, backend/worker/ingest-loop.ts, run npm run -s lint, npm test, and fail closed if the patch widens or breaks validation.",
           "responsibilities": [
-            "Provide the batch, file previews, and allowed targets: backend/server.ts, backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts.",
+            "Provide the batch, file previews, and allowed targets: backend/routes/ops-control.ts, backend/scripts/full-stack-mission.ts, backend/worker/ingest-loop.ts.",
             "Reject any proposal that touches files outside the bounded target list.",
             "Run validators in order: npm run -s lint, npm test.",
             "Record the artifact, verdict, and failure reason for the next capsule regardless of outcome."
@@ -211,8 +212,8 @@
     },
     {
       "batchId": "offline-batch-2",
-      "goal": "Trim page-level runtime surfaces before adding more autonomous UI behavior.",
-      "rationale": "Keep DeepSeek in a narrow frontend-pages patch lane with local-only validation.",
+      "goal": "Resolve locally fixable debt without network access.",
+      "rationale": "Keep DeepSeek in a narrow architecture patch lane with local-only validation.",
       "maxFilesChanged": 3,
       "maxChangedLines": 180,
       "allowedActions": [
@@ -231,7 +232,6 @@
       ],
       "validatorSequence": [
         "npm run -s lint",
-        "npm run -s test:unit:ui",
         "npm run -s build"
       ],
       "items": [
@@ -239,50 +239,49 @@
           "id": "hotspot-5",
           "severity": "P2",
           "category": "architecture",
-          "title": "src/pages/HeliophysicsDashboard.tsx is still oversized",
-          "target": "src/pages/HeliophysicsDashboard.tsx",
-          "evidence": "901 lines in a single TypeScript surface.",
-          "recommendation": "Move source health, risk HUD, and heavy metrics cards into leaf components with explicit props.",
+          "title": "src/lib/types/space-weather.ts is still oversized",
+          "target": "src/lib/types/space-weather.ts",
+          "evidence": "817 lines in a single TypeScript surface.",
+          "recommendation": "Reduce file scope before enabling autonomous patch application.",
           "offlineFixable": true
         },
         {
-          "id": "runtime-2",
-          "severity": "P2",
-          "category": "runtime",
-          "title": "Runtime Efficiency: Burst CPU spikes in monitored processes",
-          "target": "src/pages/AutomationPage.tsx",
-          "evidence": "Backprop capsule blocker. Next milestone: V0.2 Audit Parity.",
-          "recommendation": "Replace fixed polling loops with adaptive cadence tied to power/profile constraints.",
+          "id": "hotspot-7",
+          "severity": "P3",
+          "category": "architecture",
+          "title": "src/lib/api/heliophysics-proxy.ts is still oversized",
+          "target": "src/lib/api/heliophysics-proxy.ts",
+          "evidence": "772 lines in a single TypeScript surface.",
+          "recommendation": "Reduce file scope before enabling autonomous patch application.",
           "offlineFixable": true
         },
         {
-          "id": "runtime-3",
-          "severity": "P2",
-          "category": "runtime",
-          "title": "Runtime Efficiency: Burst GPU load windows",
-          "target": "src/pages/SDAPage.tsx",
-          "evidence": "Backprop capsule blocker. Next milestone: V0.2 Audit Parity.",
-          "recommendation": "Use lightweight SVG SDA fallback in low-power or compact viewport sessions.",
+          "id": "hotspot-8",
+          "severity": "P3",
+          "category": "architecture",
+          "title": "src/imports/gauss-ui/src/app/components/ui/sidebar.tsx is still oversized",
+          "target": "src/imports/gauss-ui/src/app/components/ui/sidebar.tsx",
+          "evidence": "727 lines in a single TypeScript surface.",
+          "recommendation": "Reduce file scope before enabling autonomous patch application.",
           "offlineFixable": true
         }
       ],
       "pairing": {
         "strategy": "bounded-dual-lane-repair",
-        "rationale": "Keep DeepSeek in a narrow frontend-pages patch lane with local-only validation. The model reasons inside the patch lane while the orchestrator owns scope, validation, and recording.",
+        "rationale": "Keep DeepSeek in a narrow architecture patch lane with local-only validation. The model reasons inside the patch lane while the orchestrator owns scope, validation, and recording.",
         "targets": [
-          "src/pages/HeliophysicsDashboard.tsx",
-          "src/pages/AutomationPage.tsx",
-          "src/pages/SDAPage.tsx"
+          "src/lib/types/space-weather.ts",
+          "src/lib/api/heliophysics-proxy.ts",
+          "src/imports/gauss-ui/src/app/components/ui/sidebar.tsx"
         ],
         "model": {
           "actor": "model",
-          "objective": "Propose the smallest low-power runtime fix inside src/pages/HeliophysicsDashboard.tsx, src/pages/AutomationPage.tsx, src/pages/SDAPage.tsx without widening the surface area.",
+          "objective": "Propose the smallest extraction or simplification inside src/lib/types/space-weather.ts, src/lib/api/heliophysics-proxy.ts, src/imports/gauss-ui/src/app/components/ui/sidebar.tsx while preserving UI behavior.",
           "responsibilities": [
-            "Read only the bounded targets: src/pages/HeliophysicsDashboard.tsx, src/pages/AutomationPage.tsx, src/pages/SDAPage.tsx.",
+            "Read only the bounded targets: src/lib/types/space-weather.ts, src/lib/api/heliophysics-proxy.ts, src/imports/gauss-ui/src/app/components/ui/sidebar.tsx.",
             "Return a unified diff that stays within 3 files and 180 changed lines.",
             "Prefer extraction, simplification, and clearer boundaries over new abstractions or dependencies.",
             "Use the validator sequence to shape the patch scope before proposing changes.",
-            "Prefer adaptive cadence, lighter defaults, and existing fallback paths over new runtime loops.",
             "Preserve existing APIs while isolating the hotspot into smaller modules or helpers."
           ],
           "outputs": [
@@ -299,11 +298,11 @@
         },
         "orchestrator": {
           "actor": "orchestrator",
-          "objective": "Freeze scope to src/pages/HeliophysicsDashboard.tsx, src/pages/AutomationPage.tsx, src/pages/SDAPage.tsx, run npm run -s lint, npm run -s test:unit:ui, npm run -s build, and fail closed if the patch widens or breaks validation.",
+          "objective": "Freeze scope to src/lib/types/space-weather.ts, src/lib/api/heliophysics-proxy.ts, src/imports/gauss-ui/src/app/components/ui/sidebar.tsx, run npm run -s lint, npm run -s build, and fail closed if the patch widens or breaks validation.",
           "responsibilities": [
-            "Provide the batch, file previews, and allowed targets: src/pages/HeliophysicsDashboard.tsx, src/pages/AutomationPage.tsx, src/pages/SDAPage.tsx.",
+            "Provide the batch, file previews, and allowed targets: src/lib/types/space-weather.ts, src/lib/api/heliophysics-proxy.ts, src/imports/gauss-ui/src/app/components/ui/sidebar.tsx.",
             "Reject any proposal that touches files outside the bounded target list.",
-            "Run validators in order: npm run -s lint, npm run -s test:unit:ui, npm run -s build.",
+            "Run validators in order: npm run -s lint, npm run -s build.",
             "Record the artifact, verdict, and failure reason for the next capsule regardless of outcome."
           ],
           "outputs": [
@@ -386,9 +385,29 @@
           "severity": "P2",
           "category": "runtime",
           "title": "Runtime Efficiency: Low free memory headroom overnight",
-          "target": "playwright.config.ts",
+          "target": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/playwright.config.ts",
           "evidence": "Backprop capsule blocker. Next milestone: V0.2 Audit Parity.",
           "recommendation": "Constrain default Playwright worker count when free RAM is low to reduce swap and UI flake.",
+          "offlineFixable": true
+        },
+        {
+          "id": "runtime-2",
+          "severity": "P2",
+          "category": "runtime",
+          "title": "Runtime Efficiency: Burst CPU spikes in monitored processes",
+          "target": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/AutomationPage.tsx",
+          "evidence": "Backprop capsule blocker. Next milestone: V0.2 Audit Parity.",
+          "recommendation": "Replace fixed polling loops with adaptive cadence tied to power/profile constraints.",
+          "offlineFixable": true
+        },
+        {
+          "id": "runtime-3",
+          "severity": "P2",
+          "category": "runtime",
+          "title": "Runtime Efficiency: Burst GPU load windows",
+          "target": "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/SDAPage.tsx",
+          "evidence": "Backprop capsule blocker. Next milestone: V0.2 Audit Parity.",
+          "recommendation": "Use lightweight SVG SDA fallback in low-power or compact viewport sessions.",
           "offlineFixable": true
         }
       ],
@@ -396,13 +415,15 @@
         "strategy": "bounded-dual-lane-repair",
         "rationale": "Keep DeepSeek in a narrow runtime patch lane with local-only validation. The model reasons inside the patch lane while the orchestrator owns scope, validation, and recording.",
         "targets": [
-          "playwright.config.ts"
+          "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/playwright.config.ts",
+          "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/AutomationPage.tsx",
+          "/Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/SDAPage.tsx"
         ],
         "model": {
           "actor": "model",
-          "objective": "Propose the smallest low-power runtime fix inside playwright.config.ts without widening the surface area.",
+          "objective": "Propose the smallest low-power runtime fix inside /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/playwright.config.ts, /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/AutomationPage.tsx, /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/SDAPage.tsx without widening the surface area.",
           "responsibilities": [
-            "Read only the bounded targets: playwright.config.ts.",
+            "Read only the bounded targets: /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/playwright.config.ts, /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/AutomationPage.tsx, /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/SDAPage.tsx.",
             "Return a unified diff that stays within 3 files and 180 changed lines.",
             "Prefer extraction, simplification, and clearer boundaries over new abstractions or dependencies.",
             "Use the validator sequence to shape the patch scope before proposing changes.",
@@ -422,9 +443,9 @@
         },
         "orchestrator": {
           "actor": "orchestrator",
-          "objective": "Freeze scope to playwright.config.ts, run npm run -s lint, npm run -s build, and fail closed if the patch widens or breaks validation.",
+          "objective": "Freeze scope to /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/playwright.config.ts, /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/AutomationPage.tsx, /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/SDAPage.tsx, run npm run -s lint, npm run -s build, and fail closed if the patch widens or breaks validation.",
           "responsibilities": [
-            "Provide the batch, file previews, and allowed targets: playwright.config.ts.",
+            "Provide the batch, file previews, and allowed targets: /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/playwright.config.ts, /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/AutomationPage.tsx, /Users/josh/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/src/pages/SDAPage.tsx.",
             "Reject any proposal that touches files outside the bounded target list.",
             "Run validators in order: npm run -s lint, npm run -s build.",
             "Record the artifact, verdict, and failure reason for the next capsule regardless of outcome."

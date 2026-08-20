@@ -1,5 +1,8 @@
 import { useCallback, useMemo } from "react";
-import type { ThreatSummaryResponse } from "@/lib/types/space-weather";
+import type {
+  BackendMemoryPressureLevel,
+  ThreatSummaryResponse,
+} from "@/lib/types/space-weather";
 import { fetchThreatSummary } from "@/lib/api/heliophysics-proxy";
 import { getAccessToken } from "@/lib/api/auth";
 import { useRealtimeFeed } from "@/hooks/useRealtimeFeed";
@@ -15,10 +18,11 @@ export interface ThreatSummaryState {
 
 interface UseThreatSummaryOptions {
   enabled?: boolean;
+  governorLevel?: BackendMemoryPressureLevel;
 }
 
 export function useThreatSummary(options: UseThreatSummaryOptions = {}): ThreatSummaryState {
-  const { enabled = true } = options;
+  const { enabled = true, governorLevel } = options;
 
   const fetcher = useCallback(async () => {
     const token = await getAccessToken();
@@ -33,6 +37,13 @@ export function useThreatSummary(options: UseThreatSummaryOptions = {}): ThreatS
     initialData: null,
     intervalMs: POLL_INTERVAL_MS,
     enabled,
+    governor: {
+      level: governorLevel,
+      nominalMs: 10_000,
+      constrainedMs: 20_000,
+      criticalMs: 30_000,
+      hiddenMs: 30_000,
+    },
     trendSampling: {
       selectMetric: (data) => {
         if (!data) {

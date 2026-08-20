@@ -4,8 +4,8 @@ use crate::code_fixer::CodeFixer;
 /// Telegram command handler for interactive agent communication.
 /// Allows operators to chat with agents, gate fixes, and inspect command feed.
 use crate::code_indexer::{CodeAnalyzer, CodeIndexer};
-use crate::multi_agent::MultiAgentOrchestrator;
 use crate::config::load_config;
+use crate::multi_agent::MultiAgentOrchestrator;
 use crate::recap;
 use crate::state;
 use crate::telegram_connector::TelegramConnector;
@@ -24,19 +24,19 @@ fn extract_gauss_progress_line(stdout: &str) -> Option<String> {
 /// Available Telegram commands
 #[derive(Debug, Clone)]
 pub enum TelegramCommand {
-    Analyze,              // Run code analysis
-    Fix,                  // Apply autonomous fixes
-    Audit,                // Run requirements audit
-    Progress,             // Run progress:short:refresh and report score
-    Feed,                 // Show latest Telegram command/response feed
-    Approvals,            // Show pending approvals
+    Analyze,                 // Run code analysis
+    Fix,                     // Apply autonomous fixes
+    Audit,                   // Run requirements audit
+    Progress,                // Run progress:short:refresh and report score
+    Feed,                    // Show latest Telegram command/response feed
+    Approvals,               // Show pending approvals
     Approve(Option<String>), // Approve by id
-    Deny(Option<String>), // Deny by id
-    Ask(String),          // Ask Gauss reasoning engine
-    Recap,                // Project recap from local model
-    Status,               // Show system status
-    Help,                 // Show help
-    Unknown(String),      // Unknown command
+    Deny(Option<String>),    // Deny by id
+    Ask(String),             // Ask Gauss reasoning engine
+    Recap,                   // Project recap from local model
+    Status,                  // Show system status
+    Help,                    // Show help
+    Unknown(String),         // Unknown command
 }
 
 impl TelegramCommand {
@@ -125,7 +125,7 @@ pub async fn run_fix_workflow(telegram: &TelegramConnector) -> Result<(), String
     let issues = analyzer.analyze();
 
     // Apply fixes
-    let fixer = CodeFixer::new("./src".to_string());
+    let fixer = CodeFixer::new("./src");
     let fix_results = fixer.apply_fixes(issues).await;
 
     let msg = format!(
@@ -241,7 +241,9 @@ pub async fn handle_telegram_command(
     match cmd {
         TelegramCommand::Analyze => {
             telegram
-                .notify("🔍 <b>Code Analysis Started</b>\n\nIndexing codebase and consulting agents...")
+                .notify(
+                    "🔍 <b>Code Analysis Started</b>\n\nIndexing codebase and consulting agents...",
+                )
                 .await;
 
             // Index codebase
@@ -304,7 +306,23 @@ pub async fn handle_telegram_command(
 
             Ok(())
         }
-        TelegramCommand::Fix => run_fix_workflow(telegram).await,
+        TelegramCommand::Fix => {
+            let enabled = std::env::var("ORCHESTRATOR_TELEGRAM_ALLOW_FIX")
+                .map(|value| {
+                    matches!(
+                        value.trim().to_ascii_lowercase().as_str(),
+                        "1" | "true" | "yes"
+                    )
+                })
+                .unwrap_or(false);
+            if !enabled {
+                telegram
+                    .notify("🛑 <b>/fix disabled</b>\n\nEnable ORCHESTRATOR_TELEGRAM_ALLOW_FIX only after local review and backup.")
+                    .await;
+                return Ok(());
+            }
+            run_fix_workflow(telegram).await
+        }
         TelegramCommand::Audit => {
             telegram
                 .notify(
@@ -330,7 +348,12 @@ pub async fn handle_telegram_command(
                     .unwrap_or_else(|| "Progress: (unavailable)".to_string()),
                 Err(_) => "Progress: (unavailable)".to_string(),
             };
-            telegram.notify(&format!("📊 <b>Full-build progress</b>\n\n{}", progress_msg)).await;
+            telegram
+                .notify(&format!(
+                    "📊 <b>Full-build progress</b>\n\n{}",
+                    progress_msg
+                ))
+                .await;
             Ok(())
         }
         TelegramCommand::Progress => {
@@ -432,7 +455,8 @@ pub async fn handle_telegram_command(
                     .await;
                 return Ok(());
             };
-            let Some(updated) = approval_gate::resolve_request(&target_id, false, "telegram") else {
+            let Some(updated) = approval_gate::resolve_request(&target_id, false, "telegram")
+            else {
                 telegram
                     .notify(&format!(
                         "⚠️ Request not found: <code>{}</code>. Use /approvals.",
@@ -476,10 +500,14 @@ pub async fn handle_telegram_command(
             Ok(())
         }
         TelegramCommand::Recap => {
-            telegram.notify("📋 <b>Project Recap</b>\n\nGathering context and asking local model...").await;
+            telegram
+                .notify("📋 <b>Project Recap</b>\n\nGathering context and asking local model...")
+                .await;
             let config = load_config();
-            let workspace_root = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
-            let context = recap::gather_recap_context(&workspace_root).map_err(|e| format!("recap gather: {}", e))?;
+            let workspace_root =
+                std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let context = recap::gather_recap_context(&workspace_root)
+                .map_err(|e| format!("recap gather: {}", e))?;
             let recap_text = recap::request_recap_from_local(client, &config, &context)
                 .await
                 .map_err(|e| format!("recap request: {}", e))?;

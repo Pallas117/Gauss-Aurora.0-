@@ -1,16 +1,20 @@
 import { randomUUID } from "node:crypto";
-import type { OpsCommandType } from "./deepseek-command-bridge.js";
+import type { OpsCommandType } from "./model-command-bridge.js";
 import type { OpsCommandExecutionResult } from "./ops-command-executor.js";
 
 export type OpsCommandJobStatus = "planned" | "running" | "succeeded" | "failed";
-export type OpsCommandJobSource = "manual" | "deepseek";
+export type OpsCommandJobSource = "manual" | "external-model";
 export type PlannerProfileName = "performance" | "balanced" | "low-power";
+export type PlannerPowerFlow = "recovery" | "balanced" | "surplus";
 
 export interface PlannerPowerState {
+  thermalConstrained?: boolean;
   batteryPercent: number | null;
   charging: boolean | null;
   powerSource: "ac" | "battery" | "unknown";
   thermalPressure: "nominal" | "high" | "critical";
+  powerFlow: PlannerPowerFlow;
+  surplusPowerAvailable: boolean;
   constrained: boolean;
   reason: string;
 }
@@ -166,22 +170,57 @@ export function resolvePlannerPowerState(
     5,
     95,
   );
+  const recoveryMinBatteryPercent = clampInt(
+    env.ORCHESTRATOR_RECOVERY_MIN_BATTERY_PERCENT,
+    50,
+    10,
+    95,
+  );
+  const surplusMinBatteryPercent = clampInt(
+    env.ORCHESTRATOR_SURPLUS_POWER_MIN_BATTERY_PERCENT,
+    70,
+    20,
+    95,
+  );
+  const batteryCareCapPercent = Math.max(
+    surplusMinBatteryPercent + 5,
+    clampInt(env.ORCHESTRATOR_BATTERY_CARE_CAP_PERCENT, 90, 40, 100),
+  );
 
   const discharging = charging === false || (charging === null && powerSource === "battery");
+  const externallyPowered = charging === true || powerSource === "ac";
   const lowBattery = batteryPercent != null && batteryPercent <= minSafeDischarging;
   const thermalConstrained = thermalPressure === "high" || thermalPressure === "critical";
   const constrained = thermalConstrained || (discharging && lowBattery);
+  const recoveryBand = batteryPercent != null && batteryPercent < recoveryMinBatteryPercent;
+  const surplusPowerAvailable =
+    externallyPowered &&
+    !thermalConstrained &&
+    batteryPercent != null &&
+    batteryPercent >= surplusMinBatteryPercent &&
+    batteryPercent < batteryCareCapPercent;
+  const powerFlow: PlannerPowerFlow = constrained || recoveryBand
+    ? "recovery"
+    : surplusPowerAvailable
+      ? "surplus"
+      : "balanced";
   const reason = thermalConstrained
     ? `thermal=${thermalPressure}`
     : discharging && lowBattery
       ? `battery=${batteryPercent}% discharging<=${minSafeDischarging}%`
+      : surplusPowerAvailable
+        ? `surplus-power battery=${batteryPercent}% ext-power<${batteryCareCapPercent}%`
       : "nominal";
 
   return {
+    thermalConstrained,
+
     batteryPercent: batteryPercent ?? null,
     charging,
     powerSource,
     thermalPressure,
+    powerFlow,
+    surplusPowerAvailable,
     constrained,
     reason,
   };
@@ -195,7 +234,7 @@ export function resolvePlannerModelProfile(
   let profile: PlannerProfileName = "balanced";
   if (powerState.constrained) {
     profile = "low-power";
-  } else if (powerState.charging === true && (powerState.batteryPercent ?? 0) >= 70) {
+  } else if (powerState.powerFlow === "surplus") {
     profile = "performance";
   }
 
@@ -324,6 +363,12 @@ export class OpsCommandRuntime {
     }
   }
 
+  private trimPending(): void {
+    while (this.pending.length > this.maxJobs) {
+      this.pending.shift();
+    }
+  }
+
   enqueue(input: OpsCommandJobInput): { job: OpsCommandJobRecord; deduped: boolean } {
     const now = this.nowFn();
     const nowMs = now.getTime();
@@ -372,6 +417,7 @@ export class OpsCommandRuntime {
       this.idempotency.set(idempotencyKey, { jobId, createdAtMs: nowMs });
     }
     this.pending.push(jobId);
+    this.trimPending();
     this.metrics.enqueued_total += 1;
     this.trimJobs();
     this.markMetrics();
@@ -417,6 +463,7 @@ export class OpsCommandRuntime {
 
     if (normalized.status === "planned" && !this.pending.includes(normalized.jobId)) {
       this.pending.push(normalized.jobId);
+      this.trimPending();
       this.metrics.restored_total += 1;
       this.trimJobs();
       this.markMetrics();

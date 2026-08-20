@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gauss.local/schemas/development-interoperability.schema.json",
+  "title": "Gauss Development Interoperability Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract",
+    "truth_states",
+    "lifecycle",
+    "artifacts",
+    "required_role_sections",
+    "required_skill_sections",
+    "roles",
+    "harness_commands"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "contract": { "const": "gauss-development-interoperability-v1" },
+    "truth_states": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 5
+    },
+    "lifecycle": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 6
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
+    "required_role_sections": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 7
+    },
+    "required_skill_sections": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 2
+    },
+    "roles": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["skill", "lanes"],
+        "properties": {
+          "skill": { "type": "string", "minLength": 1 },
+          "lanes": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "minItems": 1
+          }
+        }
+      }
+    },
+    "harness_commands": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 },
+        "minItems": 1
+      }
+    }
+  }
+}

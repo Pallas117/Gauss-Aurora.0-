@@ -54,6 +54,8 @@ fn test_config() -> OrchestratorConfig {
 fn decodes_valid_ccsds_binary_packet() {
     let cfg = test_config();
     let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/ccsds_valid.bin");
+    println!("DEBUG: CARGO_MANIFEST_DIR = {}", env!("CARGO_MANIFEST_DIR"));
+    println!("DEBUG: fixture path = {:?}", fixture);
     let bytes = std::fs::read(&fixture).expect("fixture must exist");
     let batch = decoder_registry::decode_packet_file(&fixture, &bytes, &cfg)
         .expect("decode should succeed");

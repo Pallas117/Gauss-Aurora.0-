@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gauss Network Mount"
+  short_description: "Safely mount Mac and network disks"
+  default_prompt: "Use $gauss-network-mount to diagnose and safely configure private Mac-to-Kali and network-disk mounts."

@@ -13,7 +13,9 @@ export type CyberTigerEventType =
   | "auth.failure_threshold"
   | "http.error"
   | "ip.blocked"
-  | "ip.unblocked";
+  | "ip.unblocked"
+  | "ingest.cpp_failure"
+  | "ingest.ml_fallback";
 
 export interface CyberTigerEvent {
   id: string;
@@ -317,6 +319,24 @@ export class CyberTigerDaemon {
     }
   }
 
+  recordIngestFallback(source: string, reason: string, metadata?: Record<string, unknown>): void {
+    if (!this.config.enabled) return;
+    this.addEvent({
+      type: "ingest.cpp_failure",
+      severity: "high",
+      ip: "internal",
+      message: `C++ ingest daemon failed for ${source}: ${reason}. Triggering Python ML fallback.`,
+      metadata,
+    });
+    this.addEvent({
+      type: "ingest.ml_fallback",
+      severity: "medium",
+      ip: "internal",
+      message: `Python DataRefinery fallback activated for ${source}`,
+      metadata,
+    });
+  }
+
   blockIp(
     ip: string,
     reason: string,
@@ -452,4 +472,12 @@ export class CyberTigerDaemon {
     }
     return null;
   }
+}
+
+let _globalInstance: CyberTigerDaemon | null = null;
+export function getCyberTiger(): CyberTigerDaemon {
+  if (!_globalInstance) {
+    _globalInstance = new CyberTigerDaemon();
+  }
+  return _globalInstance;
 }

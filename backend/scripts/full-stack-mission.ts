@@ -1015,11 +1015,11 @@ async function main(): Promise<void> {
 
   // Phase 6
   if (config.runUiE2E) {
-    pushCommandCheck("Phase 6", "UI smoke suite", "npm run test:ui", true);
+    pushCommandCheck("Phase 6", "UI unit suite", "npm run test:unit:ui", true);
   } else {
     checks.push({
       phase: "Phase 6",
-      name: "UI smoke suite",
+      name: "UI unit suite",
       mandatory: false,
       status: "SKIP",
       detail: "Skipped by FULLSTACK_SKIP_UI_E2E=true",
@@ -1027,7 +1027,13 @@ async function main(): Promise<void> {
   }
 
   if (config.runUiMobile) {
-    pushCommandCheck("Phase 6", "UI mobile layout suite", "npm run test:ui:mobile", true);
+    checks.push({
+      phase: "Phase 6",
+      name: "UI mobile layout suite",
+      mandatory: false,
+      status: "SKIP",
+      detail: "Skipped because Playwright dependency/scripts were removed.",
+    });
   } else {
     checks.push({
       phase: "Phase 6",

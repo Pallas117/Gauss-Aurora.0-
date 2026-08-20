@@ -40,6 +40,61 @@ const opsCommandStatusChipSchema = z.object({
   value: z.string().optional(),
 });
 
+const workerIdSchema = z.enum([
+  "telemetry-ingest",
+  "ssa-analysis",
+  "source-policy",
+  "command-planner",
+  "safe-executor",
+  "service-reanimator",
+  "offline-repair",
+  "event-deposit",
+]);
+
+const workerLaneSchema = z.enum(["runtime", "offline"]);
+const workerApprovalModeSchema = z.enum(["none", "safe-auto", "operator-gate"]);
+
+const workerResultSchema = z.object({
+  workerId: workerIdSchema,
+  status: z.enum(["completed", "deferred", "blocked", "failed"]),
+  summary: z.string().min(1),
+  autoExecuted: z.boolean(),
+  queuedApproval: z.boolean(),
+  touchedSystems: z.array(z.string()),
+  nextTasks: z.array(
+    z.object({
+      workerId: workerIdSchema,
+      reason: z.string().min(1),
+    }),
+  ),
+  artifacts: z.array(z.string()),
+  metrics: z.record(z.string(), z.number()).optional(),
+});
+
+const workerStatusSnapshotSchema = z.object({
+  id: workerIdSchema,
+  lane: workerLaneSchema,
+  enabled: z.boolean(),
+  approval: workerApprovalModeSchema,
+  state: z.enum(["idle", "running", "degraded", "suspended"]),
+  lastRunAt: timestampSchema.nullable(),
+  lastResult: workerResultSchema.nullable(),
+});
+
+const queuedApprovalSchema = z.object({
+  taskId: z.string().min(1),
+  workerId: workerIdSchema,
+  summary: z.string().min(1),
+  risk: z.enum(["low", "medium", "high"]),
+  createdAt: timestampSchema,
+});
+
+const brokerPolicySchema = z.object({
+  memoryLevel: z.enum(["nominal", "constrained", "critical"]),
+  deepseekMode: z.enum(["auto", "manual", "off"]),
+  autoSafeOps: z.literal(true),
+});
+
 const dtnIslAuditControlSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
@@ -70,6 +125,9 @@ export const opsCommandSnapshotResponseSchema = z.object({
   dtnIslStatus: dtnIslAuditStatusSchema,
   cybertigerStatus: cyberTigerStatusSchema.nullable(),
   statusChips: z.array(opsCommandStatusChipSchema).optional(),
+  workers: z.array(workerStatusSnapshotSchema),
+  queuedApprovals: z.array(queuedApprovalSchema),
+  brokerPolicy: brokerPolicySchema,
 });
 
 export type OpsCommandStatusChip = z.infer<typeof opsCommandStatusChipSchema>;

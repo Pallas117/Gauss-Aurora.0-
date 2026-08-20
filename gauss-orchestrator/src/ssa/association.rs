@@ -140,7 +140,10 @@ impl AssociationEngine {
     }
 
     /// Process a batch of measurements; returns diagnostics and updated track list.
-    pub fn update(&mut self, batch: &MeasurementBatch) -> (Vec<AssociationDiagnostic>, Vec<TrackState>) {
+    pub fn update(
+        &mut self,
+        batch: &MeasurementBatch,
+    ) -> (Vec<AssociationDiagnostic>, Vec<TrackState>) {
         let mut diagnostics = Vec::new();
         let mut used_tracks: HashMap<String, bool> = HashMap::new();
 
@@ -207,8 +210,7 @@ impl AssociationEngine {
             } else {
                 let id = format!("trk-{}", self.next_id);
                 self.next_id += 1;
-                let mut attr = Vec::new();
-                attr.push(meas_ref.clone());
+                let attr = vec![meas_ref.clone()];
                 let cov = Covariance6::default_diagonal(1e10);
                 let u = uncertainty_1sigma(&cov);
                 let norm = position_norm(&pos);

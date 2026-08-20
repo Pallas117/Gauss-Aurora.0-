@@ -13,6 +13,8 @@ from pathlib import Path
 from threading import Lock
 from typing import Any, Dict, List
 
+from refinery import global_refinery
+
 MODEL_VERSION = "unet-baseline-v1"
 DEFAULT_REGISTRY_PATH = "ml/models/registry.json"
 
@@ -195,7 +197,11 @@ def infer(payload: Dict[str, Any]) -> Dict[str, Any]:
   rag_bias = _rag_method_prior_bias(payload)
   horizon = int(payload.get("horizonMinutes", 60))
   sequence = payload.get("sequence", [])
-  latest = sequence[-1] if sequence else {}
+  
+  # Data Refinery ML Pipeline: Detect and Self-Heal Outliers
+  healed_sequence, has_anomaly, anomaly_meta = global_refinery.clean_sequence(sequence)
+  
+  latest = healed_sequence[-1] if healed_sequence else {}
 
   sw = latest.get("solarWind", {})
   b = latest.get("magneticField", {})
@@ -248,6 +254,10 @@ def infer(payload: Dict[str, Any]) -> Dict[str, Any]:
     "generatedAt": now.isoformat(),
     "horizonMinutes": horizon,
     "predictions": predictions,
+    "refinery": {
+      "anomalyDetected": has_anomaly,
+      "metadata": anomaly_meta
+    }
   }
 
 
@@ -268,6 +278,22 @@ class Handler(BaseHTTPRequestHandler):
     self._json(404, {"error": "Not found"})
 
   def do_POST(self) -> None:
+    if self.path == "/clean":
+      try:
+        length = int(self.headers.get("Content-Length", "0"))
+        raw = self.rfile.read(length)
+        payload = json.loads(raw.decode("utf-8"))
+        sequence = payload.get("sequence", [])
+        healed_sequence, has_anomaly, anomaly_meta = global_refinery.clean_sequence(sequence)
+        self._json(200, {
+          "healed_sequence": healed_sequence,
+          "anomaly_detected": has_anomaly,
+          "metadata": anomaly_meta
+        })
+      except Exception as exc:  # noqa: BLE001
+        self._json(400, {"error": str(exc)})
+      return
+
     if self.path != "/infer":
       self._json(404, {"error": "Not found"})
       return

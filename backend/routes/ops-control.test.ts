@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import express from "express";
 import { mountOpsControlRoutes } from "./ops-control.js";
+import { pushCanonical, setSourceStatus } from "../state.js";
 
 test("ops control routes expose runtime status and offline repair fallback artifact", async () => {
   const tmpRoot = mkdtempSync(join(tmpdir(), "gauss-ops-control-"));
@@ -64,10 +65,41 @@ test("ops control routes expose runtime status and offline repair fallback artif
     ORCHESTRATOR_LOCAL_ENGINE_URL: process.env.ORCHESTRATOR_LOCAL_ENGINE_URL,
     GAUSS_BRAIN_URL: process.env.GAUSS_BRAIN_URL,
     MLX_CHAT_URL: process.env.MLX_CHAT_URL,
+    MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB: process.env.MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB,
+    MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB: process.env.MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB,
   };
   delete process.env.ORCHESTRATOR_LOCAL_ENGINE_URL;
   delete process.env.GAUSS_BRAIN_URL;
   delete process.env.MLX_CHAT_URL;
+  process.env.MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB = "0";
+  process.env.MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB = "0";
+  pushCanonical({
+    timestamp: "2026-03-07T00:00:00.000Z",
+    source: "fusion",
+    rho: 7,
+    velocity: { x: -420, y: 18, z: -9, magnitude: 445 },
+    magneticField: { x: 2, y: -1, z: -5.5, bt: 6.2 },
+    electricField: { x: 0.2, y: 3.1, z: 0.4, ey: 3.1 },
+    solarWind: { speed: 445, density: 7, dynamicPressure: 2.8 },
+    indices: { kp: 4, dst: -48 },
+    coupling: { newell: 12000, epsilon: 810000 },
+    propagation: { l1DelaySeconds: 1600, etaEarthArrival: "2026-03-07T00:26:40.000Z" },
+    alerts: { stormTier: "warning", reason: "test" },
+    quality: { outlier: false, stale: false, interpolated: false, extrapolated: false, lowConfidence: false },
+    uncertainty: {
+      speed: { lower: 430, upper: 460, sigma: 8 },
+      density: { lower: 6.5, upper: 7.5, sigma: 0.3 },
+      bz: { lower: -6, upper: -4, sigma: 0.5 },
+    },
+  });
+  setSourceStatus([
+    {
+      source: "noaa-swpc",
+      lastSeen: "2026-03-07T00:00:00.000Z",
+      latencySeconds: 5,
+      healthy: true,
+    },
+  ]);
 
   const app = express();
   app.use(express.json());
@@ -132,9 +164,12 @@ test("ops control routes expose runtime status and offline repair fallback artif
       },
     },
     opsPersistenceEnabled: false,
-    enqueueOpsCommandWithPersistence: async () => {
-      throw new Error("not used in test");
-    },
+    enqueueOpsCommandWithPersistence: async () => ({
+      job: {
+        jobId: "job-1",
+      },
+      deduped: false,
+    }),
     hydratePersistedSourceHealthState: async () => [],
     buildThreatSummaryPayload: () => ({
       gate: { action: "LOG_ONLY" },
@@ -263,6 +298,53 @@ test("ops control routes expose runtime status and offline repair fallback artif
     assert.equal(artifact.pairing.strategy, "bounded-dual-lane-repair");
     assert.equal(artifact.planner.mode, "deterministic-fallback");
     assert.equal(artifact.validation.scope, "workspace-baseline");
+
+    const latestResponse = await request("GET", "/api/ops/command/latest");
+    assert.equal(latestResponse.statusCode, 200);
+    const latestPayload = latestResponse.payload as {
+      workers: Array<{ id: string }>;
+      brokerPolicy: { autoSafeOps: boolean };
+      queuedApprovals: unknown[];
+    };
+    assert.ok(latestPayload.workers.some((worker) => worker.id === "telemetry-ingest"));
+    assert.equal(latestPayload.brokerPolicy.autoSafeOps, true);
+    assert.deepEqual(latestPayload.queuedApprovals, []);
+
+    const workerStatusResponse = await request("GET", "/api/ops/control/workers");
+    assert.equal(workerStatusResponse.statusCode, 200);
+    assert.ok(
+      (workerStatusResponse.payload as { workers: Array<{ id: string }> }).workers.some(
+        (worker) => worker.id === "ssa-analysis",
+      ),
+    );
+
+    const dispatchResponse = await request("POST", "/api/ops/control/delegation/dispatch", {
+      workerId: "command-planner",
+      lane: "runtime",
+      kind: "command-request",
+      payload: {
+        prompt: "Review SSA warning and trigger a nowcast response.",
+        anomalyProbability: 0.94,
+      },
+    });
+    assert.equal(dispatchResponse.statusCode, 202);
+    assert.equal((dispatchResponse.payload as { result: { queuedApproval: boolean } }).result.queuedApproval, true);
+
+    const queueResponse = await request("GET", "/api/ops/control/delegation/queue");
+    assert.equal(queueResponse.statusCode, 200);
+    const queuePayload = queueResponse.payload as {
+      queuedApprovals: Array<{ taskId: string }>;
+    };
+    assert.equal(queuePayload.queuedApprovals.length, 1);
+
+    const approveResponse = await request("POST", "/api/ops/control/delegation/approve", {
+      taskId: queuePayload.queuedApprovals[0]?.taskId,
+    });
+    assert.equal(approveResponse.statusCode, 200);
+    assert.match(
+      String((approveResponse.payload as { result: { summary: string } }).result.summary),
+      /approved mission action queued/i,
+    );
   } finally {
     await new Promise<void>((resolve) => {
       if (port === -1) {
@@ -274,6 +356,8 @@ test("ops control routes expose runtime status and offline repair fallback artif
     process.env.ORCHESTRATOR_LOCAL_ENGINE_URL = previousEnv.ORCHESTRATOR_LOCAL_ENGINE_URL;
     process.env.GAUSS_BRAIN_URL = previousEnv.GAUSS_BRAIN_URL;
     process.env.MLX_CHAT_URL = previousEnv.MLX_CHAT_URL;
+    process.env.MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB = previousEnv.MEMORY_GOVERNOR_NOMINAL_MIN_FREE_MB;
+    process.env.MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB = previousEnv.MEMORY_GOVERNOR_CRITICAL_MAX_FREE_MB;
     rmSync(tmpRoot, { recursive: true, force: true });
   }
 });

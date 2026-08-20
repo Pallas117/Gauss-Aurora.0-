@@ -1,0 +1,891 @@
+{
+  "generatedAt": "2026-05-08T07:53:15.714Z",
+  "routeCount": 84,
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/api/ai/nowcast/infer",
+      "file": "backend/routes/ai.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/surya/forecast",
+      "file": "backend/routes/ai.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/surya/flare",
+      "file": "backend/routes/ai.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/session",
+      "file": "backend/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/signup",
+      "file": "backend/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/signin",
+      "file": "backend/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/stripe/create-checkout-session",
+      "file": "backend/routes/billing.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ssa/conjunctions/ingest",
+      "file": "backend/routes/conjunction-interop.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ssa/conjunctions/latest",
+      "file": "backend/routes/conjunction-interop.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/status",
+      "file": "backend/routes/decoder.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/feed/space-weather/5s",
+      "file": "backend/routes/feed.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/feed/space-weather/latest",
+      "file": "backend/routes/feed.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/feed/mms/reconnection",
+      "file": "backend/routes/feed.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/feed/mms/reconnection/latest",
+      "file": "backend/routes/feed.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/feed/aurora/map",
+      "file": "backend/routes/feed.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/feed/sources/status",
+      "file": "backend/routes/feed.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/feed/threats/latest",
+      "file": "backend/routes/feed.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/feed/dashboard/latest",
+      "file": "backend/routes/feed.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/",
+      "file": "backend/routes/feedback.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/latest",
+      "file": "backend/routes/feedback.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/failure",
+      "file": "backend/routes/feedback.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ingest/telemetry/packets",
+      "file": "backend/routes/ingest.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ingest/telemetry/refine",
+      "file": "backend/routes/ingest.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/pipeline/triad",
+      "file": "backend/routes/mission.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/mission/core/latest",
+      "file": "backend/routes/mission.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "file": "backend/routes/onboarding.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/",
+      "file": "backend/routes/onboarding.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/ops/source-health/:source/override",
+      "file": "backend/routes/operator-sources.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/data-sources",
+      "file": "backend/routes/operator-sources.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/data-sources",
+      "file": "backend/routes/operator-sources.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/ops/data-sources/:id",
+      "file": "backend/routes/operator-sources.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/ops/data-sources/:id",
+      "file": "backend/routes/operator-sources.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/satellite-hardware",
+      "file": "backend/routes/operator-sources.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/satellite-hardware",
+      "file": "backend/routes/operator-sources.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/ops/satellite-hardware/:id",
+      "file": "backend/routes/operator-sources.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/ops/satellite-hardware/:id",
+      "file": "backend/routes/operator-sources.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/command/latest",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/command",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/command/model",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/command/model/run/plan",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/command/model/run/execute",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/command/job/:jobId",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/command/jobs",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/command/metrics",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/control/workers",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/control/delegation/queue",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/control/delegation/dispatch",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/control/delegation/approve",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/control/delegation/reject",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/command/log",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/pipeline/triad/latest",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/exogenous",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/exogenous",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/threat-summary",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/network/audit",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/runtime/status",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/runtime/mode",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/audit/summary",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/repair/offline/pairing",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ops/repair/offline/plan",
+      "file": "backend/routes/ops-control.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/security/cybertiger/status",
+      "file": "backend/routes/security.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/users",
+      "file": "backend/routes/security.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/security/cybertiger/events",
+      "file": "backend/routes/security.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/security/cybertiger/block",
+      "file": "backend/routes/security.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/security/cybertiger/unblock",
+      "file": "backend/routes/security.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ssa/risk-zones",
+      "file": "backend/routes/ssa.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ssa/satellites",
+      "file": "backend/routes/ssa.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ssa/space-domain",
+      "file": "backend/routes/ssa.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/turing/register",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/turing/heartbeat",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/turing/join-code",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/turing/devices",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/turing/devices/summary",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ops/turing/devices",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/turing/devices/:id/approve",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/turing/devices/:id/revoke",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/turing/devices/:id",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/turing/devices/:id/health",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/turing/devices/:id/heal",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/turing/cache",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/turing/cache/:key",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/turing/cache/:key",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/turing/compute",
+      "file": "backend/routes/turing.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/turing/compute/job/:deviceId/:jobId",
+      "file": "backend/routes/turing.ts"
+    }
+  ],
+  "links": [
+    {
+      "route": "POST /api/ai/nowcast/infer",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "POST /api/ai/surya/forecast",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /api/ai/surya/flare",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "GET /session",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/auth-portal.spec.ts",
+        "tests/e2e/helpers/mockUiApis.ts",
+        "tests/e2e/network-transition.spec.ts",
+        "tests/e2e/ui-smoke.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /signup",
+      "tests": [
+        "tests/e2e/auth-portal.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /signin",
+      "tests": []
+    },
+    {
+      "route": "POST /api/stripe/create-checkout-session",
+      "tests": []
+    },
+    {
+      "route": "POST /api/ssa/conjunctions/ingest",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "GET /api/ssa/conjunctions/latest",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "GET /status",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/helpers/mockUiApis.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/space-weather/5s",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/space-weather/latest",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/mms/reconnection",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/mms/reconnection/latest",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/aurora/map",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/sources/status",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/threats/latest",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/feed/dashboard/latest",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/conftest.py",
+        "tests/e2e/auth-portal.spec.ts",
+        "tests/e2e/helpers/mockUiApis.ts",
+        "tests/e2e/network-transition.spec.ts",
+        "tests/e2e/ui-mobile-layout.spec.ts",
+        "tests/e2e/ui-smoke.spec.ts",
+        "tests/e2e/ui-ux-granular.spec.ts",
+        "tests/integration/test_fastapi_endpoints.py",
+        "tests/integration/test_packet_ingest_api.py",
+        "tests/integration/test_powersync_sync.py",
+        "tests/mobile/manus-ar.e2e.ts",
+        "tests/unit/test_dataset_builder.py",
+        "tests/unit/test_engine.py",
+        "tests/unit/test_infer_server_training_feedback.py"
+      ]
+    },
+    {
+      "route": "GET /latest",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/helpers/mockUiApis.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /failure",
+      "tests": []
+    },
+    {
+      "route": "POST /api/ingest/telemetry/packets",
+      "tests": [
+        "tests/integration/test_packet_ingest_api.py"
+      ]
+    },
+    {
+      "route": "POST /api/ingest/telemetry/refine",
+      "tests": []
+    },
+    {
+      "route": "POST /api/ops/pipeline/triad",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "GET /api/mission/core/latest",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/conftest.py",
+        "tests/e2e/auth-portal.spec.ts",
+        "tests/e2e/helpers/mockUiApis.ts",
+        "tests/e2e/network-transition.spec.ts",
+        "tests/e2e/ui-mobile-layout.spec.ts",
+        "tests/e2e/ui-smoke.spec.ts",
+        "tests/e2e/ui-ux-granular.spec.ts",
+        "tests/integration/test_fastapi_endpoints.py",
+        "tests/integration/test_packet_ingest_api.py",
+        "tests/integration/test_powersync_sync.py",
+        "tests/mobile/manus-ar.e2e.ts",
+        "tests/unit/test_dataset_builder.py",
+        "tests/unit/test_engine.py",
+        "tests/unit/test_infer_server_training_feedback.py"
+      ]
+    },
+    {
+      "route": "PATCH /",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/conftest.py",
+        "tests/e2e/auth-portal.spec.ts",
+        "tests/e2e/helpers/mockUiApis.ts",
+        "tests/e2e/network-transition.spec.ts",
+        "tests/e2e/ui-mobile-layout.spec.ts",
+        "tests/e2e/ui-smoke.spec.ts",
+        "tests/e2e/ui-ux-granular.spec.ts",
+        "tests/integration/test_fastapi_endpoints.py",
+        "tests/integration/test_packet_ingest_api.py",
+        "tests/integration/test_powersync_sync.py",
+        "tests/mobile/manus-ar.e2e.ts",
+        "tests/unit/test_dataset_builder.py",
+        "tests/unit/test_engine.py",
+        "tests/unit/test_infer_server_training_feedback.py"
+      ]
+    },
+    {
+      "route": "PATCH /api/ops/source-health/:source/override",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/data-sources",
+      "tests": []
+    },
+    {
+      "route": "POST /api/ops/data-sources",
+      "tests": []
+    },
+    {
+      "route": "PATCH /api/ops/data-sources/:id",
+      "tests": []
+    },
+    {
+      "route": "DELETE /api/ops/data-sources/:id",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/satellite-hardware",
+      "tests": []
+    },
+    {
+      "route": "POST /api/ops/satellite-hardware",
+      "tests": []
+    },
+    {
+      "route": "PATCH /api/ops/satellite-hardware/:id",
+      "tests": []
+    },
+    {
+      "route": "DELETE /api/ops/satellite-hardware/:id",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/command/latest",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /api/ops/command",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /api/ops/command/model",
+      "tests": []
+    },
+    {
+      "route": "POST /api/ops/command/model/run/plan",
+      "tests": []
+    },
+    {
+      "route": "POST /api/ops/command/model/run/execute",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/command/job/:jobId",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/command/jobs",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/command/metrics",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/control/workers",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/control/delegation/queue",
+      "tests": []
+    },
+    {
+      "route": "POST /api/ops/control/delegation/dispatch",
+      "tests": []
+    },
+    {
+      "route": "POST /api/ops/control/delegation/approve",
+      "tests": []
+    },
+    {
+      "route": "POST /api/ops/control/delegation/reject",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/command/log",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "GET /api/ops/pipeline/triad/latest",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "POST /api/ops/exogenous",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/exogenous",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/threat-summary",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/network/audit",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/runtime/status",
+      "tests": []
+    },
+    {
+      "route": "POST /api/ops/runtime/mode",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ops/audit/summary",
+      "tests": [
+        "tests/e2e/ui-ux-granular.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /api/ops/repair/offline/pairing",
+      "tests": []
+    },
+    {
+      "route": "POST /api/ops/repair/offline/plan",
+      "tests": []
+    },
+    {
+      "route": "GET /api/security/cybertiger/status",
+      "tests": [
+        "tests/backend-ai-granular.test.ts"
+      ]
+    },
+    {
+      "route": "GET /api/admin/users",
+      "tests": []
+    },
+    {
+      "route": "GET /api/security/cybertiger/events",
+      "tests": []
+    },
+    {
+      "route": "POST /api/security/cybertiger/block",
+      "tests": []
+    },
+    {
+      "route": "POST /api/security/cybertiger/unblock",
+      "tests": []
+    },
+    {
+      "route": "GET /api/ssa/risk-zones",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/ssa/satellites",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/ssa/space-domain",
+      "tests": [
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "POST /api/turing/register",
+      "tests": []
+    },
+    {
+      "route": "POST /api/turing/heartbeat",
+      "tests": []
+    },
+    {
+      "route": "POST /api/turing/join-code",
+      "tests": []
+    },
+    {
+      "route": "GET /api/turing/devices",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/turing/devices/summary",
+      "tests": [
+        "tests/backend-ai-granular.test.ts",
+        "tests/e2e/network-transition.spec.ts"
+      ]
+    },
+    {
+      "route": "GET /api/ops/turing/devices",
+      "tests": []
+    },
+    {
+      "route": "POST /api/turing/devices/:id/approve",
+      "tests": []
+    },
+    {
+      "route": "POST /api/turing/devices/:id/revoke",
+      "tests": []
+    },
+    {
+      "route": "DELETE /api/turing/devices/:id",
+      "tests": []
+    },
+    {
+      "route": "GET /api/turing/devices/:id/health",
+      "tests": []
+    },
+    {
+      "route": "POST /api/turing/devices/:id/heal",
+      "tests": []
+    },
+    {
+      "route": "POST /api/turing/cache",
+      "tests": []
+    },
+    {
+      "route": "GET /api/turing/cache/:key",
+      "tests": []
+    },
+    {
+      "route": "DELETE /api/turing/cache/:key",
+      "tests": []
+    },
+    {
+      "route": "POST /api/turing/compute",
+      "tests": []
+    },
+    {
+      "route": "GET /api/turing/compute/job/:deviceId/:jobId",
+      "tests": []
+    }
+  ]
+}

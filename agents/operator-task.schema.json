@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gauss.local/schemas/operator-task.schema.json",
+  "title": "Gauss Satellite Operator Task",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "created_at",
+    "satellite_id",
+    "objective",
+    "priority",
+    "mode",
+    "primary_role",
+    "inputs",
+    "approval",
+    "state"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "task_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "template_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "satellite_id": { "type": "string", "minLength": 1 },
+    "objective": { "type": "string", "minLength": 1 },
+    "priority": { "enum": ["informational", "advisory", "urgent", "critical"] },
+    "mode": { "enum": ["observe", "diagnose", "plan", "authorize", "execute", "handoff"] },
+    "primary_role": { "type": "string" },
+    "supporting_roles": { "type": "array", "items": { "type": "string" } },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "source", "observed_at"],
+        "properties": {
+          "name": { "type": "string" },
+          "source": { "type": "string" },
+          "observed_at": { "type": "string", "format": "date-time" },
+          "freshness_seconds": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "constraints": { "type": "array", "items": { "type": "string" } },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["pending", "approved", "rejected", "expired"] },
+        "approver": { "type": ["string", "null"] },
+        "expires_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "outputs": { "type": "array", "items": { "type": "string" } },
+    "state": { "enum": ["open", "in_progress", "blocked", "complete", "escalated"] },
+    "memory_update": { "type": "string" }
+  }
+}

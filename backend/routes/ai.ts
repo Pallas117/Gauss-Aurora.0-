@@ -7,7 +7,7 @@ import { withAsyncMiddleware } from "../middleware/async.js";
 import {
     type AuthenticatedRequest,
 } from "../auth.js";
-import { inferNowcast, triggerTraining } from "../ml-client/client.js";
+import { inferNowcast } from "../ml-client/client.js";
 import { getLatestCanonical } from "../state.js";
 import { type NowcastInferenceRequest } from "../types.js";
 
@@ -33,6 +33,8 @@ export function mountAiRoutes(app: Router) {
                     const fallbackResponse = await inferNowcast({
                         horizonMinutes,
                         sequence: [current],
+                    }, {
+                        triggerMode: "manual",
                     });
                     res.json(fallbackResponse);
                     return;
@@ -41,6 +43,8 @@ export function mountAiRoutes(app: Router) {
                 const response = await inferNowcast({
                     horizonMinutes,
                     sequence,
+                }, {
+                    triggerMode: "manual",
                 });
                 res.json(response);
             } catch (error) {
@@ -48,22 +52,6 @@ export function mountAiRoutes(app: Router) {
             }
         });
 
-    app.post(
-        "/api/ai/nowcast/train",
-        requireRole("admin"),
-        requireClearance("restricted"),
-        async (_req: Request, res: Response) => {
-            try {
-                const result = await triggerTraining();
-                if (!result.started) {
-                    res.status(500).json(result);
-                    return;
-                }
-                res.json(result);
-            } catch (error) {
-                res.status(500).json({ error: error instanceof Error ? error.message : "Training trigger failed" });
-            }
-        });
 
     app.post(
         "/api/ai/surya/forecast",

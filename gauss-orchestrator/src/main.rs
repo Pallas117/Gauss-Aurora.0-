@@ -4,8 +4,7 @@ use notify::{RecursiveMode, Watcher};
 use orchestrator::{
     analysis,
     config::{load_config, OrchestratorConfig},
-    decode_api,
-    logging, pass_api, pipeline, routing, ssa, ssa_api, state,
+    decode_api, logging, pass_api, pipeline, routing, ssa, ssa_api, state,
     telegram_connector::{run_telegram_listener, TelegramConnector},
     telemetry, types,
 };
@@ -33,12 +32,10 @@ fn take_process_file_arg() -> (Option<PathBuf>, Vec<String>) {
     let mut process_file: Option<PathBuf> = None;
     let mut i = 0;
     while i < args.len() {
-        if args[i] == "--process-file" {
-            if i + 1 < args.len() {
-                process_file = Some(PathBuf::from(&args[i + 1]));
-                i += 2;
-                continue;
-            }
+        if args[i] == "--process-file" && i + 1 < args.len() {
+            process_file = Some(PathBuf::from(&args[i + 1]));
+            i += 2;
+            continue;
         }
         rest.push(args[i].clone());
         i += 1;
@@ -60,11 +57,15 @@ async fn main() -> anyhow::Result<()> {
                 "ORCHESTRATOR_INGEST_API_TOKEN is required for --process-file. Set it and ORCHESTRATOR_INGEST_API_URL (backend must be running)."
             );
         }
-        let path = path.canonicalize().with_context(|| format!("path not found: {}", path.display()))?;
+        let path = path
+            .canonicalize()
+            .with_context(|| format!("path not found: {}", path.display()))?;
         let client = Client::new();
         let report = telemetry::process_packet_file(&client, &path, &config).await?;
         let ok = report.accepted_count >= 1
-            || (report.decoded_count > 0 && report.mapped_count > 0 && !report.parse_rate_below_threshold);
+            || (report.decoded_count > 0
+                && report.mapped_count > 0
+                && !report.parse_rate_below_threshold);
         if ok {
             tracing::info!(
                 decoded = report.decoded_count,
@@ -153,15 +154,6 @@ async fn main() -> anyhow::Result<()> {
         .and_then(|v| v.parse().ok())
         .unwrap_or(0);
     let telegram_enabled = !telegram_token.trim().is_empty() && telegram_chat_id != 0;
-    // #region agent log
-    const DEBUG_LOG: &str = "/Users/josh/Documents/lightbound/Gauss/Gauss Aurora V0.1/.cursor/debug-21c0ed.log";
-    let ts = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0);
-    let payload = serde_json::json!({"sessionId":"21c0ed","hypothesisId":"H2","location":"main.rs:telegram_setup","message":"Rust Telegram env","data":{"telegram_chat_id":telegram_chat_id,"token_len":telegram_token.len(),"telegram_enabled":telegram_enabled},"timestamp":ts});
-    if let Ok(mut f) = std::fs::OpenOptions::new().append(true).create(true).open(DEBUG_LOG) {
-        use std::io::Write;
-        let _ = writeln!(f, "{}", payload);
-    }
-    // #endregion
     let telegram = TelegramConnector::new(&telegram_token, telegram_chat_id);
 
     // Channel for orchestrator control from Telegram commands
@@ -222,6 +214,24 @@ async fn main() -> anyhow::Result<()> {
         tracing::info!(
             "periodic audit automation disabled (set ORCHESTRATOR_AUDIT_AUTOMATION_ENABLED=true)"
         );
+    }
+
+    // --- COI Supervisor setup ---
+    let coi_enabled = parse_env_bool("ORCHESTRATOR_COI_ENABLED", true);
+    if coi_enabled {
+        let telegram_clone = telegram.clone();
+        let interval_sec = std::env::var("ORCHESTRATOR_COI_INTERVAL_SEC")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(3600); // Default to 1 hour
+        tokio::spawn(async move {
+            let supervisor = orchestrator::coi::CoiSupervisor::new(
+                telegram_clone,
+                std::time::Duration::from_secs(interval_sec),
+            );
+            supervisor.run_loop().await;
+        });
+        tracing::info!(interval_sec = %interval_sec, "COI supervisor enabled");
     }
 
     // Check if autonomous code analysis should run at startup
@@ -338,7 +348,7 @@ async fn process_path(
         .extension()
         .and_then(|ext| ext.to_str())
         .map(|ext| ext.to_lowercase())
-        .unwrap_or_else(|| "".to_string());
+        .unwrap_or_default();
 
     if extension == "bin" || extension == "hex" || extension == "ccsds" {
         if !config.decode_enabled {
@@ -365,8 +375,6 @@ async fn process_path(
 
         let status = if report.rejected_count == 0 && !report.parse_rate_below_threshold {
             "✅"
-        } else if report.parse_rate_below_threshold {
-            "⚠️"
         } else {
             "⚠️"
         };
@@ -498,16 +506,15 @@ async fn process_path(
                         .notify("🔄 <b>Triad</b> report received; applying Sovereign Buffer.")
                         .await;
                     if let Err(e) =
-                        pipeline::export_scrubbed_to_cloud_and_save(&client, &report_json, &config).await
+                        pipeline::export_scrubbed_to_cloud_and_save(&client, &report_json, &config)
+                            .await
                     {
                         tracing::warn!("cloud export: {}", e);
                     }
                 }
                 Err(e) => {
                     tracing::warn!("triad failed: {}", e);
-                    let _ = telegram
-                        .notify(&format!("⚠️ Triad pipeline: {}", e))
-                        .await;
+                    let _ = telegram.notify(&format!("⚠️ Triad pipeline: {}", e)).await;
                 }
             }
         });
@@ -629,7 +636,9 @@ async fn run_autonomous_analysis(
                 analysis_issues.len()
             );
 
-            let analyses = ca_orchestrator.analyze_issues(analysis_issues.clone()).await;
+            let analyses = ca_orchestrator
+                .analyze_issues(analysis_issues.clone())
+                .await;
 
             // Generate and send detailed report
             telegram
@@ -649,10 +658,12 @@ async fn run_autonomous_analysis(
             );
             let work_queue_path = std::env::var("ORCHESTRATOR_WORK_QUEUE_PATH")
                 .unwrap_or_else(|_| "reports/orchestrator/work-queue.json".to_string());
-            if let Err(e) =
-                orchestrator::code_analysis::write_work_queue(&queue, &work_queue_path)
+            if let Err(e) = orchestrator::code_analysis::write_work_queue(&queue, &work_queue_path)
             {
-                eprintln!("[autonomous-analysis] ⚠️  Failed to write work queue: {}", e);
+                eprintln!(
+                    "[autonomous-analysis] ⚠️  Failed to write work queue: {}",
+                    e
+                );
             } else {
                 println!(
                     "[autonomous-analysis] 📋 Work queue written to {}",
@@ -691,7 +702,7 @@ async fn run_autonomous_analysis(
             .notify("🔧 <b>Autonomous Fixing</b>\n\nApplying fixes to detected issues...")
             .await;
 
-        let fixer = orchestrator::code_fixer::CodeFixer::new("./src".to_string());
+        let fixer = orchestrator::code_fixer::CodeFixer::new("./src");
         let fix_batch = fixer.apply_fixes(issues.clone()).await;
 
         let fix_msg = format!(

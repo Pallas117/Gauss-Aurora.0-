@@ -46,7 +46,7 @@
     --gauss-bg-base: #050505;
     --gauss-panel-bg: rgba(255, 255, 255, 0.03);
     --gauss-panel-opacity: 0.92;
-    --gauss-neon-primary: #CCFF00;
+    --gauss-neon-primary: #D4AF37;
     --gauss-neon-danger: #FF4D00;
 
     /* Light mode space theme colors - WCAG AA compliant */
@@ -131,7 +131,7 @@
     --gauss-bg-base: #050505;
     --gauss-panel-bg: rgba(255, 255, 255, 0.03);
     --gauss-panel-opacity: 0.92;
-    --gauss-neon-primary: #CCFF00;
+    --gauss-neon-primary: #D4AF37;
     --gauss-neon-danger: #FF4D00;
 
     /* HUD: high-contrast for projectors and all lighting */
@@ -160,7 +160,7 @@
     --data-red: 0 70% 52%;
 
     /* Accretion gradient: inner hot, outer cool */
-    --gradient-space: radial-gradient(140% 120% at 50% 50%, hsl(280 40% 8%) 0%, hsl(0 0% 1%) 50%, hsl(0 0% 1%) 100%);
+    --gradient-space: radial-gradient(140% 120% at 50% 50%, rgba(212,175,55,0.05) 0%, hsl(0 0% 1%) 50%, hsl(0 0% 1%) 100%);
     --gradient-belt: radial-gradient(ellipse at center, hsl(var(--belt-inner) / 0.5) 0%, transparent 70%);
     --gradient-hud: linear-gradient(180deg, hsl(var(--card) / 0.92) 0%, hsl(var(--card) / 0.78) 100%);
 

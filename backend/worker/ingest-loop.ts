@@ -35,7 +35,10 @@ import {
 import { fetchPrivateerRiskZones } from "../adapters/privateer.js";
 import { buildPersistedSourceHealthRows } from "../source-health-store.js";
 import { fetchRiskZones, fetchSatelliteObjects } from "../ssa/open-catalog-client.js";
-import { getRuntimeMemoryPressureSnapshot } from "../runtime/memory-pressure.js";
+import {
+  getTrackedRuntimeMemoryPressureSnapshot,
+  recordOperationalLimitContext,
+} from "../runtime/limit-context-recorder.js";
 import type {
   CanonicalSpaceWeatherPoint,
   IngestionTickResult,
@@ -48,6 +51,7 @@ import {
   resolveSourcePowerPolicies,
   type SourcePowerPolicy,
 } from "./source-power-policy.js";
+import { getCyberTiger } from "../cybertiger/daemon.js";
 
 type WorkerPowerProfile = "nominal" | "low-power";
 type ChargingFlowMode = "recharge-first" | "balanced" | "performance";
@@ -494,6 +498,27 @@ export class IngestionWorker {
       this.lastFetch.set(key, now);
       return true;
     }
+    if ([
+      "noaa",
+      "esa",
+      "jaxa",
+      "mms",
+      "lasp",
+      "debris",
+      "source-health-write",
+      "cleanup-rpc",
+    ].includes(key)) {
+      recordOperationalLimitContext({
+        kind: "throttle",
+        source: "ingest-cadence",
+        detail: {
+          key,
+          cadenceMs,
+          reason: "upstream fetch held until cadence expires",
+        },
+        cooldownMs: 5 * 60 * 1000,
+      });
+    }
     return false;
   }
 
@@ -763,13 +788,57 @@ export class IngestionWorker {
     await supabase.from("source_health").upsert(rows).throwOnError();
   }
 
+  private async fetchNoaaWithRedundancy(): Promise<NOAAReadout | null> {
+    const cyberTiger = getCyberTiger();
+    
+    // Option C: Attempt V2 C++ Gauss Ingest Daemon
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch("http://127.0.0.1:8089/ingest/noaa/raw", { signal: controller.signal });
+      clearTimeout(timeout);
+      if (res.ok) {
+        return (await res.json()) as NOAAReadout;
+      }
+      throw new Error(`C++ daemon failed with status ${res.status}`);
+    } catch (err: any) {
+      cyberTiger.recordIngestFallback("noaa", err.message);
+      
+      // Option A: Fallback to existing fetch + Python ML DataRefinery
+      const rawNoaa = await fetchNoaaReadout();
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4000);
+        // Pass thru ML refinement
+        const mlRes = await fetch("http://127.0.0.1:8000/clean", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sequence: [rawNoaa] }),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        if (mlRes.ok) {
+          const mlJson = await mlRes.json() as any;
+          if (mlJson.healed_sequence && mlJson.healed_sequence.length > 0) {
+            return mlJson.healed_sequence[mlJson.healed_sequence.length - 1] as NOAAReadout;
+          }
+        }
+      } catch (mlErr: any) {
+         // Both Option C and Option A failed, return raw data
+      }
+      return rawNoaa;
+    }
+  }
+
   async tick(): Promise<IngestionTickResult> {
     const nowMs = Date.now();
     this.refreshAdaptiveCadence(nowMs);
     const cadence = this.activeCadence;
     const nowIso = new Date(nowMs).toISOString();
     const airGapped = isAirGapped();
-    const memoryPressure = getRuntimeMemoryPressureSnapshot();
+    const memoryPressure = getTrackedRuntimeMemoryPressureSnapshot("ingest-loop", {
+      operation: "tick",
+    });
     const sourcePolicies = this.resolveSourcePolicies(nowIso, memoryPressure.level);
 
     if (!this.skipMemoryCeiling && memoryPressure.ceiling.overCeiling) {
@@ -784,7 +853,7 @@ export class IngestionWorker {
 
     if (!airGapped) {
       if (this.shouldFetchByPolicy("noaa", sourcePolicies["noaa-swpc"])) {
-        this.noaa = await this.runSourceFetch("noaa-swpc", () => fetchNoaaReadout());
+        this.noaa = await this.runSourceFetch("noaa-swpc", () => this.fetchNoaaWithRedundancy());
       }
       if (this.shouldFetchByPolicy("esa", sourcePolicies["esa-hapi"])) {
         this.esa = await this.runSourceFetch("esa-hapi", () => fetchEsaReadout());

@@ -145,10 +145,8 @@ impl PassScheduler {
     /// Build scheduler with optional persistence. If store is provided, load() is called to seed and save() after each mutation.
     pub fn with_store(store: Arc<dyn PassStore>) -> Result<Self, SchedulerError> {
         let passes = store.load()?;
-        let inner: HashMap<String, PassWindow> = passes
-            .into_iter()
-            .map(|p| (p.pass_id.clone(), p))
-            .collect();
+        let inner: HashMap<String, PassWindow> =
+            passes.into_iter().map(|p| (p.pass_id.clone(), p)).collect();
         Ok(Self {
             inner: Arc::new(RwLock::new(inner)),
             store: Some(store),
@@ -370,7 +368,9 @@ fn suggest_alternatives<'a>(
     req_end: DateTime<Utc>,
 ) -> Vec<WindowSuggestion> {
     const MIN_DURATION_MINUTES: i64 = 5;
-    let req_dur = (req_end - req_start).num_minutes().max(MIN_DURATION_MINUTES);
+    let req_dur = (req_end - req_start)
+        .num_minutes()
+        .max(MIN_DURATION_MINUTES);
     let mut on_station: Vec<(DateTime<Utc>, DateTime<Utc>)> = existing
         .filter(|p| p.station == station)
         .filter_map(|p| {

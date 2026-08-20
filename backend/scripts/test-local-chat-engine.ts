@@ -11,7 +11,7 @@ async function main(): Promise<void> {
   const result = await checkLocalChatEngine();
 
   if (result.skipped) {
-    console.log("Optional: set ORCHESTRATOR_LOCAL_ENGINE_URL to test MLX DeepSeek. Skipping.");
+    console.log("Optional: set ORCHESTRATOR_LOCAL_ENGINE_URL to test External Model. Skipping.");
     process.exit(0);
   }
 

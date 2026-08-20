@@ -1,0 +1,20 @@
+{
+  "schema": "gauss-resource-budgets-v1",
+  "profiles": {
+    "judith-8gb": {
+      "totalRamMb": 8192,
+      "systemUsedCeilingMb": 5800,
+      "processRssBudgetMb": 900,
+      "distArtifactCeilingMb": 128,
+      "memoryIndexMaxSourceBytes": 268435456,
+      "memoryIndexMaxFiles": 256,
+      "memoryGraphMaxNodes": 25000,
+      "memoryGraphMaxEdges": 100000
+    },
+    "kali-backend": {
+      "systemUsedCeilingMb": 6144,
+      "processRssBudgetMb": 1536,
+      "distArtifactCeilingMb": 128
+    }
+  }
+}

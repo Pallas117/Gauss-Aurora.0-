@@ -67,12 +67,9 @@ async fn post_ingest_packets_once(
         }
     };
     let status = response.status().as_u16();
-    let body = response
-        .text()
-        .await
-        .unwrap_or_else(|_| String::new());
+    let body = response.text().await.unwrap_or_else(|_| String::new());
 
-    if status < 200 || status >= 300 {
+    if !(200..300).contains(&status) {
         return Err(IngestAttemptError::Http {
             status,
             body: body.clone(),
@@ -89,15 +86,11 @@ async fn post_ingest_packets_once(
 fn combine_responses(a: PacketIngestResponse, b: PacketIngestResponse) -> PacketIngestResponse {
     let mut errors = a.errors;
     let offset = errors.len();
-    errors.extend(
-        b.errors
-            .into_iter()
-            .map(|e| PacketIngestError {
-                index: e.index + offset,
-                code: e.code,
-                reason: e.reason,
-            }),
-    );
+    errors.extend(b.errors.into_iter().map(|e| PacketIngestError {
+        index: e.index + offset,
+        code: e.code,
+        reason: e.reason,
+    }));
     PacketIngestResponse {
         accepted_count: a.accepted_count + b.accepted_count,
         rejected_count: a.rejected_count + b.rejected_count,

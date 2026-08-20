@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-20T07:27:10.321Z",
+  "branch": "codex/build-interoperable-dev-system",
+  "changedFiles": [],
+  "roles": [
+    "cfs-integration",
+    "memory-systems",
+    "mesh-network",
+    "mission-control",
+    "network-mount",
+    "platform-integration",
+    "recursive-solver",
+    "satellite-operations",
+    "sovereign-ui",
+    "verification-keeper"
+  ],
+  "recommendedVerification": [
+    "npm run develop:verify",
+    "npm run lint"
+  ],
+  "memoryFiles": [
+    "development/memory/README.md",
+    "development/memory/CURRENT.md",
+    "development/memory/DECISIONS.md"
+  ],
+  "operatorTasks": [
+    "agents/operator-tasks/anomaly-response.md",
+    "agents/operator-tasks/command-readiness.md",
+    "agents/operator-tasks/link-recovery.md",
+    "agents/operator-tasks/mesh-network-migration.md",
+    "agents/operator-tasks/mesh-node-management.md",
+    "agents/operator-tasks/pass-planning.md",
+    "agents/operator-tasks/recursive-issue-resolution.md",
+    "agents/operator-tasks/shift-handover.md",
+    "agents/operator-tasks/telemetry-triage.md"
+  ],
+  "architecture": {
+    "activeWebEntry": [
+      "src/main.tsx",
+      "src/App.jsx",
+      "src/Cybertiger.tsx"
+    ],
+    "domains": [
+      "src",
+      "backend",
+      "gauss-orchestrator",
+      "ml",
+      "supabase"
+    ],
+    "durableMemoryRoot": "development/memory",
+    "handoffSchema": "agents/handoff.schema.json",
+    "operatorTaskCatalog": "agents/operator-tasks/README.md",
+    "operatorTaskSchema": "agents/operator-task.schema.json",
+    "operatorTaskReports": "reports/context/operator-tasks/",
+    "complianceManifest": "compliance/requirements.json",
+    "complianceReports": "reports/compliance/"
+  }
+}

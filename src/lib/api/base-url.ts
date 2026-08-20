@@ -1,3 +1,5 @@
+import { getViteEnv } from "@/lib/heliophysics-utils";
+
 const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
 
 function isLoopbackHost(hostname: string): boolean {
@@ -27,9 +29,7 @@ function shouldPreserveExplicitOrigin(rawEnvBaseUrl: string): boolean {
 
 function resolveEnvBaseUrl(): string | null {
   const envValue =
-    (typeof import.meta !== "undefined"
-      ? (import.meta as { env?: { VITE_HELIO_PROXY_URL?: string } }).env?.VITE_HELIO_PROXY_URL
-      : undefined) ??
+    getViteEnv("VITE_HELIO_PROXY_URL") ??
     (typeof process !== "undefined" ? process.env?.VITE_HELIO_PROXY_URL : undefined) ??
     null;
   return normalizeEnvBaseUrl(envValue);
@@ -53,6 +53,12 @@ export function resolveClientBaseUrl(
   const fallback = `${pageUrl.protocol}//${pageUrl.hostname}:${defaultPort}`;
   if (!envBaseUrl) {
     return stripTrailingSlash(fallback);
+  }
+
+  // In same-origin proxy mode callers still append `/api/...`, so the base must
+  // remain the page origin instead of preserving a literal `/api` suffix.
+  if (isRootRelative(envBaseUrl)) {
+    return stripTrailingSlash(pageUrl.origin);
   }
 
   try {

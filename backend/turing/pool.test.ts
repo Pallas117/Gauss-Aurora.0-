@@ -79,3 +79,63 @@ test("devices below TURING_MIN_BATTERY_PERCENT are excluded from selection", () 
     }
   }
 });
+
+test("externally powered devices are preferred for compute and cache selection", () => {
+  const prevMax = process.env.TURING_POOL_MAX_DEVICES;
+  const prevMinBatt = process.env.TURING_MIN_BATTERY_PERCENT;
+  try {
+    for (const d of getDevices()) {
+      removeDevice(d.id);
+    }
+    process.env.TURING_POOL_MAX_DEVICES = "0";
+    process.env.TURING_MIN_BATTERY_PERCENT = "25";
+
+    const batteryNode = register({
+      hostname: "battery-node",
+      tailscale_ip: "192.168.11.1",
+      capabilities: ["cache", "inference"],
+    });
+    const acNode = register({
+      hostname: "ac-node",
+      tailscale_ip: "192.168.11.2",
+      capabilities: ["cache", "inference"],
+    });
+
+    approveDevice(batteryNode.id);
+    approveDevice(acNode.id);
+    heartbeat({
+      device_id: batteryNode.id,
+      ram_used_mb: 256,
+      load: 0.2,
+      current_jobs: 0,
+      battery_percent: 90,
+      charging: false,
+      power_source: "battery",
+    });
+    heartbeat({
+      device_id: acNode.id,
+      ram_used_mb: 512,
+      load: 0.8,
+      current_jobs: 3,
+      battery_percent: 76,
+      charging: true,
+      power_source: "ac",
+    });
+
+    const cacheDevice = selectDeviceForCache(null);
+    assert.ok(cacheDevice);
+    assert.equal(cacheDevice.id, acNode.id);
+
+    const computeDevice = selectDeviceForCompute("inference", null);
+    assert.ok(computeDevice);
+    assert.equal(computeDevice.id, acNode.id);
+  } finally {
+    if (prevMax !== undefined) process.env.TURING_POOL_MAX_DEVICES = prevMax;
+    else delete process.env.TURING_POOL_MAX_DEVICES;
+    if (prevMinBatt !== undefined) process.env.TURING_MIN_BATTERY_PERCENT = prevMinBatt;
+    else delete process.env.TURING_MIN_BATTERY_PERCENT;
+    for (const d of getDevices()) {
+      removeDevice(d.id);
+    }
+  }
+});

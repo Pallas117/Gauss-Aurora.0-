@@ -1,0 +1,51 @@
+{
+  "schema": "gauss-space-data-center-bridge-v1",
+  "bridgeId": "gauss-cross-orbit-iod-bridge",
+  "mode": "ground_simulation",
+  "trustZones": [
+    { "id": "leo-fleet", "segment": "LEO", "commandAuthority": false },
+    { "id": "meo-bridge", "segment": "MEO", "commandAuthority": false },
+    { "id": "geo-relay", "segment": "GEO", "commandAuthority": false },
+    { "id": "lunar-relay", "segment": "lunar", "commandAuthority": false },
+    { "id": "ground-control", "segment": "ground", "commandAuthority": false }
+  ],
+  "nodes": [
+    { "id": "leo-producer-01", "zone": "leo-fleet", "role": "producer", "memoryBudgetMb": 128, "maxPayloadBytes": 262144 },
+    { "id": "meo-bridge-01", "zone": "meo-bridge", "role": "relay", "memoryBudgetMb": 512, "maxPayloadBytes": 524288 },
+    { "id": "meo-compute-01", "zone": "meo-bridge", "role": "compute", "memoryBudgetMb": 512, "maxPayloadBytes": 524288 },
+    { "id": "geo-relay-01", "zone": "geo-relay", "role": "relay", "memoryBudgetMb": 256, "maxPayloadBytes": 524288 },
+    { "id": "lunar-relay-sim-01", "zone": "lunar-relay", "role": "relay", "memoryBudgetMb": 256, "maxPayloadBytes": 262144 },
+    { "id": "ground-yamcs-01", "zone": "ground-control", "role": "archive", "memoryBudgetMb": 2048, "maxPayloadBytes": 1048576 },
+    { "id": "ground-operator-01", "zone": "ground-control", "role": "operator_gateway", "memoryBudgetMb": 256, "maxPayloadBytes": 262144 }
+  ],
+  "links": [
+    { "id": "leo-to-meo-dtn", "source": "leo-producer-01", "destination": "meo-bridge-01", "transport": "dtn_bp", "maxPayloadBytes": 262144, "storeAndForward": true },
+    { "id": "meo-to-geo-dtn", "source": "meo-bridge-01", "destination": "geo-relay-01", "transport": "dtn_bp", "maxPayloadBytes": 524288, "storeAndForward": true },
+    { "id": "meo-to-lunar-dtn", "source": "meo-bridge-01", "destination": "lunar-relay-sim-01", "transport": "dtn_bp", "maxPayloadBytes": 262144, "storeAndForward": true },
+    { "id": "meo-to-ground-dtn", "source": "meo-bridge-01", "destination": "ground-yamcs-01", "transport": "dtn_bp", "maxPayloadBytes": 524288, "storeAndForward": true },
+    { "id": "geo-to-ground-dtn", "source": "geo-relay-01", "destination": "ground-yamcs-01", "transport": "dtn_bp", "maxPayloadBytes": 524288, "storeAndForward": true },
+    { "id": "lunar-to-ground-dtn", "source": "lunar-relay-sim-01", "destination": "ground-yamcs-01", "transport": "dtn_bp", "maxPayloadBytes": 262144, "storeAndForward": true },
+    { "id": "ground-to-operator", "source": "ground-yamcs-01", "destination": "ground-operator-01", "transport": "https_ground_only", "maxPayloadBytes": 1048576, "storeAndForward": false }
+  ],
+  "dataProducts": [
+    { "id": "raw-ccsds-packet", "class": "raw_packet", "integrity": "sha256", "encryption": "required", "replication": 2, "staleAction": "retain_context" },
+    { "id": "calibrated-telemetry-window", "class": "calibrated_product", "integrity": "sha256", "encryption": "required", "replication": 2, "staleAction": "abstain" },
+    { "id": "radiation-assessment", "class": "radiation_assessment", "integrity": "sha256", "encryption": "required", "replication": 2, "staleAction": "abstain" },
+    { "id": "analytics-tensor-window", "class": "tensor_window", "integrity": "sha256", "encryption": "required", "replication": 2, "staleAction": "abstain" },
+    { "id": "deterministic-recommendation", "class": "recommendation", "integrity": "sha256", "encryption": "required", "replication": 2, "staleAction": "abstain" }
+  ],
+  "computePolicy": {
+    "maxConcurrentLeases": 4,
+    "maxLeaseBytes": 524288,
+    "requireHealthyNode": true,
+    "requireNominalRadiation": true,
+    "allowOnlineTraining": false,
+    "fallback": "deterministic_baseline"
+  },
+  "safety": {
+    "commandAuthority": false,
+    "unknownState": "abstain",
+    "staleState": "abstain",
+    "approvalRequired": true
+  }
+}

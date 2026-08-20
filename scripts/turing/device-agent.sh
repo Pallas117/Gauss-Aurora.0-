@@ -18,8 +18,11 @@
 #   TURING_HEARTBEAT_SEC     - Heartbeat interval seconds (default: 60)
 #   TURING_DEVICE_PORT       - Port this device serves cache/compute on (default: 8090) — for display only
 #   TURING_BATTERY_PERCENT   - Override battery percent [0-100] when OS detection is unavailable
+#   TURING_NETWORK_INVENTORY_ENABLED - Attach passive local network inventory (default: false)
+#   TURING_NETWORK_INVENTORY_INTERVAL_SEC - Inventory refresh interval (default: 300)
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_URL="${BACKEND_URL:-}"
 JOIN_CODE="${JOIN_CODE:-}"
 TURING_SECRET="${TURING_SECRET:-}"
@@ -30,6 +33,10 @@ TURING_RAM_MB="${TURING_RAM_MB:-0}"
 TURING_CAPABILITIES="${TURING_CAPABILITIES:-cache}"
 TURING_HEARTBEAT_SEC="${TURING_HEARTBEAT_SEC:-60}"
 TURING_DEVICE_PORT="${TURING_DEVICE_PORT:-8090}"
+TURING_NETWORK_INVENTORY_ENABLED="${TURING_NETWORK_INVENTORY_ENABLED:-false}"
+TURING_NETWORK_INVENTORY_INTERVAL_SEC="${TURING_NETWORK_INVENTORY_INTERVAL_SEC:-300}"
+network_inventory_json=""
+last_network_inventory_at=0
 
 # Trim trailing slash
 BACKEND_URL="${BACKEND_URL%/}"
@@ -124,6 +131,8 @@ collect_health() {
   local ram_used_mb=""
   local load_val=""
   local battery_pct=""
+  local charging_state=""
+  local power_source=""
   if [[ -f /proc/meminfo ]]; then
     local mem_total mem_avail
     mem_total="$(awk '/MemTotal:/{print $2}' /proc/meminfo 2>/dev/null)"
@@ -140,8 +149,19 @@ collect_health() {
     battery_pct="${TURING_BATTERY_PERCENT}"
   else
     if command -v pmset >/dev/null 2>&1; then
-      # macOS: pmset -g batt | grep -Eo "[0-9]+%"
-      battery_pct="$(pmset -g batt 2>/dev/null | grep -Eo '[0-9]+%' | head -1 | tr -d '%')"
+      local batt_raw
+      batt_raw="$(pmset -g batt 2>/dev/null || true)"
+      battery_pct="$(printf '%s\n' "${batt_raw}" | grep -Eo '[0-9]+%' | head -1 | tr -d '%')"
+      if printf '%s\n' "${batt_raw}" | grep -qi "AC Power"; then
+        power_source="ac"
+      elif printf '%s\n' "${batt_raw}" | grep -qi "Battery Power"; then
+        power_source="battery"
+      fi
+      if printf '%s\n' "${batt_raw}" | grep -qi "charging"; then
+        charging_state="true"
+      elif printf '%s\n' "${batt_raw}" | grep -qi "discharging"; then
+        charging_state="false"
+      fi
     elif [[ -d /sys/class/power_supply ]]; then
       # Linux laptops: use first BAT* capacity file
       local cap_file
@@ -149,16 +169,51 @@ collect_health() {
       if [[ -n "${cap_file}" ]] && [[ -r "${cap_file}" ]]; then
         battery_pct="$(cat "${cap_file}" 2>/dev/null | tr -cd '0-9')"
       fi
+      local status_file
+      status_file="$(ls /sys/class/power_supply/BAT*/status 2>/dev/null | head -1 || true)"
+      if [[ -n "${status_file}" ]] && [[ -r "${status_file}" ]]; then
+        local status_raw
+        status_raw="$(tr '[:upper:]' '[:lower:]' < "${status_file}" 2>/dev/null || true)"
+        if [[ "${status_raw}" == *charging* ]] || [[ "${status_raw}" == *full* ]]; then
+          charging_state="true"
+          power_source="ac"
+        elif [[ "${status_raw}" == *discharging* ]]; then
+          charging_state="false"
+          power_source="battery"
+        fi
+      fi
     elif command -v upower >/dev/null 2>&1; then
       # Fallback: upower (may not be installed)
       local dev
       dev="$(upower -e 2>/dev/null | grep -m1 'battery' || true)"
       if [[ -n "${dev}" ]]; then
-        battery_pct="$(upower -i "${dev}" 2>/dev/null | awk '/percentage:/ {gsub(/%/,"",$2); print $2; exit}')"
+        local up_raw
+        up_raw="$(upower -i "${dev}" 2>/dev/null || true)"
+        battery_pct="$(printf '%s\n' "${up_raw}" | awk '/percentage:/ {gsub(/%/,"",$2); print $2; exit}')"
+        if printf '%s\n' "${up_raw}" | awk '/state:/ {print tolower($2); exit}' | grep -q '^charging$'; then
+          charging_state="true"
+          power_source="ac"
+        elif printf '%s\n' "${up_raw}" | awk '/state:/ {print tolower($2); exit}' | grep -q '^discharging$'; then
+          charging_state="false"
+          power_source="battery"
+        fi
       fi
     fi
   fi
-  echo "${ram_used_mb:-0} ${load_val:-0} ${battery_pct:-}"
+  printf '%s|%s|%s|%s|%s\n' "${ram_used_mb:-0}" "${load_val:-0}" "${battery_pct:-}" "${charging_state:-}" "${power_source:-}"
+}
+
+collect_network_inventory() {
+  if [[ "$(printf '%s' "${TURING_NETWORK_INVENTORY_ENABLED}" | tr '[:upper:]' '[:lower:]')" != "true" ]] || ! command -v python3 >/dev/null 2>&1; then
+    return
+  fi
+  local now
+  now="$(date +%s)"
+  if (( now - last_network_inventory_at < TURING_NETWORK_INVENTORY_INTERVAL_SEC )); then
+    return
+  fi
+  last_network_inventory_at="${now}"
+  network_inventory_json="$(python3 "${SCRIPT_DIR}/network-inventory.py" 2>/dev/null || true)"
 }
 
 # Heartbeat loop: report health so backend can show device health and do healing via agent
@@ -169,9 +224,8 @@ while true; do
     echo "[turing-agent] Lost Tailscale IP; next heartbeat may use previous IP" >&2
   fi
   health="$(collect_health)"
-  ram_used_mb="$(echo "${health}" | awk '{print $1}')"
-  load_val="$(echo "${health}" | awk '{print $2}')"
-  battery_pct="$(echo "${health}" | awk '{print $3}')"
+  collect_network_inventory
+  IFS='|' read -r ram_used_mb load_val battery_pct charging_state power_source <<< "${health}"
   payload="{\"device_id\":\"${device_id}\",\"tailscale_ip\":\"${TAILSCALE_IP}\""
   if [[ -n "${ram_used_mb}" ]] && [[ "${ram_used_mb}" =~ ^[0-9]+$ ]]; then
     payload="${payload},\"ram_used_mb\":${ram_used_mb}"
@@ -182,12 +236,21 @@ while true; do
   if [[ -n "${battery_pct}" ]] && [[ "${battery_pct}" =~ ^[0-9]+$ ]]; then
     payload="${payload},\"battery_percent\":${battery_pct}"
   fi
+  if [[ "${charging_state}" == "true" ]] || [[ "${charging_state}" == "false" ]]; then
+    payload="${payload},\"charging\":${charging_state}"
+  fi
+  if [[ "${power_source}" == "ac" ]] || [[ "${power_source}" == "battery" ]] || [[ "${power_source}" == "unknown" ]]; then
+    payload="${payload},\"power_source\":\"${power_source}\""
+  fi
+  if [[ "${network_inventory_json}" == \{*\} ]]; then
+    payload="${payload},\"network_inventory\":${network_inventory_json}"
+  fi
   payload="${payload}}"
   code="$(curl -s -o /dev/null -w "%{http_code}" -X POST "${BACKEND_URL}/api/turing/heartbeat" \
     "${curl_headers[@]}" \
     -d "${payload}")"
   if [[ "${code}" == "200" ]]; then
-    echo "[turing-agent] Heartbeat OK (device_id=${device_id} ram_used_mb=${ram_used_mb:-—} load=${load_val:-—} battery=${battery_pct:-—})"
+    echo "[turing-agent] Heartbeat OK (device_id=${device_id} ram_used_mb=${ram_used_mb:-—} load=${load_val:-—} battery=${battery_pct:-—} charging=${charging_state:-—} source=${power_source:-—})"
   else
     echo "[turing-agent] Heartbeat HTTP ${code}" >&2
   fi

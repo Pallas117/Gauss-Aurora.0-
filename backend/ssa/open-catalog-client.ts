@@ -10,9 +10,9 @@ const MEO_ALT_KM_MAX = 35786;
 const GEO_ALT_KM_MIN = 35786 - 500;
 const GEO_ALT_KM_MAX = 35786 + 500;
 const DEFAULT_TLE_URL =
-  "https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=tle";
+  "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle";
 const DEFAULT_SATELLITES_URL =
-  "https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=tle";
+  "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle";
 const MAX_OBJECTS_TO_PROPAGATE = 500;
 const MAX_RISK_ZONES = 50;
 const MAX_SATELLITE_OBJECTS = 200;
@@ -37,6 +37,24 @@ export interface SatelliteObject {
   longitudeDeg: number;
   highValue: boolean;
   unidentified: boolean;
+  objectClass?: "spacecraft" | "rocket_body" | "debris" | "unknown";
+  observedAt?: string;
+}
+
+export interface SatelliteCatalogCoverage {
+  catalogGroup?: string;
+  sourceUrl?: string;
+  sourceUrls: string[];
+  sourceFailures: string[];
+  complete: boolean;
+  truncated?: boolean;
+  catalogObjects: number;
+  parsedObjects: number;
+  propagatedObjects: number;
+  returnedObjects: number;
+  objectLimit: number;
+  fetchedAt: string;
+  objectClassCounts: { spacecraft: number; rocket_body: number; debris: number; unknown: number };
 }
 
 function getTleUrl(): string | null {

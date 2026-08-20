@@ -1,5 +1,35 @@
 {
   "documents": {
+    "papers/memory-storage-compute-optimization-peer-reviewed-2023-2025.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "not_required",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "source_attribution",
+      "reasons": [
+        "Curated public peer-reviewed research note with primary proceedings links and explicit repository adoption boundaries."
+      ]
+    },
+    "papers/software-development-standard-for-space-systems-2020.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "not_required",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "source_attribution",
+      "reasons": [
+        "Structured RAG companion for the public-release SMC-S-012 (2020) source paper."
+      ]
+    },
+    "papers/software-development-standard-for-space-systems-2020.pdf": {
+      "approvalStatus": "approved",
+      "redactionStatus": "not_required",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "source_attribution",
+      "reasons": [
+        "Public-release NASA-hosted source artifact; retain source URL and checksum."
+      ]
+    },
     "foundational-axioms/gauss-steward-identity.md": {
       "approvalStatus": "approved",
       "redactionStatus": "ready",
@@ -68,6 +98,66 @@
       "retentionPolicy": "living_reference",
       "reasons": [
         "Approved curated spacecraft operations procedure reference for local RAG."
+      ]
+    },
+    "spacecraft-ops-probability/gaussian-hypothesis-cycle.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "reasons": [
+        "Approved bounded probabilistic learning method for local RAG and DeepSeek hypothesis testing."
+      ]
+    },
+    "mission-lessons/van-allen-probes-eom-and-reentry-lessons.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "reasons": [
+        "Approved Van Allen mission lesson for offline RAG and local event-learning deposit."
+      ]
+    },
+    "mission-lessons/van-allen-probe-a-reentry-lesson-deposit.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "reasons": [
+        "Approved mission lesson for offline RAG and local event-learning deposit."
+      ]
+    },
+    "mission-lessons/legacy-mission-optimization-and-lifecycle-doctrine.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "reasons": [
+        "Approved mission architecture doctrine for low-memory autonomy, lifecycle extension, and local model training."
+      ]
+    },
+    "mission-lessons/local-model-service-integration-doctrine.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "living_reference",
+      "reasons": [
+        "Approved local-model service wiring doctrine based on durable mission autonomy and graceful degradation patterns."
+      ]
+    },
+    "runtime-limit-events/limit-context-log.md": {
+      "approvalStatus": "approved",
+      "redactionStatus": "ready",
+      "sensitivity": "public",
+      "owner": "gauss",
+      "retentionPolicy": "regenerated_reference",
+      "reasons": [
+        "Approved generated runtime limit context log for truthful local RAG retrieval whenever memory limits are hit."
       ]
     }
   }

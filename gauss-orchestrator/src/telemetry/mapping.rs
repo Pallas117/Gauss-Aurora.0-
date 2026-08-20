@@ -134,7 +134,7 @@ fn canonical_from_fields(
     let dynamic_pressure = (density.max(0.0) * speed_mag * speed_mag * 1.6726e-6).max(0.0);
     let coupling_newell = (speed_mag * bz.abs() * density.max(0.0)).sqrt() / 100.0;
     let kp = (1.0 + (bz.abs() / 4.0)).min(9.0);
-    let dst = (-12.0 - bz * 5.0).max(-450.0).min(50.0);
+    let dst = (-12.0 - bz * 5.0).clamp(-450.0, 50.0);
     let eta = chrono::DateTime::parse_from_rfc3339(timestamp)
         .map(|ts| (ts + chrono::Duration::seconds(45)).to_rfc3339())
         .unwrap_or_else(|_| timestamp.to_string());

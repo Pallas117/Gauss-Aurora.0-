@@ -1,0 +1,84 @@
+# Isolated repository test/build environment.
+#
+# This file intentionally does not load .env, Supabase credentials, Tailscale,
+# host sockets, or host directories. It is a disposable verification boundary,
+# not a production deployment and not a way to bypass production controls.
+name: gauss-test
+
+services:
+  test:
+    build:
+      context: .
+      dockerfile: containers/test/Dockerfile
+    command: ["sh", "-lc", "npm run lint && npm test && npm run build"]
+    environment:
+      NODE_ENV: test
+      CI: "true"
+      SUPABASE_URL: ""
+      SUPABASE_SERVICE_ROLE_KEY: ""
+      SUPABASE_ANON_KEY: ""
+      VITE_SUPABASE_URL: ""
+      VITE_SUPABASE_PUBLISHABLE_KEY: ""
+      TURING_REGISTRATION_MODE: join-code
+      TURING_DEVICE_IP_POLICY: any
+      TURING_POOL_ENABLED: "true"
+      TURING_NETWORK_INVENTORY_ENABLED: "false"
+      TURING_AUTOSCALER_ENABLED: "false"
+      TURING_RADIATION_SCHEDULER_ENABLED: "false"
+      GAUSS_RUNTIME_MODE: suspended
+      NPM_CONFIG_CACHE: /tmp/npm-cache
+    network_mode: none
+    read_only: true
+    mem_limit: 2048m
+    cpus: 2.0
+    tmpfs:
+      - /tmp
+      - /workspace/dist
+      - /workspace/node_modules/.cache
+      - /workspace/node_modules/.vite-temp
+
+  backend:
+    build:
+      context: .
+      dockerfile: containers/test/Dockerfile
+    command: ["node", "--import", "tsx", "backend/server.ts"]
+    environment:
+      NODE_ENV: test
+      CI: "true"
+      PROXY_HOST: 0.0.0.0
+      PROXY_PORT: "3001"
+      AUTH_REQUIRED: "true"
+      ALLOW_PRIVATE_NETWORK_ORIGINS: "false"
+      SUPABASE_URL: ""
+      SUPABASE_SERVICE_ROLE_KEY: ""
+      SUPABASE_ANON_KEY: ""
+      VITE_SUPABASE_URL: ""
+      VITE_SUPABASE_PUBLISHABLE_KEY: ""
+      TURING_POOL_ENABLED: "true"
+      TURING_REGISTRATION_MODE: join-code
+      TURING_DEVICE_IP_POLICY: tailnet
+      TURING_NETWORK_INVENTORY_ENABLED: "false"
+      TURING_AUTOSCALER_ENABLED: "false"
+      TURING_RADIATION_SCHEDULER_ENABLED: "false"
+      GAUSS_RUNTIME_MODE: suspended
+      NPM_CONFIG_CACHE: /tmp/npm-cache
+    ports:
+      - "127.0.0.1:13001:3001"
+    networks:
+      - gauss_test
+    read_only: true
+    mem_limit: 768m
+    cpus: 1.0
+    tmpfs:
+      - /tmp
+      - /workspace/.vite-temp
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+networks:
+  gauss_test:
+    internal: true

@@ -53,8 +53,10 @@ export default function ChronosPage() {
           </p>
           {health?.memory && (
             <p className="text-muted-foreground">
-              Memory headroom: {health.memory.freeRamGb.toFixed(2)} GB free of {health.memory.totalRamGb.toFixed(2)} GB
-              {health.memory.ceiling.overCeiling ? " · ceiling breached" : ""}
+              Memory headroom: {Math.round(health.memory.freeMb)} MB free · DeepSeek {health.memory.deepseekMode}
+              {health.memory.suspendedSubsystems.length > 0
+                ? ` · suspended ${health.memory.suspendedSubsystems.join(", ")}`
+                : ""}
             </p>
           )}
         </CardContent>

@@ -9,7 +9,7 @@ test("offline repair pairing assigns bounded responsibilities to model and orche
   const batch = {
     batchId: "offline-batch-1",
     goal: "Reduce backend coupling before autonomous patch execution.",
-    rationale: "Keep DeepSeek in a narrow backend patch lane with local-only validation.",
+    rationale: "Keep Model in a narrow backend patch lane with local-only validation.",
     maxFilesChanged: 3,
     maxChangedLines: 180,
     allowedActions: ["read-local-files", "run-lint"],
@@ -45,7 +45,7 @@ test("offline repair pairing summary exposes the active batch queue", () => {
   const batch = {
     batchId: "offline-batch-2",
     goal: "Trim page-level runtime surfaces before adding more autonomous UI behavior.",
-    rationale: "Keep DeepSeek in a narrow frontend-pages patch lane with local-only validation.",
+    rationale: "Keep Model in a narrow frontend-pages patch lane with local-only validation.",
     maxFilesChanged: 3,
     maxChangedLines: 180,
     allowedActions: ["read-local-files", "run-build"],

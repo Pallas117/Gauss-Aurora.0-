@@ -5,8 +5,12 @@
 
 const MIN_SAFE_LEVEL = 0.25;
 const RECHARGE_PROTECT_LEVEL = 0.5;
+const RECOVERY_LEVEL = 0.5;
+const SURPLUS_MIN_LEVEL = 0.7;
+const CARE_CAP_LEVEL = 0.9;
 const SLOW_CHARGE_SECONDS = 30 * 60;
 type BatteryDrainMode = "recharge-first" | "balanced" | "performance";
+export type BatteryPowerFlow = "recovery" | "balanced" | "surplus";
 
 type BatteryState = {
   level: number;
@@ -69,6 +73,27 @@ function startBatteryListener() {
     .catch(() => {});
 }
 
+function resolveBatteryPowerFlow(): BatteryPowerFlow {
+  if (cached == null) return "balanced";
+  if ((!cached.charging && cached.level < MIN_SAFE_LEVEL) || cached.level < RECOVERY_LEVEL) {
+    return "recovery";
+  }
+  if (
+    cached.charging &&
+    cached.level >= SURPLUS_MIN_LEVEL &&
+    cached.level < CARE_CAP_LEVEL &&
+    (cached.chargingTime == null || cached.chargingTime <= SLOW_CHARGE_SECONDS)
+  ) {
+    return "surplus";
+  }
+  return "balanced";
+}
+
+export function getBatteryPowerFlow(): BatteryPowerFlow {
+  if (typeof window !== "undefined") startBatteryListener();
+  return resolveBatteryPowerFlow();
+}
+
 /**
  * True when battery is known, below 25%, and not charging — back off polling to preserve device.
  */
@@ -93,6 +118,7 @@ export function getBatteryDrainMultiplier(): number {
         ? process.env?.VITE_BATTERY_DRAIN_MODE
         : undefined),
   );
+  const flow = resolveBatteryPowerFlow();
 
   if (mode === "recharge-first") {
     if (!cached.charging) {
@@ -115,6 +141,9 @@ export function getBatteryDrainMultiplier(): number {
   }
 
   if (mode === "performance") {
+    if (flow === "surplus") {
+      return 0.8;
+    }
     if (!cached.charging) {
       if (cached.level < 0.25) return 2.5;
       if (cached.level < 0.35) return 2;
@@ -127,6 +156,10 @@ export function getBatteryDrainMultiplier(): number {
       return 1.1;
     }
     return 1;
+  }
+
+  if (flow === "surplus") {
+    return 0.9;
   }
 
   if (!cached.charging) {

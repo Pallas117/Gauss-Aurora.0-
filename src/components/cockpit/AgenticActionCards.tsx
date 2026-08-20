@@ -21,7 +21,7 @@ export function AgenticActionCards() {
                         <div className="flex flex-wrap items-center justify-between gap-2 pl-2">
                             <CardTitle className="text-sm flex items-center gap-2 text-purple-400">
                                 <Brain className="h-4 w-4" />
-                                DeepSeek-R1 Priority Action
+                                External Model Priority Action
                             </CardTitle>
                             <div className="flex items-center gap-2">
                                 <Badge variant="outline" className="border-purple-500/30 text-purple-300 bg-purple-500/10 hover:bg-purple-500/20">

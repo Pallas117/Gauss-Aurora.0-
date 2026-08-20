@@ -1,0 +1,22 @@
+{
+  "title": "Van Allen Probe A reentry lesson deposit",
+  "event_date": "2026-03-10",
+  "summary": "Probe A reentered earlier than long-range estimates because stronger solar-cycle drag accelerated decay after the mission had already ended from propellant exhaustion.",
+  "body": "This event should teach Gauss that apparent spacecraft failure headlines can hide coupled causal chains. The mission end state in 2019 was driven by propellant depletion, attitude constraints, and solar-array pointing limits, while the 2026 reentry timing was driven by stronger-than-expected solar maximum drag. The lesson for near-term causal inference is to keep solar-wind and geomagnetic coupling as the first-order operational drivers, while carrying long-horizon drag and contamination uncertainty explicitly.",
+  "lessons": [
+    "Treat fuel and attitude margin as first-class mission risk drivers.",
+    "Carry solar-cycle drag uncertainty in orbital lifetime and reentry forecasts.",
+    "Apply confidence penalties to inner-belt measurements vulnerable to proton contamination.",
+    "Keep causal weighting on solar-wind and IMF coupling instead of speculative tertiary priors."
+  ],
+  "sources": [
+    {
+      "label": "NASA reentry update",
+      "url": "https://www.nasa.gov/missions/van-allen-probes/nasa-van-allen-probe-a-to-re-enter-atmosphere/"
+    },
+    {
+      "label": "NASA Probe B shutdown",
+      "url": "https://www.nasa.gov/solar-system/first-of-two-van-allen-probes-spacecraft-ceases-operations/"
+    }
+  ]
+}

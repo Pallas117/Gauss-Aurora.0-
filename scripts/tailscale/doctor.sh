@@ -31,9 +31,9 @@ detect_tailscale_ip_fallback() {
       iface=$1
       sub(":", "", iface)
     }
-    iface ~ /^utun[0-9]+$/ && $1 == "inet" && $2 ~ /^100\./ {
+    iface ~ /^(utun[0-9]+|tailscale[0-9]*)$/ && $1 == "inet" && $2 ~ /^100\./ && !found {
       print $2
-      exit
+      found=1
     }'
 }
 

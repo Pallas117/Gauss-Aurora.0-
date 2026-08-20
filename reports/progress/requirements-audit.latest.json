@@ -1,26 +1,26 @@
 {
-  "generated_at": "2026-03-10T18:47:17.660Z",
+  "generated_at": "2026-07-21T10:22:21.520Z",
   "strict_mode": false,
   "totals": {
-    "pass": 14,
+    "pass": 8,
     "warn": 0,
-    "fail": 0,
-    "skip": 0
+    "fail": 3,
+    "skip": 3
   },
   "checks": [
     {
       "name": "RBAC Environment Preflight",
       "command": "env RBAC_VIEWER_EMAIL RBAC_VIEWER_PASSWORD RBAC_OPERATOR_EMAIL RBAC_OPERATOR_PASSWORD",
-      "status": "PASS",
-      "exitCode": 0,
-      "detail": "All required RBAC variables are set (RBAC_VIEWER_EMAIL, RBAC_VIEWER_PASSWORD, RBAC_OPERATOR_EMAIL, RBAC_OPERATOR_PASSWORD)"
+      "status": "SKIP",
+      "exitCode": null,
+      "detail": "Missing RBAC variables: RBAC_VIEWER_PASSWORD, RBAC_OPERATOR_PASSWORD. Run `npm run setup:rbac` and export credentials before runtime audit."
     },
     {
       "name": "RBAC Runtime Smoke Test",
       "command": "npm run test:rbac",
-      "status": "PASS",
-      "exitCode": 0,
-      "detail": "> vite_react_shadcn_ts@0.0.0 test:rbac\n> node --env-file-if-exists=.env --import tsx backend/scripts/rbac-smoke.ts\n\n[PASS] No token rejected - HTTP 401\n[PASS] viewer can access viewer endpoint - HTTP 200\n[PASS] viewer role resolved - reported=viewer\n[PASS] operator can access viewer endpoint - HTTP 200\n[PASS] operator role resolved - reported=operator\n[SKIP] admin status check - token not configured\n[PASS] viewer blocked from infer - HTTP 403\n[PASS] operator allowed to infer - HTTP 200\n[PASS] operator blocked from train - HTTP 403\n[SKIP] admin train check - set RBAC_TEST_TRAIN=true to enable\n\nRBAC smoke test passed. (testIp=198.51.100.48)"
+      "status": "SKIP",
+      "exitCode": null,
+      "detail": "Skipped because RBAC preflight did not pass. Set RBAC_* variables to run runtime auth verification."
     },
     {
       "name": "TypeScript Lint",
@@ -34,28 +34,28 @@
       "command": "npm test",
       "status": "PASS",
       "exitCode": 0,
-      "detail": "> vite_react_shadcn_ts@0.0.0 test\n> node --import tsx --test \"backend/**/*.test.ts\"\n\n✔ resolveClientBaseUrl preserves an explicit https origin without forcing port 3001 (0.822791ms)\n✔ resolveClientBaseUrl preserves a same-origin relative api path (0.184292ms)\n✔ resolveClientBaseUrl rewrites loopback env hosts to the current host for remote clients (0.142ms)\n✔ source status response contract accepts valid payload (2.604209ms)\n✔ source status response contract rejects malformed payload (0.566125ms)\n✔ mission core snapshot contract accepts valid payload (7.085709ms)\n✔ mission core snapshot contract rejects malformed payload (0.958541ms)\n✔ packet ingest contract accepts valid payload (2.617209ms)\n✔ packet ingest contract rejects invalid APID and payload hex (0.835666ms)\n✔ blocks malicious sign\n...<truncated>"
+      "detail": "> vite_react_shadcn_ts@0.0.0 test\n> node --import tsx --test \"backend/tests-domains/*.test.ts\"\n\n✔ offline repair pairing assigns bounded responsibilities to model and orchestrator (3.557333ms)\n✔ offline repair pairing summary exposes the active batch queue (0.387458ms)\n✔ parsePmsetBattery parses AC charging state (4.490208ms)\n✔ parsePmsetBattery parses battery discharging state (0.527333ms)\n✔ getBatteryGuard enforces higher floor while discharging (54.048791ms)\n✔ getBatteryGuard uses base floor when charging (34.591458ms)\n✔ getBatteryGuard avoids surplus mode above the battery care cap (28.735167ms)\n✔ document trust manifest only index-allows explicitly approved safe docs (73.26175ms)\n✔ document trust override precedence can explicitly reject a supported file (4.347ms)\n✔ loadMissionConfig \n...<truncated>"
     },
     {
       "name": "Orchestrator Tests",
       "command": "npm run test:orchestrator",
       "status": "PASS",
       "exitCode": 0,
-      "detail": "> vite_react_shadcn_ts@0.0.0 test:orchestrator\n> cd \"gauss-orchestrator\" && cargo test --all-targets\n\n\nrunning 73 tests\ntest anonymization::tests::anonymize_basic ... ok\ntest analysis::tests::detects_none ... ok\ntest analysis::tests::detects_classified ... ok\ntest bug_tracker::tests::test_bug_report_creation ... ok\ntest bug_tracker::tests::test_bug_tracker_mark_fixed ... ok\ntest bug_tracker::tests::test_bug_tracker_report ... ok\ntest bug_tracker::tests::test_bug_report_with_steps ... ok\ntest code_analysis::tests::test_recommended_action_display ... ok\ntest code_analysis::tests::test_risk_level_display ... ok\ntest code_fixer::tests::test_fix_result ... ok\ntest code_indexer::tests::test_issue_severity_ordering ... ok\ntest code_indexer::tests::test_symbol_type_display ... ok\ntest code_analysi\n...<truncated>"
+      "detail": "> vite_react_shadcn_ts@0.0.0 test:orchestrator\n> cd \"gauss-orchestrator\" && cargo test --all-targets\n\n\nrunning 93 tests\ntest analysis::tests::detects_none ... ok\ntest anonymization::tests::anonymize_basic ... ok\ntest audit_automation::tests::background_command_success_is_silent ... ok\ntest analysis::tests::detects_classified ... ok\ntest audit_automation::tests::background_command_failure_is_reported ... ok\ntest autoscaler::tests::scales_out_on_queue_but_respects_maximum ... ok\ntest autoscaler::tests::critical_memory_blocks_scale_out ... ok\ntest autoscaler::tests::positive_retained_memory_blocks_scale_out_before_critical_pressure ... ok\ntest anonymization::tests::anonymize_payload_redacts_patterns ... ok\ntest anonymization::tests::anonymize_payload_strips_sensitive_keys ... ok\ntest autoscal\n...<truncated>"
     },
     {
       "name": "Orchestrator ingest E2E",
       "command": "node --env-file-if-exists=.env --import tsx backend/scripts/orchestrator-ingest-e2e.ts",
-      "status": "PASS",
-      "exitCode": 0,
-      "detail": "OK: accepted_count=1, rejected_count=0"
+      "status": "FAIL",
+      "exitCode": 1,
+      "detail": "TypeError: fetch failed\n    at node:internal/deps/undici/undici:16416:13\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async main (/Users/josh/Documents/Documents/lightbound/Gauss/Gauss AI/Gauss Aurora/backend/scripts/orchestrator-ingest-e2e.ts:39:15) {\n  [cause]: Error: connect ECONNREFUSED 127.0.0.1:3001\n      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {\n    errno: -61,\n    code: 'ECONNREFUSED',\n    syscall: 'connect',\n    address: '127.0.0.1',\n    port: 3001\n  }\n}"
     },
     {
       "name": "Orchestrator live ingest (one file)",
       "command": "npm run test:orchestrator:live-ingest",
-      "status": "PASS",
-      "exitCode": 0,
-      "detail": "> vite_react_shadcn_ts@0.0.0 test:orchestrator:live-ingest\n> node --env-file-if-exists=.env --import tsx backend/scripts/orchestrator-live-ingest.ts"
+      "status": "FAIL",
+      "exitCode": 101,
+      "detail": "> vite_react_shadcn_ts@0.0.0 test:orchestrator:live-ingest\n> node --env-file-if-exists=.env --import tsx backend/scripts/orchestrator-live-ingest.ts\n\nerror: `cargo run` could not determine which binary to run. Use the `--bin` option to specify a binary, or the `default-run` manifest key.\navailable binaries: gauss-orchestrator, recursive-solver"
     },
     {
       "name": "Security Compliance Mapping Check",
@@ -76,21 +76,21 @@
       "command": "npm run build",
       "status": "PASS",
       "exitCode": 0,
-      "detail": "> vite_react_shadcn_ts@0.0.0 build\n> vite build\n\nvite v7.3.1 building client environment for production...\ntransforming...\n✓ 2518 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                         2.81 kB │ gzip:   0.84 kB\ndist/assets/index-pDu8jCJc.css                        115.14 kB │ gzip:  19.45 kB\ndist/assets/NotFound-CgNny3MJ.js                        0.63 kB │ gzip:   0.38 kB\ndist/assets/subsystem-space-orbit-BY-92e06.js           1.10 kB │ gzip:   0.64 kB\ndist/assets/operator-sources-CB8LXVPY.js                1.91 kB │ gzip:   0.61 kB\ndist/assets/ChronosPage-C-zZSKsY.js                     3.04 kB │ gzip:   1.26 kB\ndist/assets/AdminUsersPage-DqYrEeSm.js                  3.24 kB │ gzip:   1.18 kB\ndist/assets/theme-vendor-dIe38rK\n...<truncated>"
+      "detail": "> vite_react_shadcn_ts@0.0.0 build\n> vite build\n\nvite v7.3.6 building client environment for production...\ntransforming...\n✓ 1627 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                   1.60 kB │ gzip:   0.59 kB\ndist/assets/index-BX2k71xK.css  123.86 kB │ gzip:  20.58 kB\ndist/assets/index-DIveoV4K.js   371.26 kB │ gzip: 111.21 kB\n✓ built in 3.07s"
     },
     {
       "name": "Backend Environment Sanity",
       "command": "npm run check:backend-env",
       "status": "PASS",
       "exitCode": 0,
-      "detail": "> vite_react_shadcn_ts@0.0.0 check:backend-env\n> node --env-file-if-exists=.env --import tsx backend/scripts/check-env.ts\n\n[backend-env] Checking backend configuration:\nOK  SUPABASE_URL=https://qmlanlazhbhiwcaxgzxt.supabase.co  (Supabase project URL)\nOK  SUPABASE_ANON_KEY=eyJh...J-gE  (Supabase anon/public key)\nOK  SUPABASE_SERVICE_ROLE_KEY=eyJh...TzTI  (Supabase service role key)\nOK  PROXY_PORT=3001  (Backend HTTP port (default 3001))\nOK  PROXY_HOST=0.0.0.0  (Backend bind host (default 0.0.0.0 in dev, loopback when private origins disabled))\nOK  FRONTEND_HOST=0.0.0.0  (Frontend dev bind host (e.g. 0.0.0.0 for hotspot/LAN))\nOK  ALLOWED_ORIGINS=http://localhost:8080  (CSV list for CORS allowlist)\nOK  ALLOW_PRIVATE_NETWORK_ORIGINS=true  (Allow hotspot/LAN origins on known dev ports)\nOK  AUTH\n...<truncated>"
+      "detail": "> vite_react_shadcn_ts@0.0.0 check:backend-env\n> node --env-file-if-exists=.env --import tsx backend/scripts/check-env.ts\n\n[backend-env] Checking backend configuration:\nOK  SUPABASE_URL=https://qmlanlazhbhiwcaxgzxt.supabase.co  (Supabase project URL)\nOK  SUPABASE_ANON_KEY=sb_p...a94x  (Supabase anon/public key)\nOK  SUPABASE_SERVICE_ROLE_KEY=eyJh...TzTI  (Supabase service role key)\nOK  PROXY_PORT=3001  (Backend HTTP port (default 3001))\nOK  PROXY_HOST=0.0.0.0  (Backend bind host (default 0.0.0.0 in dev, loopback when private origins disabled))\nOK  FRONTEND_HOST=0.0.0.0  (Frontend dev bind host (e.g. 0.0.0.0 for hotspot/LAN))\nOK  ALLOWED_ORIGINS=http://localhost:8080  (CSV list for CORS allowlist)\nOK  ALLOW_PRIVATE_NETWORK_ORIGINS=true  (Allow hotspot/LAN origins on known dev ports)\nOK  AUTH\n...<truncated>"
     },
     {
       "name": "Supabase RLS Smoke",
-      "command": "node --env-file-if-exists=.env --import tsx backend/scripts/supabase-rls-smoke.ts",
-      "status": "PASS",
-      "exitCode": 0,
-      "detail": "[PASS] authenticated SELECT sw_nowcast_5s: ok\n[PASS] authenticated SELECT mms_recon_vectors_5s: ok\n[PASS] authenticated SELECT aurora_healpix_maps: ok\n[PASS] authenticated SELECT source_health: ok\n[PASS] authenticated INSERT sw_raw_samples denied: ok (denied)\n\nSupabase RLS smoke test passed."
+      "command": "npm run test:supabase-rls",
+      "status": "SKIP",
+      "exitCode": null,
+      "detail": "Set SUPABASE_URL (or VITE_SUPABASE_URL), SUPABASE_ANON_KEY (or VITE_SUPABASE_PUBLISHABLE_KEY), and RBAC_VIEWER_TOKEN or RBAC_VIEWER_EMAIL/RBAC_VIEWER_PASSWORD to run RLS smoke."
     },
     {
       "name": "DTN+ISL Network Management Audit",
@@ -102,13 +102,13 @@
     {
       "name": "Demand Features Audit",
       "command": "npm run check:demand-features",
-      "status": "PASS",
-      "exitCode": 0,
-      "detail": "> vite_react_shadcn_ts@0.0.0 check:demand-features\n> node --env-file-if-exists=.env --import tsx backend/scripts/demand-features-audit.ts\n\nDemand Features Audit\n=====================\n[PASS] DEMAND-1 - Conjunction interoperability + ethical purpose gating\n       CDM/OMM/OEM/OCM ingest module and SSA conjunction routes are present and mounted with policy checks.\n[PASS] DEMAND-2 - Multi-channel alert delivery and escalation\n       Alert delivery/escalation route(s) detected.\n[PASS] DEMAND-3 - Hotspot/offline handover included in full sweep\n       Full sweep includes Playwright network transition scenario.\n[PASS] DEMAND-4 - Source outage fallback behavior coverage\n       Offline resilience and network transition tests are present.\n[WARN] DEMAND-5 - Enterprise assurance controls in release gate\n...<truncated>"
+      "status": "FAIL",
+      "exitCode": 1,
+      "detail": "> vite_react_shadcn_ts@0.0.0 check:demand-features\n> node --env-file-if-exists=.env --import tsx backend/scripts/demand-features-audit.ts\n\nDemand Features Audit\n=====================\n[PASS] DEMAND-1 - Conjunction interoperability + ethical purpose gating\n       CDM/OMM/OEM/OCM ingest module and SSA conjunction routes are present and mounted with policy checks.\n[PASS] DEMAND-2 - Multi-channel alert delivery and escalation\n       Alert delivery/escalation route(s) detected.\n[FAIL] DEMAND-3 - Hotspot/offline handover included in full sweep\n       Full sweep is missing tests/e2e/network-transition.spec.ts.\n[PASS] DEMAND-4 - Source outage fallback behavior coverage\n       Offline resilience and network transition tests are present.\n[WARN] DEMAND-5 - Enterprise assurance controls in release gate\n...<truncated>"
     }
   ],
   "security_compliance": {
-    "generated_at": "2026-03-10T18:47:08.854Z",
+    "generated_at": "2026-07-21T10:22:16.172Z",
     "totals": {
       "pass": 8,
       "warn": 0,

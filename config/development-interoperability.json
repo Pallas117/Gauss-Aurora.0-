@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "contract": "gauss-development-interoperability-v1",
+  "truth_states": ["observed", "inferred", "unknown", "blocked", "verified"],
+  "lifecycle": ["observe", "diagnose", "plan", "authorize", "execute", "handoff"],
+  "artifacts": {
+    "interoperability_schema": "config/development-interoperability.schema.json",
+    "memory_root": "development/memory",
+    "handoff_schema": "agents/handoff.schema.json",
+    "operator_task_schema": "agents/operator-task.schema.json",
+    "operator_task_catalog": "agents/operator-tasks/README.md",
+    "mission_target_schema": "config/mission-target.schema.json",
+    "mission_target_catalog": "config/mission-targets.json",
+    "space_bridge_schema": "config/space-data-center-bridge.schema.json",
+    "space_bridge_profile": "config/space-data-center-bridge.json",
+    "product_package_schema": "config/product-packages.schema.json",
+    "product_package_manifest": "config/product-packages.json",
+    "generated_handoff_dir": "reports/context/handoffs",
+    "generated_task_dir": "reports/context/operator-tasks"
+  },
+  "required_role_sections": [
+    "## Own",
+    "## Receive",
+    "## Produce",
+    "## Guardrails",
+    "## Interoperability",
+    "## Subagent lanes",
+    "## Required workflow"
+  ],
+  "required_skill_sections": ["## Interoperability", "## Verification"],
+  "roles": {
+    "memory-systems": {
+      "skill": "gauss-memory-systems",
+      "lanes": ["memory-observer", "memory-benchmarker", "memory-planner", "memory-verifier"]
+    },
+    "mesh-network": {
+      "skill": "gauss-mesh-network",
+      "lanes": ["mesh-observer", "mesh-builder", "mesh-verifier", "mesh-operator"]
+    },
+    "network-mount": {
+      "skill": "gauss-network-mount",
+      "lanes": ["mount-observer", "mount-planner", "mount-verifier"]
+    },
+    "mission-control": {
+      "skill": "gauss-development-loop",
+      "lanes": ["scope-planner", "boundary-coordinator", "handoff-verifier"]
+    },
+    "recursive-solver": {
+      "skill": "gauss-recursive-solver",
+      "lanes": ["decomposition-planner", "recursive-delegate", "synthesis-aggregator"]
+    },
+    "platform-integration": {
+      "skill": "gauss-mission-integration",
+      "lanes": ["contract-reader", "boundary-builder", "integration-verifier"]
+    },
+    "cfs-integration": {
+      "skill": "gauss-cfs-integration",
+      "lanes": ["cfs-observer", "cfs-optimizer", "cfs-memory-auditor", "cfs-verifier", "flight-reviewer"]
+    },
+    "satellite-operations": {
+      "skill": "gauss-satellite-operations",
+      "lanes": ["operations-observer", "operations-analyst", "handoff-operator"]
+    },
+    "sovereign-ui": {
+      "skill": "gauss-sovereign-ui",
+      "lanes": ["ui-observer", "ui-builder", "ui-verifier"]
+    },
+    "verification-keeper": {
+      "skill": "gauss-development-loop",
+      "lanes": ["scope-selector", "test-runner", "evidence-auditor"]
+    }
+  },
+  "harness_commands": {
+    "orientation": ["npm run develop:status", "npm run check:llm"],
+    "control_plane": [
+      "npm run develop:verify",
+      "npm run develop:interoperability",
+      "npm run debt:check",
+      "npm run audit:mission-targets",
+      "npm run audit:space-bridge",
+      "npm run audit:product-packages",
+      "npm run develop:skills:check",
+      "npm run develop:tasks",
+      "npm run memory:audit",
+      "npm run check:security-compliance"
+    ],
+    "local_quality": ["npm run lint", "npm test", "npm run develop:brief", "npm run memory:refine"],
+    "quality": ["npm run quality:check", "npm run quality:rust"],
+    "debt": ["npm run debt:check"],
+    "cleanup": [
+      "npm run develop:cleanup",
+      "npm run develop:cleanup:apply",
+      "npm run develop:cleanup:all",
+      "npm run develop:exit",
+      "npm run orchestrator:clean"
+    ],
+    "handoff": ["npm run develop:handoff -- --from <role> --to <role> --summary \"...\""]
+  }
+}

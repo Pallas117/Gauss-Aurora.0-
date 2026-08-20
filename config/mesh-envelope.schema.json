@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gauss.local/schemas/mesh-envelope-v1.json",
+  "title": "Gauss Mesh Envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol",
+    "node_id",
+    "device_id",
+    "sequence",
+    "observed_at_ms",
+    "topic",
+    "payload_cid",
+    "payload_bytes",
+    "previous_event_hash",
+    "signature_scheme",
+    "signature"
+  ],
+  "properties": {
+    "protocol": { "const": "gauss-mesh-v1" },
+    "node_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "device_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "sequence": { "type": "integer", "minimum": 0 },
+    "observed_at_ms": { "type": "integer" },
+    "topic": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "payload_cid": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "payload_bytes": { "type": "integer", "minimum": 0 },
+    "previous_event_hash": {
+      "type": "string",
+      "maxLength": 128
+    },
+    "signature_scheme": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "signature": { "type": "string", "minLength": 1, "maxLength": 8192 }
+  }
+}

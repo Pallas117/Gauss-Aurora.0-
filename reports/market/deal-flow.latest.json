@@ -1,0 +1,84 @@
+{
+  "reportType": "gauss-ai-space-deal-flow-v1",
+  "generatedAt": "2026-08-20T05:46:52.647Z",
+  "lookbackDays": 30,
+  "truthState": "blocked",
+  "sourceResults": [
+    {
+      "source": {
+        "id": "spacenews",
+        "name": "SpaceNews",
+        "url": "https://spacenews.com/feed/",
+        "kind": "rss"
+      },
+      "status": "failed",
+      "fetchedAt": "2026-08-20T05:46:52.648Z",
+      "itemCount": 0,
+      "error": "fetch failed"
+    },
+    {
+      "source": {
+        "id": "techcrunch-ai",
+        "name": "TechCrunch AI",
+        "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+        "kind": "rss"
+      },
+      "status": "failed",
+      "fetchedAt": "2026-08-20T05:46:52.756Z",
+      "itemCount": 0,
+      "error": "fetch failed"
+    },
+    {
+      "source": {
+        "id": "techcrunch-venture",
+        "name": "TechCrunch Venture",
+        "url": "https://techcrunch.com/category/venture/feed/",
+        "kind": "rss"
+      },
+      "status": "failed",
+      "fetchedAt": "2026-08-20T05:46:52.762Z",
+      "itemCount": 0,
+      "error": "fetch failed"
+    },
+    {
+      "source": {
+        "id": "venturebeat-ai",
+        "name": "VentureBeat AI",
+        "url": "https://venturebeat.com/category/ai/feed/",
+        "kind": "rss"
+      },
+      "status": "failed",
+      "fetchedAt": "2026-08-20T05:46:52.764Z",
+      "itemCount": 0,
+      "error": "fetch failed"
+    },
+    {
+      "source": {
+        "id": "crunchbase-news",
+        "name": "Crunchbase News",
+        "url": "https://news.crunchbase.com/feed/",
+        "kind": "rss"
+      },
+      "status": "failed",
+      "fetchedAt": "2026-08-20T05:46:52.767Z",
+      "itemCount": 0,
+      "error": "fetch failed"
+    }
+  ],
+  "items": [],
+  "stats": {
+    "sourceCount": 5,
+    "successfulSources": 0,
+    "failedSources": 5,
+    "relevantItems": 0,
+    "itemsWithObservedAmount": 0,
+    "observedAmountUsd": 0,
+    "stageCounts": {}
+  },
+  "caveats": [
+    "This is a public-feed signal collector, not a verified financing database.",
+    "Keyword scores and deal stages are inferred; validate material claims against primary company or investor announcements.",
+    "Missing, delayed, paywalled, duplicated, or blocked sources can make this report incomplete.",
+    "Currency conversion is intentionally not inferred; only amounts explicitly expressed in USD are totaled."
+  ]
+}

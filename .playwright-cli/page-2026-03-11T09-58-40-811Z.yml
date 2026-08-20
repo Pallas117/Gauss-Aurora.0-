@@ -1,0 +1,145 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=e3]:
+        - img [ref=e5]
+        - generic [ref=e7]:
+          - generic [ref=e8]: "Boot: Auth session"
+          - generic [ref=e9]: Sign in for full mission data and protected feeds.
+  - generic [ref=e11]:
+    - complementary [ref=e12]:
+      - generic [ref=e13]:
+        - img [ref=e14]
+        - generic [ref=e17]:
+          - paragraph [ref=e18]: GAUSS AURORA
+          - paragraph [ref=e19]: Mission Shell
+      - navigation "Primary" [ref=e20]:
+        - link "Command C2" [ref=e21] [cursor=pointer]:
+          - /url: /command
+          - img [ref=e22]
+          - generic [ref=e24]: Command
+          - generic [ref=e25]: C2
+        - link "SDA HUD" [ref=e26] [cursor=pointer]:
+          - /url: /sda
+          - img [ref=e27]
+          - generic [ref=e32]: SDA
+          - generic [ref=e33]: HUD
+        - link "Systems Infra" [ref=e34] [cursor=pointer]:
+          - /url: /systems
+          - img [ref=e35]
+          - generic [ref=e38]: Systems
+          - generic [ref=e39]: Infra
+        - link "Intel RAG" [ref=e40] [cursor=pointer]:
+          - /url: /intel
+          - img [ref=e41]
+          - generic [ref=e44]: Intel
+          - generic [ref=e45]: RAG
+        - link "Heliophysics Ops" [ref=e46] [cursor=pointer]:
+          - /url: /heliophysics
+          - img [ref=e47]
+          - generic [ref=e53]: Heliophysics
+          - generic [ref=e54]: Ops
+      - generic [ref=e55]:
+        - paragraph [ref=e56]: Security posture
+        - generic [ref=e57]:
+          - generic [ref=e58]: feed paused
+          - generic [ref=e59]: signed out
+          - generic [ref=e60]: sources healthy
+    - generic [ref=e61]:
+      - banner [ref=e62]:
+        - generic [ref=e63]:
+          - paragraph [ref=e64]: Unified operations
+          - heading "Mission Command Surface" [level=1] [ref=e65]
+        - generic [ref=e66]:
+          - 'button "Display options: accent and HUD glow" [ref=e67] [cursor=pointer]':
+            - img
+          - generic [ref=e68]: "tier: unknown"
+          - generic [ref=e69]:
+            - img [ref=e70]
+            - text: public
+      - main [ref=e72]:
+        - generic [ref=e73]:
+          - region "Mission surface links" [ref=e74]:
+            - generic [ref=e76]:
+              - paragraph [ref=e77]: Mission Surfaces
+              - paragraph [ref=e78]: Split heavy workflows into focused route lanes to reduce scrolling and render load.
+            - generic [ref=e79]:
+              - link "Command OPS/C2" [ref=e80] [cursor=pointer]:
+                - /url: /command
+                - generic [ref=e81]:
+                  - generic [ref=e82]:
+                    - generic [ref=e83]:
+                      - img [ref=e84]
+                      - generic [ref=e86]: Command
+                    - paragraph [ref=e87]: OPS/C2
+                  - img [ref=e88]
+              - link "SDA HUD SPACE/SDA" [ref=e90] [cursor=pointer]:
+                - /url: /space/sda
+                - generic [ref=e91]:
+                  - generic [ref=e92]:
+                    - generic [ref=e93]:
+                      - img [ref=e94]
+                      - generic [ref=e99]: SDA HUD
+                    - paragraph [ref=e100]: SPACE/SDA
+                  - img [ref=e101]
+              - link "Heliophysics SOLAR/OPS" [ref=e103] [cursor=pointer]:
+                - /url: /space/heliophysics
+                - generic [ref=e104]:
+                  - generic [ref=e105]:
+                    - generic [ref=e106]:
+                      - img [ref=e107]
+                      - generic [ref=e113]: Heliophysics
+                    - paragraph [ref=e114]: SOLAR/OPS
+                  - img [ref=e115]
+              - link "Chronos OPS/RUNTIME" [ref=e117] [cursor=pointer]:
+                - /url: /ops/chronos
+                - generic [ref=e118]:
+                  - generic [ref=e119]:
+                    - generic [ref=e120]:
+                      - img [ref=e121]
+                      - generic [ref=e124]: Chronos
+                    - paragraph [ref=e125]: OPS/RUNTIME
+                  - img [ref=e126]
+              - link "Dev HUD OPS/TTY" [ref=e128] [cursor=pointer]:
+                - /url: /ops/dev-hud
+                - generic [ref=e129]:
+                  - generic [ref=e130]:
+                    - generic [ref=e131]:
+                      - img [ref=e132]
+                      - generic [ref=e135]: Dev HUD
+                    - paragraph [ref=e136]: OPS/TTY
+                  - img [ref=e137]
+          - generic [ref=e139]: Public SDA stays live off the space-domain store. Sign in only when you need mission control, protected MMS feeds, or operator actions.
+          - generic [ref=e140]:
+            - tablist [ref=e141]:
+              - tab "HUD" [selected] [ref=e142] [cursor=pointer]
+              - tab "Metrics & Science" [ref=e143] [cursor=pointer]
+            - link "Cast / full room" [ref=e145] [cursor=pointer]:
+              - /url: /sda?presentation=1
+              - img
+              - text: Cast / full room
+          - tabpanel "HUD" [ref=e146]:
+            - generic [ref=e147]:
+              - heading "SDA Visualization" [level=3] [ref=e149]
+              - generic [ref=e151]:
+                - img "Simplified SDA map" [ref=e153]
+                - paragraph [ref=e160]: "Backend RAM is critical: forcing SVG-only SDA mode until headroom recovers."
+        - generic [ref=e163]:
+          - generic [ref=e164]:
+            - paragraph [ref=e165]: Public SDA active
+            - paragraph [ref=e166]: Orbital awareness stays open. Sign in only when you need the protected mission command surface.
+          - button "Login for mission control" [ref=e167] [cursor=pointer]:
+            - generic [ref=e168]:
+              - img
+              - text: Login for mission control
+            - img
+      - contentinfo [ref=e169]:
+        - generic [ref=e170]: Project Gauss mission shell
+        - generic [ref=e171]:
+          - link "Dev HUD" [ref=e172] [cursor=pointer]:
+            - /url: /ops/dev-hud
+          - 'link "Turing: 0 devices (0 healthy)" [ref=e173] [cursor=pointer]':
+            - /url: /ops/turing
+          - generic [ref=e174]: waiting for feed

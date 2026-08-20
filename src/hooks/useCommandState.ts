@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useBackendHealth } from "@/hooks/useBackendHealth";
 import { useMissionSnapshot } from "@/hooks/useMissionSnapshot";
 import { useMissionCoreSnapshot } from "@/hooks/useMissionCoreSnapshot";
 import { useOpsCommandSnapshot } from "@/hooks/useOpsCommandSnapshot";
@@ -8,7 +9,7 @@ import { useThreatSummary } from "@/hooks/useThreatSummary";
 import {
     fetchOpsCommandJob,
     fetchOpsCommandMetrics,
-    planOpsCommandWithDeepSeek,
+    planOpsCommandWithModel,
     queueOpsCommand,
 } from "@/lib/api/heliophysics-proxy";
 import type { OpsCommandJob, OpsCommandPlan } from "@/lib/types/space-weather";
@@ -29,16 +30,24 @@ export function useCommandState() {
     } | null>(null);
 
     const mission = useMissionSnapshot();
+    const backendHealth = useBackendHealth({ basePollMs: 30_000 });
     const { profile: uiPowerProfile } = usePowerProfile();
     const opsEnabled = mission.session ? !mission.session.authRequired || mission.session.authenticated : true;
-    const ops = useOpsCommandSnapshot(opsEnabled);
+    const criticalOpsMode = backendHealth.memoryLevel === "critical";
+    const ops = useOpsCommandSnapshot(opsEnabled, backendHealth.memoryLevel);
 
     const session = ops.data?.session ?? mission.session;
     const canViewProtectedFeeds = session ? !session.authRequired || session.authenticated : false;
 
-    const solarWind = useSolarWind5s({ enabled: canViewProtectedFeeds });
-    const threats = useThreatSummary({ enabled: canViewProtectedFeeds });
-    const missionCore = useMissionCoreSnapshot({ enabled: canViewProtectedFeeds });
+    const solarWind = useSolarWind5s({ enabled: canViewProtectedFeeds && !criticalOpsMode });
+    const threats = useThreatSummary({
+        enabled: canViewProtectedFeeds && !criticalOpsMode,
+        governorLevel: backendHealth.memoryLevel,
+    });
+    const missionCore = useMissionCoreSnapshot({
+        enabled: canViewProtectedFeeds && !criticalOpsMode,
+        governorLevel: backendHealth.memoryLevel,
+    });
 
     const canonical = ops.data?.canonicalLatest ?? mission.snapshot?.canonicalLatest ?? solarWind.latest;
     const summary = ops.data?.threatSummary ?? threats.data;
@@ -47,6 +56,9 @@ export function useCommandState() {
     const sourceStatusHealthy = sourceStatus.length === 0 || sourceStatus.every((s) => s.healthy);
 
     const telemetryRows = solarWind.points.slice(-10).reverse();
+    const workers = ops.data?.workers ?? [];
+    const queuedApprovals = ops.data?.queuedApprovals ?? [];
+    const brokerPolicy = ops.data?.brokerPolicy ?? null;
 
     const handleRefresh = () => {
         void mission.refresh();
@@ -171,7 +183,7 @@ export function useCommandState() {
         setPlannerError(null);
         setPlannerInfo(null);
         try {
-            const response = await planOpsCommandWithDeepSeek({
+            const response = await planOpsCommandWithModel({
                 prompt: plannerPrompt,
                 context: runtimeContext,
                 execute: false,
@@ -275,6 +287,9 @@ export function useCommandState() {
         plannerError,
         plannerInfo,
         metricsInfo,
+        backendHealth,
+        criticalOpsMode,
+        plannerMode: backendHealth.health?.memory?.plannerMode ?? "auto",
         session,
         canViewProtectedFeeds,
         solarWind,
@@ -287,10 +302,14 @@ export function useCommandState() {
         sourceStatusHealthy,
         telemetryRows,
         handleRefresh,
+        refreshSession: mission.refreshSession,
         handlePlanPreview,
         enqueueFromPlan,
         denyPlan,
         replayLastJob,
         refreshOps: ops.refresh,
+        workers,
+        queuedApprovals,
+        brokerPolicy,
     };
 }

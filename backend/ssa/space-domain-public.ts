@@ -1,4 +1,6 @@
 import type { SpaceDomainSnapshot } from "./space-domain-store.js";
+import type { SpaceDomainAvailability } from "./availability.js";
+import type { SpaceDomainAnalysis } from "./live-analysis.js";
 import type { SpaceDomainSummary } from "./ssa-features.js";
 
 export interface PublicSpaceDomainSnapshot {
@@ -13,7 +15,9 @@ export interface PublicSpaceDomainSnapshot {
 
 export interface PublicSpaceDomainEnvelope {
   snapshot: PublicSpaceDomainSnapshot;
+  availability: SpaceDomainAvailability;
   summary: SpaceDomainSummary;
+  analysis: SpaceDomainAnalysis;
 }
 
 export function toPublicSpaceDomainSnapshot(

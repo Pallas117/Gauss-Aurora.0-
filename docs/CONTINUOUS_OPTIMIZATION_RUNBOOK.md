@@ -2,10 +2,11 @@
 
 This runbook describes how to keep Gauss models and operator behavior optimized without on-device training: RAG re-index cadence, prompt and system-instruction tuning, offload retrain cadence, and the evaluation loop. Ethics and voice live in RAG and prompts and evolve with the team.
 
-## RAG re-index cadence
+## RAG re-index cadence (offline-first)
 
 - **When:** After any change under `research/documentation-rag` (including `spacecraft-ops-probability/` and ethics/voice docs). The co-pilot and Triad use RAG context; without re-index they will not see new or edited content.
 - **How:** `POST /api/rag/index` with body `{ "dir": "research/documentation-rag" }` (or the subdir you changed). From the repo root you can use the MCP tool `rag_index` (see [MCP_MODEL_OPS.md](MCP_MODEL_OPS.md)) or call the RAG service directly (default port 3002).
+- **Policy:** Runtime external fetches are deny-by-default. New online references must be cached locally, approved in trust overrides, and then indexed.
 - **Optional automation:** A weekly or post-merge job can run the index (e.g. cron or CI step calling the RAG index API). No code change required if the API is sufficient; document the cadence in [ml/rag/README.md](../ml/rag/README.md) if you add automation.
 
 ## Prompt and system-instruction tuning
@@ -24,6 +25,16 @@ This runbook describes how to keep Gauss models and operator behavior optimized 
 - **What:** Use the existing backprop capsule and/or a small golden set (e.g. operator decisions on sample telemetry). Run periodically (e.g. with backprop or CI).
 - **Output:** Store results in `reports/progress/model-eval.latest.json` if you add a script (optional). The MCP tool `evaluate_model` runs `npm run context:backprop -- --short` and returns the summary.
 - **Decision:** No automatic weight updates from eval; humans decide when to retrain or deploy. Use eval output to decide whether to tweak prompts, re-index RAG, or schedule an offload retrain.
+
+## Indexed diagnostics and impact gating
+
+- Build system indexes with `npm run index:system` to emit:
+  - `reports/index/route-to-test-map.latest.json`
+  - `reports/index/contract-to-test-map.latest.json`
+  - `reports/index/failure-signature-catalog.latest.json`
+  - `reports/index/runtime-risk-register.latest.json`
+- Use `npm run test:impact` (or `npm run test:impact:json`) to derive a minimal, risk-based command set before broad sweeps.
+- CI keeps full-suite jobs, but staged impact gating should run first to lower average fix cost.
 
 ## Summary
 

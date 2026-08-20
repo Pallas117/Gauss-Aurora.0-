@@ -1,0 +1,175 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=e3]:
+        - img [ref=e5]
+        - generic [ref=e7]:
+          - generic [ref=e8]: "Boot: Auth config"
+          - generic [ref=e9]: VITE_SUPABASE_URL is missing.
+      - listitem [ref=e10]:
+        - img [ref=e12]
+        - generic [ref=e14]:
+          - generic [ref=e15]: "Boot: Backend health"
+          - generic [ref=e16]: "backend health: Failed to fetch"
+  - generic [ref=e17]:
+    - alert [ref=e18]: "Auth config: VITE_SUPABASE_URL is missing. See docs/AUTH_TROUBLESHOOTING.md."
+    - generic [ref=e19]:
+      - complementary [ref=e20]:
+        - generic [ref=e21]:
+          - img [ref=e22]
+          - generic [ref=e25]:
+            - paragraph [ref=e26]: GAUSS AURORA
+            - paragraph [ref=e27]: Mission Shell
+        - navigation "Primary" [ref=e28]:
+          - link "Command C2" [ref=e29] [cursor=pointer]:
+            - /url: /command
+            - img [ref=e30]
+            - generic [ref=e32]: Command
+            - generic [ref=e33]: C2
+          - link "SDA HUD" [ref=e34] [cursor=pointer]:
+            - /url: /sda
+            - img [ref=e35]
+            - generic [ref=e40]: SDA
+            - generic [ref=e41]: HUD
+          - link "Systems Infra" [ref=e42] [cursor=pointer]:
+            - /url: /systems
+            - img [ref=e43]
+            - generic [ref=e46]: Systems
+            - generic [ref=e47]: Infra
+          - link "Intel RAG" [ref=e48] [cursor=pointer]:
+            - /url: /intel
+            - img [ref=e49]
+            - generic [ref=e52]: Intel
+            - generic [ref=e53]: RAG
+          - link "Heliophysics Ops" [ref=e54] [cursor=pointer]:
+            - /url: /heliophysics
+            - img [ref=e55]
+            - generic [ref=e61]: Heliophysics
+            - generic [ref=e62]: Ops
+        - generic [ref=e63]:
+          - paragraph [ref=e64]: Security posture
+          - generic [ref=e65]:
+            - generic [ref=e66]: feed paused
+            - generic [ref=e67]: signed out
+            - generic [ref=e68]: sources healthy
+      - generic [ref=e69]:
+        - banner [ref=e70]:
+          - generic [ref=e71]:
+            - paragraph [ref=e72]: Unified operations
+            - heading "Mission Command Surface" [level=1] [ref=e73]
+          - generic [ref=e74]:
+            - 'button "Display options: accent and HUD glow" [ref=e75] [cursor=pointer]':
+              - img
+            - generic [ref=e76]: "tier: unknown"
+            - generic [ref=e77]:
+              - img [ref=e78]
+              - text: public
+        - main [ref=e80]:
+          - generic [ref=e81]:
+            - region "Mission surface links" [ref=e82]:
+              - generic [ref=e84]:
+                - paragraph [ref=e85]: Mission Surfaces
+                - paragraph [ref=e86]: Split heavy workflows into focused route lanes to reduce scrolling and render load.
+              - generic [ref=e87]:
+                - link "Command OPS/C2" [ref=e88] [cursor=pointer]:
+                  - /url: /command
+                  - generic [ref=e89]:
+                    - generic [ref=e90]:
+                      - generic [ref=e91]:
+                        - img [ref=e92]
+                        - generic [ref=e94]: Command
+                      - paragraph [ref=e95]: OPS/C2
+                    - img [ref=e96]
+                - link "SDA HUD SPACE/SDA" [ref=e98] [cursor=pointer]:
+                  - /url: /space/sda
+                  - generic [ref=e99]:
+                    - generic [ref=e100]:
+                      - generic [ref=e101]:
+                        - img [ref=e102]
+                        - generic [ref=e107]: SDA HUD
+                      - paragraph [ref=e108]: SPACE/SDA
+                    - img [ref=e109]
+                - link "Heliophysics SOLAR/OPS" [ref=e111] [cursor=pointer]:
+                  - /url: /space/heliophysics
+                  - generic [ref=e112]:
+                    - generic [ref=e113]:
+                      - generic [ref=e114]:
+                        - img [ref=e115]
+                        - generic [ref=e121]: Heliophysics
+                      - paragraph [ref=e122]: SOLAR/OPS
+                    - img [ref=e123]
+                - link "Chronos OPS/RUNTIME" [ref=e125] [cursor=pointer]:
+                  - /url: /ops/chronos
+                  - generic [ref=e126]:
+                    - generic [ref=e127]:
+                      - generic [ref=e128]:
+                        - img [ref=e129]
+                        - generic [ref=e132]: Chronos
+                      - paragraph [ref=e133]: OPS/RUNTIME
+                    - img [ref=e134]
+                - link "Dev HUD OPS/TTY" [ref=e136] [cursor=pointer]:
+                  - /url: /ops/dev-hud
+                  - generic [ref=e137]:
+                    - generic [ref=e138]:
+                      - generic [ref=e139]:
+                        - img [ref=e140]
+                        - generic [ref=e143]: Dev HUD
+                      - paragraph [ref=e144]: OPS/TTY
+                    - img [ref=e145]
+            - generic [ref=e147]: Public SDA stays live off the space-domain store. Sign in only when you need mission control, protected MMS feeds, or operator actions.
+            - generic [ref=e148]:
+              - tablist [ref=e149]:
+                - tab "HUD" [selected] [ref=e150] [cursor=pointer]
+                - tab "Metrics & Science" [ref=e151] [cursor=pointer]
+              - link "Cast / full room" [ref=e153] [cursor=pointer]:
+                - /url: /sda?presentation=1
+                - img
+                - text: Cast / full room
+            - tabpanel "HUD" [ref=e154]:
+              - generic [ref=e155]:
+                - heading "SDA Visualization" [level=3] [ref=e157]
+                - generic [ref=e159]:
+                  - generic [ref=e161]:
+                    - generic [ref=e162]:
+                      - generic [ref=e163]: Storm
+                      - generic [ref=e164]: QUIET
+                    - generic [ref=e165]:
+                      - generic [ref=e166]: Compression
+                      - generic [ref=e167]: 92%
+                    - generic [ref=e168]:
+                      - generic [ref=e169]: Reconnection
+                      - generic [ref=e170]: 0%
+                    - generic [ref=e171]:
+                      - generic [ref=e172]: Mode
+                      - generic [ref=e173]: BALANCED
+                  - generic [ref=e174]:
+                    - generic [ref=e175]: SVG mission surface
+                    - generic [ref=e176]:
+                      - generic [ref=e177]: SW n/a
+                      - generic [ref=e178]: IMF Bz 0 nT
+                      - generic [ref=e179]: Data points 0
+                      - generic [ref=e180]: MMS 0
+                      - generic [ref=e181]: Passes 0
+                  - img "Project Gauss mission surface" [ref=e182]:
+                    - generic [ref=e203]:
+                      - generic [ref=e205]: LIVE INPUTS
+                      - generic [ref=e206]: Awaiting node
+                      - generic [ref=e207]: Bz 0 nT
+                      - generic [ref=e208]: Kp 0
+          - generic [ref=e211]:
+            - generic [ref=e212]:
+              - paragraph [ref=e213]: Public SDA active
+              - paragraph [ref=e214]: Orbital awareness stays open. Sign in only when you need the protected mission command surface.
+            - button "Login for mission control" [ref=e215] [cursor=pointer]:
+              - generic [ref=e216]:
+                - img
+                - text: Login for mission control
+              - img
+        - contentinfo [ref=e217]:
+          - generic [ref=e218]: Project Gauss mission shell
+          - generic [ref=e219]:
+            - link "Dev HUD" [ref=e220] [cursor=pointer]:
+              - /url: /ops/dev-hud
+            - generic [ref=e221]: waiting for feed

@@ -74,4 +74,17 @@ describe("decoder-registry", () => {
     assert.deepStrictEqual(result.packets, []);
     assert.ok(result.errors.length >= 1);
   });
+
+  it("rejects decode input above the bounded working-set limit", async () => {
+    const previous = process.env.ORCHESTRATOR_DECODE_API_BIND;
+    process.env.ORCHESTRATOR_DECODE_API_BIND = "127.0.0.1:9";
+    try {
+      const result = await decode(Buffer.alloc(4 * 1024 * 1024 + 1));
+      assert.deepStrictEqual(result.packets, []);
+      assert.ok(result.errors.some((error) => error.includes("exceeds")));
+    } finally {
+      if (previous === undefined) delete process.env.ORCHESTRATOR_DECODE_API_BIND;
+      else process.env.ORCHESTRATOR_DECODE_API_BIND = previous;
+    }
+  });
 });

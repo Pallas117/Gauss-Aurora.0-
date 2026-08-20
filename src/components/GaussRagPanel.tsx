@@ -6,13 +6,18 @@ import { resolveHostAwareBaseUrl } from '@/lib/api/base-url';
 type RagStatus = {
   ok: boolean;
   chunkCount?: number;
+  documents?: number;
+  nodes?: number;
+  edges?: number;
+  state?: string;
+  embedding?: { mode?: string; available?: boolean };
   error?: string;
 };
 
 type RagQueryResponse = {
   ok: boolean;
   answer?: string;
-  sources?: { filePath: string; score: number }[];
+  sources?: { filePath: string; score: number; verified?: boolean; sourceSha256?: string }[];
   error?: string;
 };
 
@@ -38,7 +43,7 @@ export function GaussRagPanel({ className }: GaussRagPanelProps) {
   const [indexing, setIndexing] = useState(false);
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState<string | null>(null);
-  const [sources, setSources] = useState<{ filePath: string; score: number }[]>(
+  const [sources, setSources] = useState<{ filePath: string; score: number; verified?: boolean; sourceSha256?: string }[]>(
     [],
   );
   const [asking, setAsking] = useState(false);
@@ -62,7 +67,7 @@ export function GaussRagPanel({ className }: GaussRagPanelProps) {
     setIndexing(true);
     setError(null);
     try {
-      const res = await fetch(`${RAG_BASE}/api/rag/index`, {
+      const res = await fetch(`${RAG_BASE}/api/memory/index`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dir: DEFAULT_INDEX_DIR }),
@@ -79,17 +84,17 @@ export function GaussRagPanel({ className }: GaussRagPanelProps) {
     }
   }
 
-  async function handleAsk() {
-    if (!question.trim()) return;
+  async function runQuery(query: string) {
+    if (!query.trim()) return;
     setAsking(true);
     setError(null);
     setAnswer(null);
     setSources([]);
     try {
-      const res = await fetch(`${RAG_BASE}/api/rag/query`, {
+      const res = await fetch(`${RAG_BASE}/api/memory/search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: question }),
+        body: JSON.stringify({ query }),
       });
       const json = (await res.json()) as RagQueryResponse;
       if (!json.ok) {
@@ -103,6 +108,16 @@ export function GaussRagPanel({ className }: GaussRagPanelProps) {
     } finally {
       setAsking(false);
     }
+  }
+
+  async function handleAsk() {
+    await runQuery(question);
+  }
+
+  async function handlePitchDeckDemo() {
+    const query = 'Gauss Aurora investor pitch deck: problem, product, market, edge intelligence, and funding ask';
+    setQuestion(query);
+    await runQuery(query);
   }
 
   const chunkLabel =
@@ -125,7 +140,7 @@ export function GaussRagPanel({ className }: GaussRagPanelProps) {
             Logic Engine
           </h3>
           <p className="text-[11px] text-muted-foreground/75 uppercase tracking-wide mt-1">
-            LanceDB Retrieval Layer
+            Hybrid Memory Fabric
           </p>
         </div>
         <button
@@ -140,9 +155,14 @@ export function GaussRagPanel({ className }: GaussRagPanelProps) {
       </div>
 
       <p className="text-[11px] text-muted-foreground/80">
-        {chunkLabel}. Updating the index lets your LLM adapt to new Gauss
-        documents without retraining the core model.
+        {chunkLabel}. {status?.nodes ?? 0} graph nodes · {status?.edges ?? 0} evidence links · {status?.embedding?.mode ?? 'float32'} vectors. Updating the index lets your LLM adapt to new Gauss documents without retraining the core model.
       </p>
+
+      <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono uppercase tracking-wide text-muted-foreground/75">
+        <span className="border border-primary/25 px-2 py-1 text-primary/90">Portable JSONL v1</span>
+        <span className="border border-white/10 px-2 py-1">SQLite + LanceDB + graph</span>
+        <span className="border border-white/10 px-2 py-1">tool adapters isolated</span>
+      </div>
 
       <div className="space-y-2">
         <textarea
@@ -159,6 +179,14 @@ export function GaussRagPanel({ className }: GaussRagPanelProps) {
         >
           <Search size={12} />
           {asking ? 'Consulting Gauss RAG…' : 'Ask Gauss RAG'}
+        </button>
+        <button
+          type="button"
+          onClick={() => void handlePitchDeckDemo()}
+          disabled={asking}
+          className="w-full text-[11px] px-3 py-2 border border-white/15 hover:border-primary/35 hover:text-primary disabled:opacity-50 font-semibold uppercase tracking-wider"
+        >
+          {asking ? 'Retrieving deck evidence…' : 'Try pitch deck retrieval'}
         </button>
       </div>
 
@@ -194,7 +222,7 @@ export function GaussRagPanel({ className }: GaussRagPanelProps) {
                       className="text-[10px] text-gauss-neon/70 truncate"
                       title={s.filePath}
                     >
-                      {s.filePath}
+                      <span className="text-primary/90">{s.verified === false ? 'REVIEW' : 'VERIFIED'}</span>{' '}{s.filePath}
                     </li>
                   ))}
                 </ul>

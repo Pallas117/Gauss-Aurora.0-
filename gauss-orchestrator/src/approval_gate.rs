@@ -5,6 +5,8 @@ use std::time::Duration;
 use tokio::time::sleep;
 use uuid::Uuid;
 
+pub const MAX_APPROVALS: usize = 256;
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ApprovalStatus {
     Pending,
@@ -33,7 +35,28 @@ fn now_iso() -> String {
     chrono::Utc::now().to_rfc3339()
 }
 
-pub fn create_request(topic: &str, prompt: &str, timeout_secs: u64) -> ApprovalRequest {
+fn make_room(guard: &mut HashMap<String, ApprovalRequest>) -> bool {
+    if guard.len() < MAX_APPROVALS {
+        return true;
+    }
+    let oldest_terminal_id = guard
+        .iter()
+        .filter(|(_, value)| value.status != ApprovalStatus::Pending)
+        .min_by(|(_, left), (_, right)| left.requested_at.cmp(&right.requested_at))
+        .map(|(id, _)| id.clone());
+    if let Some(id) = oldest_terminal_id {
+        guard.remove(&id);
+        true
+    } else {
+        false
+    }
+}
+
+pub fn create_request(
+    topic: &str,
+    prompt: &str,
+    timeout_secs: u64,
+) -> Result<ApprovalRequest, String> {
     let now = chrono::Utc::now();
     let expires = now + chrono::Duration::seconds(timeout_secs.max(1) as i64);
     let req = ApprovalRequest {
@@ -46,10 +69,14 @@ pub fn create_request(topic: &str, prompt: &str, timeout_secs: u64) -> ApprovalR
         resolved_by: None,
         resolved_at: None,
     };
-    if let Ok(mut guard) = APPROVALS.lock() {
-        guard.insert(req.id.clone(), req.clone());
+    let mut guard = APPROVALS
+        .lock()
+        .map_err(|_| "approval store lock is poisoned".to_string())?;
+    if !make_room(&mut guard) {
+        return Err("approval store reached its bounded capacity with pending requests; resolve or expire one before creating another".to_string());
     }
-    req
+    guard.insert(req.id.clone(), req.clone());
+    Ok(req)
 }
 
 pub fn resolve_request(id: &str, approved: bool, actor: &str) -> Option<ApprovalRequest> {
@@ -74,7 +101,7 @@ pub fn list_recent(limit: usize) -> Vec<ApprovalRequest> {
     if let Ok(guard) = APPROVALS.lock() {
         let mut values: Vec<ApprovalRequest> = guard.values().cloned().collect();
         values.sort_by(|a, b| b.requested_at.cmp(&a.requested_at));
-        values.truncate(limit.max(1).min(200));
+        values.truncate(limit.clamp(1, 200));
         values
     } else {
         Vec::new()
@@ -150,5 +177,53 @@ pub async fn wait_for_decision(id: &str, timeout_secs: u64) -> ApprovalStatus {
         }
 
         sleep(Duration::from_secs(2)).await;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{make_room, ApprovalRequest, ApprovalStatus, MAX_APPROVALS};
+    use std::collections::HashMap;
+
+    fn request(id: &str, status: ApprovalStatus, requested_at: &str) -> ApprovalRequest {
+        ApprovalRequest {
+            id: id.to_string(),
+            topic: "test".to_string(),
+            prompt: "test".to_string(),
+            requested_at: requested_at.to_string(),
+            expires_at: requested_at.to_string(),
+            status,
+            resolved_by: None,
+            resolved_at: None,
+        }
+    }
+
+    #[test]
+    fn capacity_evicts_oldest_terminal_but_never_pending() {
+        let mut requests = HashMap::new();
+        requests.insert(
+            "terminal".to_string(),
+            request("terminal", ApprovalStatus::Denied, "2026-01-01T00:00:00Z"),
+        );
+        for index in 0..MAX_APPROVALS - 1 {
+            let id = format!("pending-{index}");
+            requests.insert(
+                id.clone(),
+                request(&id, ApprovalStatus::Pending, "2026-01-02T00:00:00Z"),
+            );
+        }
+
+        assert!(make_room(&mut requests));
+        assert!(!requests.contains_key("terminal"));
+        assert_eq!(requests.len(), MAX_APPROVALS - 1);
+
+        let id = "pending-last".to_string();
+        requests.insert(
+            id.clone(),
+            request(&id, ApprovalStatus::Pending, "2026-01-03T00:00:00Z"),
+        );
+        assert_eq!(requests.len(), MAX_APPROVALS);
+        assert!(!make_room(&mut requests));
+        assert_eq!(requests.len(), MAX_APPROVALS);
     }
 }

@@ -10,9 +10,9 @@ test("resolveClientBaseUrl preserves an explicit https origin without forcing po
   );
 });
 
-test("resolveClientBaseUrl preserves a same-origin relative api path", () => {
+test("resolveClientBaseUrl collapses a same-origin relative api path to the page origin", () => {
   const pageUrl = new URL("https://app.example.com/heliophysics");
-  assert.equal(resolveClientBaseUrl(pageUrl, "/api", 3001), "https://app.example.com/api");
+  assert.equal(resolveClientBaseUrl(pageUrl, "/api", 3001), "https://app.example.com");
 });
 
 test("resolveClientBaseUrl rewrites loopback env hosts to the current host for remote clients", () => {

@@ -1,6 +1,6 @@
 /**
- * Runs the Triad pipeline (Surya → DeepSeek) and exposes the report for UI.
- * POST /api/ops/pipeline/triad with sourcePath; parse and return surya, deepseek, summary.
+ * Runs the Triad pipeline (Surya → Model) and exposes the report for UI.
+ * POST /api/ops/pipeline/triad with sourcePath; parse and return surya, model, summary.
  */
 
 import { useCallback, useState } from "react";
@@ -19,7 +19,7 @@ export interface TriadReport {
     source_size_bytes?: number;
     stub?: boolean;
   };
-  deepseek: {
+  model: {
     worker: string;
     recommendation: string;
     reasoning?: string;
@@ -54,8 +54,8 @@ export function useTriadReport() {
       const report: TriadReport = {
         timestamp: json.timestamp ?? new Date().toISOString(),
         surya: json.surya ?? { worker: "surya", model: "surya.366m.v1", forecast: [] },
-        deepseek: json.deepseek ?? { worker: "deepseek", recommendation: "", stub: true },
-        summary: json.summary ?? json.deepseek?.recommendation ?? "",
+        model: json.model ?? { worker: "deepseek", recommendation: "", stub: true },
+        summary: json.summary ?? json.model?.recommendation ?? "",
       };
       setState((s) => ({ ...s, loading: false, error: null, report }));
       return report;
@@ -88,8 +88,8 @@ export function useTriadReport() {
       const report: TriadReport = {
         timestamp: json.timestamp ?? new Date().toISOString(),
         surya: json.surya ?? { worker: "surya", model: "surya.366m.v1", forecast: [] },
-        deepseek: json.deepseek ?? { worker: "deepseek", recommendation: "", stub: true },
-        summary: json.summary ?? json.deepseek?.recommendation ?? "",
+        model: json.model ?? { worker: "deepseek", recommendation: "", stub: true },
+        summary: json.summary ?? json.model?.recommendation ?? "",
       };
       setState((s) => ({ ...s, loading: false, error: null, report }));
       return report;

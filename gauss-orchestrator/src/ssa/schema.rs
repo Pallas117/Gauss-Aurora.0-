@@ -32,7 +32,9 @@ impl Covariance6 {
     }
 
     fn valid(&self) -> bool {
-        self.xx >= 0.0 && self.yy >= 0.0 && self.zz >= 0.0
+        self.xx >= 0.0
+            && self.yy >= 0.0
+            && self.zz >= 0.0
             && (self.xx * self.yy - self.xy * self.xy) >= -1e-12
             && (self.yy * self.zz - self.yz * self.yz) >= -1e-12
             && (self.xx * self.zz - self.xz * self.xz) >= -1e-12

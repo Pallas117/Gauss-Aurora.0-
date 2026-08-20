@@ -181,6 +181,7 @@ export default function TuringDevicesPage() {
                     <th className="px-2 py-2 text-left font-medium">Approval</th>
                     <th className="px-2 py-2 text-left font-medium">Status</th>
                     <th className="px-2 py-2 text-left font-medium">Last seen</th>
+                    <th className="px-2 py-2 text-left font-medium">Power</th>
                     <th className="px-2 py-2 text-right font-medium">RAM</th>
                     <th className="px-2 py-2 text-left font-medium">Capabilities</th>
                     <th className="px-2 py-2 text-right font-medium">Actions</th>
@@ -206,6 +207,15 @@ export default function TuringDevicesPage() {
                         <Badge variant={statusVariant(d.status)}>{d.status}</Badge>
                       </td>
                       <td className="px-2 py-2 text-muted-foreground">{formatLastSeen(d.last_seen)}</td>
+                      <td className="px-2 py-2 text-muted-foreground">
+                        {d.power_source === "ac" || d.charging === true
+                          ? "AC / preferred"
+                          : d.power_source === "battery"
+                            ? d.battery_percent != null
+                              ? `Battery ${d.battery_percent}%`
+                              : "Battery"
+                            : "Unknown"}
+                      </td>
                       <td className="px-2 py-2 text-right">
                         {d.ram_mb != null
                           ? d.ram_used_mb != null

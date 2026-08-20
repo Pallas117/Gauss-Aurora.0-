@@ -1,0 +1,1 @@
+{"schema":"gauss-radiation-envelope-v1","spacecraft_id":"GAUSS-TEST-01","observed_at":"2026-08-17T00:00:00Z","received_at":"2026-08-19T00:00:00Z","stale":true,"conflicting":true,"source":"offline-replay","provenance_refs":["radiation:stale","radiation:conflicting"]}

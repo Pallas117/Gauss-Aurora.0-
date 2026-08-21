@@ -159,3 +159,4 @@ Primary owner: `mission-control`
 - `Active` means future work should follow the decision.
 - `Superseded` means the row remains for history but a newer decision takes precedence.
 - `Review` means the decision is still useful but needs confirmation before it drives new work.
+| D-131 | 2026-08-21 | Active | Treat the Malaysia review criteria as the investor-deck acceptance checklist: state the amount, purpose, commercial return and off-taker profile, competitive advantages, team expertise, and project duration/milestones using the ground-first evidence boundary. | The revised deck maps the $1.5M ask, five-account/$500k ARR planning case, mission-data and integration off-takers, partner-neutral assurance advantage, named team roles, and the 6–12 month gated programme to the committee’s six questions without presenting research profiles or future flight/IOD work as signed commitments. |

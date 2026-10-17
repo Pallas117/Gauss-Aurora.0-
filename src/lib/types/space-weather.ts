@@ -152,6 +152,8 @@ export interface SourceStatus {
   latencySeconds: number | null;
   healthy: boolean;
   message?: string;
+  /** "unknown" marks a reachability probe: neither healthy nor degraded. */
+  truthState?: "observed" | "unknown";
   powerDecision?: "primary" | "validate" | "sample" | "suspend";
   utilityScore?: number;
   targetCadenceMs?: number | null;

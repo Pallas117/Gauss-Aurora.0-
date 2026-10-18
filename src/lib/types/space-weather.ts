@@ -650,6 +650,7 @@ export interface OpsDelegationQueueResponse {
   queuedApprovals: QueuedWorkerApproval[];
   brokerPolicy?: {
     memoryLevel: BackendMemoryPressureLevel;
+    deepseekMode?: DeepseekMode;
     autoSafeOps: true;
   };
 }
@@ -689,6 +690,7 @@ export interface OpsCommandSnapshotResponse {
   queuedApprovals: QueuedWorkerApproval[];
   brokerPolicy: {
     memoryLevel: BackendMemoryPressureLevel;
+    deepseekMode?: DeepseekMode;
     autoSafeOps: true;
     plannerMode?: string;
   };
@@ -801,12 +803,19 @@ export interface ModelSafeCommandExecuteResponse {
 
 export type BackendMemoryPressureLevel = "nominal" | "constrained" | "critical";
 
+/**
+ * External planner mode. The current backend does not send it (MemoryGovernorHealth and
+ * WorkerBrokerPolicySnapshot omit it), so it is optional; treat absent as unknown.
+ */
+export type DeepseekMode = "auto" | "manual" | "off";
+
 
 export interface BackendMemoryHealth {
   level: BackendMemoryPressureLevel;
   freeMb: number;
   suspendedSubsystems: string[];
   svgLiteForced: boolean;
+  deepseekMode?: DeepseekMode;
   plannerMode?: string;
 }
 

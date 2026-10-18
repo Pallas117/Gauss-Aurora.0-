@@ -61,6 +61,7 @@ export function useBackendHealth(
     loading,
     error,
     memoryLevel: health?.memory?.level ?? "nominal",
+    deepseekMode: health?.memory?.deepseekMode ?? null,
     svgLiteForced: health?.memory?.svgLiteForced ?? false,
   };
 }

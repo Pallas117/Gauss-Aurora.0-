@@ -91,7 +91,8 @@ const queuedApprovalSchema = z.object({
 
 const brokerPolicySchema = z.object({
   memoryLevel: z.enum(["nominal", "constrained", "critical"]),
-  deepseekMode: z.enum(["auto", "manual", "off"]),
+  // Optional: WorkerBroker.getPolicy() does not send it, and requiring it rejected every live snapshot.
+  deepseekMode: z.enum(["auto", "manual", "off"]).optional(),
   autoSafeOps: z.literal(true),
 });
 

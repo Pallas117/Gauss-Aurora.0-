@@ -283,8 +283,9 @@ export default function AutomationPage() {
             <Badge variant="outline">
               {workerMesh.queue.brokerPolicy?.memoryLevel ?? "nominal"} governor
             </Badge>
+            {/* The broker does not report the planner mode yet; absent is unknown (GAU-81). */}
             <Badge variant="outline">
-              DeepSeek {workerMesh.queue.brokerPolicy?.deepseekMode ?? "auto"}
+              DeepSeek {workerMesh.queue.brokerPolicy?.deepseekMode ?? "unknown"}
             </Badge>
             <Badge variant="secondary">
               {workerMesh.workers.filter((worker) => worker.enabled).length} enabled

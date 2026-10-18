@@ -5,6 +5,8 @@ const useMissionSnapshotMock = jest.fn();
 const usePowerProfileMock = jest.fn();
 const updateSourcePolicyOverrideMock = jest.fn();
 const getAuthHeadersMock = jest.fn();
+// The backend broker policy has no planner mode (backend/workers/mesh/broker.ts getPolicy).
+let mockBrokerPolicy: Record<string, unknown> = {};
 
 jest.mock("@/hooks/useMissionSnapshot", () => ({
   useMissionSnapshot: () => useMissionSnapshotMock(),
@@ -30,11 +32,7 @@ jest.mock("@/hooks/useOpsWorkerMesh", () => ({
     queue: {
       pendingTasks: [],
       queuedApprovals: [],
-      brokerPolicy: {
-        memoryLevel: "nominal",
-        externalModelMode: "auto",
-        autoSafeOps: true,
-      },
+      brokerPolicy: mockBrokerPolicy,
     },
     loading: false,
     error: null,
@@ -63,6 +61,7 @@ describe("AutomationPage", () => {
   const refreshMock = jest.fn();
 
   beforeEach(() => {
+    mockBrokerPolicy = { memoryLevel: "nominal", autoSafeOps: true };
     refreshMock.mockReset();
     refreshMock.mockResolvedValue(undefined);
     getAuthHeadersMock.mockResolvedValue({});
@@ -167,5 +166,19 @@ describe("AutomationPage", () => {
     await waitFor(() =>
       expect(screen.getByText("noaa-swpc pinned to suspend.")).toBeInTheDocument(),
     );
+  });
+
+  test("shows the DeepSeek mode as unknown when the broker does not report it", async () => {
+    render(<AutomationPage />);
+
+    expect(await screen.findByText("DeepSeek unknown")).toBeInTheDocument();
+    expect(screen.queryByText(/deepseek auto/i)).not.toBeInTheDocument();
+  });
+
+  test("shows the DeepSeek mode the broker reports", async () => {
+    mockBrokerPolicy = { memoryLevel: "nominal", deepseekMode: "manual", autoSafeOps: true };
+    render(<AutomationPage />);
+
+    expect(await screen.findByText("DeepSeek manual")).toBeInTheDocument();
   });
 });

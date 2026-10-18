@@ -1,7 +1,8 @@
 /** @type {import('jest').Config} */
 module.exports = {
   testEnvironment: "jsdom",
-  testMatch: ["<rootDir>/src/components/__tests__/**/*.test.ts?(x)"],
+  // Every src test, matching tsconfig.test.json (src/lib tests such as mhd-fixture.test.ts were skipped before).
+  testMatch: ["<rootDir>/src/**/*.test.ts?(x)"],
   transform: {
     "^.+\\.(ts|tsx)$": [
       "ts-jest",

@@ -292,7 +292,8 @@ export function useCommandState() {
         metricsInfo,
         backendHealth,
         criticalOpsMode,
-        plannerMode: backendHealth.health?.memory?.plannerMode ?? "auto",
+        // The backend does not report the planner mode yet; absent is unknown, never "auto" (GAU-81).
+        plannerMode: backendHealth.health?.memory?.plannerMode ?? "unknown",
         session,
         canViewProtectedFeeds,
         solarWind,

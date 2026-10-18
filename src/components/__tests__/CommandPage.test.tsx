@@ -3,11 +3,18 @@ import { MemoryRouter } from "react-router-dom";
 import CommandPage from "@/pages/CommandPage";
 import {
   approveOpsDelegationTask,
+  fetchBackendHealth,
   planOpsCommandWithModel,
   queueOpsCommand,
 } from "@/lib/api/heliophysics-proxy";
 
+// The backend broker policy has no planner mode (backend/workers/mesh/broker.ts getPolicy).
+let mockBrokerPolicy: Record<string, unknown> = {};
+
 jest.mock("@/lib/api/heliophysics-proxy", () => ({
+  fetchBackendHealth: jest.fn(async () => {
+    throw new Error("backend health unavailable");
+  }),
   fetchOpsCommandJob: jest.fn(async () => ({
     jobId: "job-test-1",
     commandType: "log-health-check",
@@ -187,11 +194,7 @@ jest.mock("@/hooks/useOpsCommandSnapshot", () => ({
           createdAt: new Date().toISOString(),
         },
       ],
-      brokerPolicy: {
-        memoryLevel: "nominal",
-        externalModelMode: "auto",
-        autoSafeOps: true,
-      },
+      brokerPolicy: mockBrokerPolicy,
     },
     loading: false,
     error: null,
@@ -254,6 +257,10 @@ jest.mock("@/hooks/usePowerProfile", () => ({
 }));
 
 describe("CommandPage", () => {
+  beforeEach(() => {
+    mockBrokerPolicy = { memoryLevel: "nominal", autoSafeOps: true };
+  });
+
   it("renders command snapshot and telemetry panels", async () => {
     render(
       <MemoryRouter>
@@ -352,5 +359,48 @@ describe("CommandPage", () => {
     await waitFor(() => {
       expect(approveOpsDelegationTask).toHaveBeenCalledWith({ taskId: "approval-1" });
     });
+  });
+
+  it("shows the planner mode as unknown when neither the broker nor backend health reports it", async () => {
+    render(
+      <MemoryRouter>
+        <CommandPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Planner unknown")).toBeInTheDocument();
+    expect(screen.queryByText(/planner auto/i)).not.toBeInTheDocument();
+  });
+
+  it("shows the planner mode the broker reports", async () => {
+    mockBrokerPolicy = { memoryLevel: "nominal", deepseekMode: "off", autoSafeOps: true };
+    render(
+      <MemoryRouter>
+        <CommandPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Planner off")).toBeInTheDocument();
+  });
+
+  it("falls back to the planner mode backend health reports", async () => {
+    (fetchBackendHealth as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      timestamp: new Date().toISOString(),
+      memory: {
+        level: "nominal",
+        freeMb: 2048,
+        suspendedSubsystems: [],
+        svgLiteForced: false,
+        plannerMode: "manual",
+      },
+    });
+    render(
+      <MemoryRouter>
+        <CommandPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("Planner manual")).toBeInTheDocument();
   });
 });

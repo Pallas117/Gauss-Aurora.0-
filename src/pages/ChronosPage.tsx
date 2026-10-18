@@ -53,7 +53,7 @@ export default function ChronosPage() {
           </p>
           {health?.memory && (
             <p className="text-muted-foreground">
-              Memory headroom: {Math.round(health.memory.freeMb)} MB free · DeepSeek {health.memory.deepseekMode}
+              Memory headroom: {Math.round(health.memory.freeMb)} MB free · DeepSeek {health.memory.deepseekMode ?? "unknown"}
               {health.memory.suspendedSubsystems.length > 0
                 ? ` · suspended ${health.memory.suspendedSubsystems.join(", ")}`
                 : ""}

@@ -26,6 +26,8 @@ lerna-debug.log*
 
 # RAG vector DB (recreated on index)
 data/
+# ...but src/data/ is app source (StaffPortalPage imports it), not a vector DB.
+!src/data/
 
 # Test and report artifacts
 test-results/

@@ -1,7 +1,18 @@
 import React from "react";
-import { SentryCanvas } from "@/components/SentryCanvas";
 import { SignUpModal } from "@/components/SignUpModal";
 import { useState } from "react";
+
+// SVG sentry mark: pulsing while operator verification is pending.
+function SentryMark() {
+  return (
+    <svg viewBox="0 0 120 120" className="h-32 w-32" role="img" aria-label="Sentry awaiting operator verification">
+      <circle cx="60" cy="60" r="54" fill="none" stroke="#CCFF00" strokeOpacity="0.2" strokeWidth="1" />
+      <circle cx="60" cy="60" r="40" fill="none" stroke="#CCFF00" strokeOpacity="0.45" strokeWidth="1" strokeDasharray="4 6" />
+      <circle cx="60" cy="60" r="24" fill="none" stroke="#CCFF00" strokeWidth="1.5" className="animate-pulse" />
+      <circle cx="60" cy="60" r="4" fill="#CCFF00" />
+    </svg>
+  );
+}
 
 export default function Login() {
   const [signUpOpen, setSignUpOpen] = useState(false);
@@ -19,7 +30,7 @@ export default function Login() {
         </div>
 
         <div className="flex justify-center py-8">
-          <SentryCanvas />
+          <SentryMark />
         </div>
 
         <div className="space-y-4">

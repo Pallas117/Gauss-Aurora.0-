@@ -7,6 +7,7 @@ import { OpsLaneLinks, type OpsLaneId } from "@/components/ops/OpsLaneLinks";
 import { useBackendHealth } from "@/hooks/useBackendHealth";
 import { useMissionSnapshot } from "@/hooks/useMissionSnapshot";
 import { useTuringSummary } from "@/hooks/useTuringDevices";
+import { rollupSources } from "@/lib/source-truth";
 
 const AutomationPage = lazy(() => import("./AutomationPage"));
 const ChronosPage = lazy(() => import("./ChronosPage"));
@@ -38,8 +39,8 @@ export default function SystemsPage() {
   const backendHealth = useBackendHealth();
   const turing = useTuringSummary();
   const sourceStatus = mission.snapshot?.sourceStatus ?? [];
-  const healthySources = sourceStatus.filter((source) => source.healthy).length;
-  const degradedSources = sourceStatus.length - healthySources;
+  // Measuring sources only; with none reporting, health is unknown (GAU-81).
+  const sources = rollupSources(sourceStatus);
 
   const laneCards = useMemo(
     () => [
@@ -48,7 +49,7 @@ export default function SystemsPage() {
         title: "Automation controls",
         to: "/ops/automation",
         icon: Zap,
-        summary: `${healthySources}/${sourceStatus.length || 0} sources nominal`,
+        summary: sources.state === "unknown" ? "no measuring source: health unknown" : `${sources.healthy}/${sources.measuring} sources nominal`,
         detail: "Source overrides, cadence policy, and CyberTiger telemetry.",
         badge: mission.pollingPaused ? "polling paused" : "adaptive active",
       },
@@ -75,7 +76,7 @@ export default function SystemsPage() {
         title: "Source onboarding",
         to: "/ops/sources",
         icon: Database,
-        summary: degradedSources > 0 ? `${degradedSources} degraded feeds` : "feeds nominal",
+        summary: sources.state === "degraded" ? `${sources.degraded} degraded feeds` : sources.state === "healthy" ? "feeds nominal" : "feed health unknown",
         detail: "Staff-only feed and hardware registration for mission IO.",
         badge: mission.session?.authenticated ? mission.session.role ?? "viewer" : "signed out",
       },
@@ -83,12 +84,13 @@ export default function SystemsPage() {
     [
       backendHealth.health?.ok,
       backendHealth.memoryLevel,
-      degradedSources,
-      healthySources,
+      sources.degraded,
+      sources.healthy,
+      sources.measuring,
+      sources.state,
       mission.pollingPaused,
       mission.session?.authenticated,
       mission.session?.role,
-      sourceStatus.length,
       turing.summary,
     ],
   );

@@ -29,3 +29,29 @@ export function sourceHealthVariant(source: TruthFields): "secondary" | "destruc
   if (isUnknownTruthSource(source)) return "outline";
   return source.healthy ? "secondary" : "destructive";
 }
+
+export type SourceHealth = "healthy" | "degraded" | "unknown";
+
+export interface SourceRollup {
+  /** "unknown" when no measuring source is present: nothing measured, so nothing is nominal. */
+  state: SourceHealth;
+  measuring: number;
+  healthy: number;
+  degraded: number;
+  /** Unknown-truth probes, left out of every count above. */
+  probes: number;
+}
+
+/** Health summary over measuring sources only (GAU-81). */
+export function rollupSources(sources: TruthFields[]): SourceRollup {
+  const measuring = measuringSources(sources);
+  const healthy = measuring.filter((source) => source.healthy).length;
+  const degraded = measuring.length - healthy;
+  return {
+    state: measuring.length === 0 ? "unknown" : degraded > 0 ? "degraded" : "healthy",
+    measuring: measuring.length,
+    healthy,
+    degraded,
+    probes: sources.length - measuring.length,
+  };
+}

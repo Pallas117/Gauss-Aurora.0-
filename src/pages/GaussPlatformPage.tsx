@@ -28,6 +28,7 @@ import {
 import { useMissionSnapshot } from "@/hooks/useMissionSnapshot";
 import { useOfflineMode } from "@/hooks/useOfflineMode";
 import { usePowerProfile } from "@/hooks/usePowerProfile";
+import { rollupSources } from "@/lib/source-truth";
 import { useTuringSummary } from "@/hooks/useTuringDevices";
 import { MavenMissionTheater } from "@/components/heliophysics/MavenMissionTheater";
 import { cn } from "@/lib/utils";
@@ -176,8 +177,10 @@ export default function GaussPlatformPage() {
   const offline = useOfflineMode({ lastSuccessfulSyncAt: mission.lastSuccessfulSyncAt, staleAfterMs: 90_000 });
   const { profile: powerProfile, isLowPower } = usePowerProfile();
   const latest = mission.snapshot?.canonicalLatest;
-  const sourceCount = mission.snapshot?.sourceStatus.length ?? 0;
-  const healthySourceCount = mission.snapshot?.sourceStatus.filter((source) => source.healthy).length ?? 0;
+  // Measuring sources only: reachability probes don't count towards data health (GAU-81).
+  const sources = rollupSources(mission.snapshot?.sourceStatus ?? []);
+  const sourceCount = sources.measuring;
+  const healthySourceCount = sources.healthy;
   const missionState: TruthState = mission.snapshot ? (mission.usingCachedData || offline.staleData ? "cached" : "observed") : mission.error ? "blocked" : "unknown";
   const statusText = offline.isOffline ? "OFFLINE / STORE-AND-FORWARD" : missionState === "cached" ? "CACHED / VERIFY FRESHNESS" : missionState === "observed" ? "NOMINAL / EVIDENCE LIVE" : "AWAITING NODE";
   const healthScore = useMemo(() => {

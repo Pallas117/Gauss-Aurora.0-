@@ -13,6 +13,7 @@ import {
     queueOpsCommand,
 } from "@/lib/api/heliophysics-proxy";
 import type { OpsCommandJob, OpsCommandPlan } from "@/lib/types/space-weather";
+import { rollupSources } from "@/lib/source-truth";
 
 export function useCommandState() {
     const [plannerPrompt, setPlannerPrompt] = useState("Assess current ops state and propose the next mission command.");
@@ -53,7 +54,9 @@ export function useCommandState() {
     const summary = ops.data?.threatSummary ?? threats.data;
     const sourceStatus = ops.data?.sourceStatus ?? mission.snapshot?.sourceStatus ?? [];
     const passes = missionCore.data?.passes ?? [];
-    const sourceStatusHealthy = sourceStatus.length === 0 || sourceStatus.every((s) => s.healthy);
+    // Probes and an empty list are unknown, never healthy (GAU-81).
+    const sourceHealth = rollupSources(sourceStatus);
+    const sourceStatusHealthy = sourceHealth.state === "healthy";
 
     const telemetryRows = solarWind.points.slice(-10).reverse();
     const workers = ops.data?.workers ?? [];
@@ -300,6 +303,7 @@ export function useCommandState() {
         sourceStatus,
         passes,
         sourceStatusHealthy,
+        sourceHealth,
         telemetryRows,
         handleRefresh,
         refreshSession: mission.refreshSession,

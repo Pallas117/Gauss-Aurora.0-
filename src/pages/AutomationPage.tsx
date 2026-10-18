@@ -13,6 +13,7 @@ import {
 } from "@/lib/api/operator-sources";
 import { getApiBaseUrl } from "@/lib/api/base-url";
 import { getAdaptivePollInterval } from "@/lib/power/polling";
+import { rollupSources } from "@/lib/source-truth";
 
 const BASE_URL = getApiBaseUrl();
 
@@ -90,7 +91,7 @@ export default function AutomationPage() {
   const [overrideError, setOverrideError] = useState<string | null>(null);
 
   const sourceStatus = mission.snapshot?.sourceStatus ?? [];
-  const healthySources = sourceStatus.filter((source) => source.healthy).length;
+  const sources = rollupSources(sourceStatus);
   const powerDecisionCounts = useMemo(() => {
     return sourceStatus.reduce(
       (acc, source) => {
@@ -328,7 +329,7 @@ export default function AutomationPage() {
             constraint signals: <span className="font-semibold">{isConstraintDetected ? "detected" : "clear"}</span>
           </p>
           <p>
-            source health: <span className="font-semibold">{healthySources}/{sourceStatus.length || 0} healthy</span>
+            source health: <span className="font-semibold">{sources.state === "unknown" ? "unknown (no measuring source)" : `${sources.healthy}/${sources.measuring} healthy`}</span>
           </p>
           <div className="flex flex-wrap gap-2">
             {(sourceStatus.length > 0 ? sourceStatus : [{ source: "none", healthy: false } as const]).map((source) => (

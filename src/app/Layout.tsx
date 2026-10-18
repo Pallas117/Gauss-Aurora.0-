@@ -10,6 +10,7 @@ import { OfflineResilienceBanner } from "@/components/cockpit/OfflineResilienceB
 import { OnboardingGuard } from "@/components/OnboardingGuard";
 import { cn } from "@/lib/utils";
 import { getSupabaseEnvStatus } from "@/lib/auth-env-check";
+import { rollupSources } from "@/lib/source-truth";
 
 const NAV_ITEMS = [
   { to: "/platform", label: "Platform", icon: Sparkles, hint: "HOME" },
@@ -40,7 +41,8 @@ export function Layout() {
   const presentation =
     location.pathname === "/sda" && new URLSearchParams(location.search).get("presentation") === "1";
   const stormTier = mission.snapshot?.canonicalLatest.alerts.stormTier ?? "unknown";
-  const degradedSources = (mission.snapshot?.sourceStatus ?? []).filter((source) => !source.healthy).length;
+  // Probes are left out, and no measuring source is unknown rather than healthy (GAU-81).
+  const sources = rollupSources(mission.snapshot?.sourceStatus ?? []);
   const publicLaneActive = isPublicSdaSurface && !mission.session?.authenticated;
   const feedOperational = publicLaneActive || !mission.pollingPaused;
 
@@ -125,8 +127,8 @@ export function Layout() {
                     ? mission.session?.role ?? "viewer"
                     : "signed out"}
               </Badge>
-              <Badge variant={statusTone(degradedSources === 0)}>
-                {degradedSources === 0 ? "sources healthy" : `${degradedSources} degraded`}
+              <Badge variant={sources.state === "unknown" ? "outline" : statusTone(sources.state === "healthy")}>
+                {sources.state === "healthy" ? "sources healthy" : sources.state === "degraded" ? `${sources.degraded} degraded` : "sources unknown"}
               </Badge>
             </div>
           </div>

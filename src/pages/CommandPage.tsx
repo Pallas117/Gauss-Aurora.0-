@@ -47,7 +47,7 @@ export default function CommandPage() {
     summary,
     sourceStatus,
     passes,
-    sourceStatusHealthy,
+    sourceHealth,
     telemetryRows,
     handleRefresh,
     refreshSession,
@@ -186,7 +186,7 @@ export default function CommandPage() {
             </div>
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">sources</p>
-              <p className="mt-1 text-white">{sourceStatusHealthy ? "nominal" : "degraded"}</p>
+              <p className="mt-1 text-white">{sourceHealth.state === "healthy" ? "nominal" : sourceHealth.state}</p>
             </div>
           </CardContent>
         </Card>
@@ -203,7 +203,7 @@ export default function CommandPage() {
           gateAction={summary?.gate.action ?? null}
           stormTier={canonical?.alerts.stormTier ?? "unknown"}
           topRecommendedAction={summary?.summary?.top_recommended_action ?? null}
-          sourceStatusHealthy={sourceStatusHealthy}
+          sourceHealth={sourceHealth.state}
           className="min-w-0 flex-1 sm:max-w-md"
         />
       </div>

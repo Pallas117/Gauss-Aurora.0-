@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Clock, Satellite, AlertCircle, CheckCircle } from "lucide-react";
 import type { MissionPassWindow } from "@/lib/types/space-weather";
 import type { ThreatSummaryResponse } from "@/lib/types/space-weather";
+import type { SourceHealth } from "@/lib/source-truth";
 
 export interface TimelineEvent {
   id: string;
@@ -17,7 +18,8 @@ interface OperatorTimelineProps {
   gateAction: "TRIGGER_LLM" | "LOG_AND_SLEEP" | null;
   stormTier: string;
   topRecommendedAction: string | null;
-  sourceStatusHealthy: boolean;
+  /** "unknown" when no measuring source is present (GAU-81). */
+  sourceHealth: SourceHealth;
   className?: string;
 }
 
@@ -35,7 +37,7 @@ export function OperatorTimeline({
   gateAction,
   stormTier,
   topRecommendedAction,
-  sourceStatusHealthy,
+  sourceHealth,
   className = "",
 }: OperatorTimelineProps) {
   const events = useMemo((): TimelineEvent[] => {
@@ -66,12 +68,12 @@ export function OperatorTimeline({
       detail: stormTier,
       time: "now",
     });
-    if (!sourceStatusHealthy) {
+    if (sourceHealth !== "healthy") {
       out.push({
         id: "alert-sources",
         type: "alert",
         label: "Sources",
-        detail: "Degraded",
+        detail: sourceHealth === "degraded" ? "Degraded" : "Unknown (no measuring source)",
         time: "now",
       });
     }
@@ -86,7 +88,7 @@ export function OperatorTimeline({
     }
 
     return out;
-  }, [passes, gateAction, stormTier, topRecommendedAction, sourceStatusHealthy]);
+  }, [passes, gateAction, stormTier, topRecommendedAction, sourceHealth]);
 
   return (
     <div

@@ -395,7 +395,8 @@ export interface SpaceDomainAnalysis {
   generatedAt: string;
   cadenceSeconds: number;
   source: "deterministic" | "hybrid";
-  severity: "quiet" | "watch" | "warning" | "critical";
+  /** "unknown" when the risk inputs are unavailable (GAU-81); set by the client, not the backend. */
+  severity: "quiet" | "watch" | "warning" | "critical" | "unknown";
   headline: string;
   summary: string;
   confidence: number;

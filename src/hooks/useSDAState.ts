@@ -12,7 +12,7 @@ import { useAgenticEvaluator } from "@/hooks/useAgenticEvaluator";
 import { prioritizeVisualizationPoints } from "@/lib/visual-priority";
 import type { LayerVisibility } from "@/components/types";
 import type { VisualizationPoint } from "@/lib/types/radiation";
-import type { SpaceDomainAnalysis, SpaceDomainSummary } from "@/lib/types/space-weather";
+import { buildDeterministicPublicAnalysis, riskInputs } from "@/lib/ssa-public-analysis";
 
 const debrisEnvEnabled =
     String(
@@ -20,98 +20,6 @@ const debrisEnvEnabled =
             ? import.meta.env?.VITE_FEATURE_DEBRIS_3D
             : process.env.VITE_FEATURE_DEBRIS_3D) ?? "true",
     ).toLowerCase() !== "false";
-
-function determineFallbackSeverity(summary: SpaceDomainSummary): SpaceDomainAnalysis["severity"] {
-    if (
-        summary.conjunctionRisk.recentCriticalCount > 0 ||
-        (summary.conjunctionRisk.maxCollisionProbability ?? 0) >= 0.01
-    ) {
-        return "critical";
-    }
-    if (
-        summary.learnedLane.trigger ||
-        (summary.conjunctionRisk.maxCollisionProbability ?? 0) >= 0.005
-    ) {
-        return "warning";
-    }
-    if (summary.learnedLane.score >= 0.45 || summary.crowding.maxRiskScore >= 0.55) {
-        return "watch";
-    }
-    return "quiet";
-}
-
-function formatPercent(value: number | null | undefined): string {
-    if (value == null || !Number.isFinite(value)) {
-        return "n/a";
-    }
-    return `${Math.round(value * 100)}%`;
-}
-
-function formatMeters(value: number | null | undefined): string {
-    if (value == null || !Number.isFinite(value)) {
-        return "n/a";
-    }
-    return `${Math.round(value).toLocaleString()} m`;
-}
-
-function buildDeterministicPublicAnalysis(
-    summary: SpaceDomainSummary,
-    analysis: SpaceDomainAnalysis | null,
-    availabilityMode: "live" | "projected" | "warming" = "live",
-): SpaceDomainAnalysis {
-    const severity = analysis?.severity ?? determineFallbackSeverity(summary);
-    const metrics = analysis?.metrics ?? {
-        learnedLaneScore: summary.learnedLane.score,
-        maxRiskScore: summary.crowding.maxRiskScore,
-        maxCollisionProbability: summary.conjunctionRisk.maxCollisionProbability,
-        minMissDistanceM: summary.conjunctionRisk.minMissDistanceM,
-        conjunctionCount: summary.counts.conjunctionCount,
-    };
-
-    const headline =
-        availabilityMode === "projected"
-            ? "Projected orbital lane active"
-            : availabilityMode === "warming"
-                ? "Public orbital lane awaiting ingest"
-                : severity === "critical"
-                    ? "Critical conjunction activity detected"
-                    : severity === "warning"
-                        ? "Elevated orbital risk requires attention"
-                        : severity === "watch"
-                            ? "Orbital watch active across the public lane"
-                            : "Public orbital lane remains stable";
-
-    const summaryText =
-        availabilityMode === "projected"
-            ? "Live SSA ingest is stale, so Gauss is serving a clearly labeled projected hold-state from the last trusted orbital snapshot."
-            : availabilityMode === "warming"
-                ? "Catalog and risk-zone feeds are still warming up. Public SDA remains online while ingest catches up."
-                : severity === "critical"
-                    ? `Critical conjunction lane active with ${metrics.conjunctionCount} tracked events, peak collision probability ${formatPercent(metrics.maxCollisionProbability)}, and minimum miss distance ${formatMeters(metrics.minMissDistanceM)}.`
-                    : severity === "warning"
-                        ? `Elevated SSA pressure detected: learned lane ${formatPercent(metrics.learnedLaneScore)}, catalog risk ${formatPercent(metrics.maxRiskScore)}, and ${metrics.conjunctionCount} conjunctions under watch.`
-                        : severity === "watch"
-                            ? `Crowding and learned-lane drift are above quiet baseline. Catalog risk is ${formatPercent(metrics.maxRiskScore)} with learned SSA score ${formatPercent(metrics.learnedLaneScore)}.`
-                            : `No elevated conjunction trigger is active. Catalog risk is ${formatPercent(metrics.maxRiskScore)} and the learned SSA lane remains below the warning threshold.`;
-
-    return {
-        generatedAt: analysis?.generatedAt ?? summary.updatedAt ?? new Date().toISOString(),
-        cadenceSeconds: analysis?.cadenceSeconds ?? 30,
-        source: "deterministic",
-        severity,
-        headline,
-        summary: summaryText,
-        confidence: analysis?.confidence ?? summary.learnedLane.confidence,
-        changed: analysis?.changed ?? false,
-        changedSignals: analysis?.changedSignals ?? [],
-        metrics,
-        model: {
-            used: false,
-            modelId: null,
-            generatedAt: null,
-        },
-    };
-}
 
 export function useSDAState() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -241,7 +149,11 @@ export function useSDAState() {
         if (!spaceDomain.analysis) {
             return buildDeterministicPublicAnalysis(spaceDomain.summary, spaceDomain.analysis ?? null);
         }
+        // With a risk feed unavailable, use the client text, which says "unknown" (GAU-81).
+        const known = riskInputs(spaceDomain.summary);
         if (
+            !known.catalog ||
+            !known.conjunctions ||
             useLiteSdaScene ||
             backendHealth.deepseekMode !== "auto" ||
             spaceDomain.availability?.mode !== "live"

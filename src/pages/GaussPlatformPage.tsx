@@ -238,7 +238,7 @@ export default function GaussPlatformPage() {
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <Metric label="Data health" value={healthScore == null ? "—" : `${healthScore}%`} detail={sourceCount ? `${healthySourceCount}/${sourceCount} sources healthy` : "source evidence unavailable"} state={healthScore == null ? "unknown" : healthScore < 75 ? "blocked" : missionState} icon={Gauge} />
           <Metric label="Solar wind" value={latest ? `${Math.round(latest.solarWind.speed)} km/s` : "—"} detail={latest ? `Bz ${latest.magneticField.z.toFixed(1)} nT · ${formatAge(latest.timestamp)}` : "awaiting canonical point"} state={latest ? (latest.quality.stale ? "cached" : "observed") : "unknown"} icon={Zap} />
-          <Metric label="Fleet nodes" value={turingSummary ? String(turingSummary.total) : "—"} detail={turingSummary ? `${turingSummary.healthy} healthy · ${turingSummary.pending ?? 0} pending` : "capacity not observed"} state={turingSummary ? "observed" : "unknown"} icon={ServerIcon} />
+          <Metric label="Fleet nodes" value={turingSummary ? String(turingSummary.total) : "—"} detail={turingSummary ? `${turingSummary.healthy} healthy · ${turingSummary.pending ?? 0} pending` : "capacity not observed"} state={turingSummary ? "observed" : "unknown"} icon={Database} />
           <Metric label="Safety gate" value="ABSTAIN" detail="command authority disabled" state="observed" icon={ShieldCheck} />
         </div>
       </section>}
@@ -284,8 +284,4 @@ export default function GaussPlatformPage() {
       </section>
     </div>
   );
-}
-
-function ServerIcon(props: React.ComponentProps<typeof Activity>) {
-  return <Database {...props} />;
 }

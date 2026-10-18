@@ -156,7 +156,7 @@
     "test": "node --import tsx --test \"backend/tests-domains/*.test.ts\"",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "lint": "tsc --noEmit",
+    "lint": "tsc -b",
     "scan:backend-lint": "node --import tsx backend/scripts/scan-lint-issues.ts",
     "preview": "vite preview",
     "progress": "python3 \"tools/progress-checker/gauss_progress_bar.py\" --show-missing --record-history",

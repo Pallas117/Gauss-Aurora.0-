@@ -95,6 +95,10 @@ export function useRadiationDataOptimized(
     [filter.endTime]
   );
 
+  // react-query takes a number or `false` (never `true`); typed so the literal is not widened to boolean.
+  const liveRefetchInterval: number | false = realTime ? updateInterval : false;
+  const noRefetch: false = false; // CSV files don't change
+
   // Create queries for each source using service clients
   const queries = useQueries({
     queries: [
@@ -110,7 +114,7 @@ export function useRadiationDataOptimized(
                 energyRange: filter.energyRange,
                 resolution: 'hourly',
               }),
-              refetchInterval: realTime ? updateInterval : false,
+              refetchInterval: liveRefetchInterval,
             },
           ]
         : []),
@@ -119,7 +123,7 @@ export function useRadiationDataOptimized(
         ? [
             {
               ...ERGClient.getQueryOptions(csvSources['erg-arase']),
-              refetchInterval: false, // CSV files don't change
+              refetchInterval: noRefetch,
             },
           ]
         : []),
@@ -128,7 +132,7 @@ export function useRadiationDataOptimized(
         ? [
             {
               ...CSESClient.getQueryOptions(csvSources['cses']),
-              refetchInterval: false, // CSV files don't change
+              refetchInterval: noRefetch,
             },
           ]
         : []),

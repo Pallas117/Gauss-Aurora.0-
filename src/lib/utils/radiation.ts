@@ -67,7 +67,9 @@ export function filterRadiationData(
 
   // Source filter
   if (filter.sources && filter.sources.length > 0) {
-    filtered = filtered.filter((m) => filter.sources!.includes(m.source));
+    // Widened so an 'unknown' source can be looked up; it is never listed, so it is filtered out.
+    const sources: ReadonlyArray<RadiationMeasurement["source"]> = filter.sources;
+    filtered = filtered.filter((m) => sources.includes(m.source));
   }
 
   // Limit results

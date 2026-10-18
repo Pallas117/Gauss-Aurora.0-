@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    /* Jest runs src tests under Node with jsdom, so they get Node and Jest globals; app code does not. */
+    "types": ["vite/client", "node", "jest", "@testing-library/jest-dom"]
+  },
+  "include": [
+    "src/**/__tests__/**/*",
+    "src/**/__mocks__/**/*",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "jest.setup.ts"
+  ],
+  "exclude": ["src/imports/**"]
+}

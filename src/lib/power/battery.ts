@@ -3,6 +3,8 @@
  * Devices = high-value assets; never run heavy polling when battery is low and discharging.
  */
 
+import { getViteEnv } from "@/lib/heliophysics-utils";
+
 const MIN_SAFE_LEVEL = 0.25;
 const RECHARGE_PROTECT_LEVEL = 0.5;
 const RECOVERY_LEVEL = 0.5;
@@ -112,11 +114,7 @@ export function getBatteryDrainMultiplier(): number {
   if (cached == null) return 1;
 
   const mode = parseBatteryDrainMode(
-    (typeof import_meta !== "undefined"
-      ? import_meta?.env?.VITE_BATTERY_DRAIN_MODE
-      : typeof process !== "undefined"
-        ? process.env?.VITE_BATTERY_DRAIN_MODE
-        : undefined),
+    getViteEnv("VITE_BATTERY_DRAIN_MODE"),
   );
   const flow = resolveBatteryPowerFlow();
 

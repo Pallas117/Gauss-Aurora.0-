@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Database, Search, Terminal as TerminalIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { resolveHostAwareBaseUrl } from '@/lib/api/base-url';
+import { getViteEnv } from '@/lib/heliophysics-utils';
 
 type RagStatus = {
   ok: boolean;
@@ -23,16 +24,12 @@ type RagQueryResponse = {
 
 const RAG_BASE =
   resolveHostAwareBaseUrl(
-    (typeof import_meta !== 'undefined'
-      ? import_meta?.env?.VITE_GAUSS_RAG_URL
-      : typeof process !== 'undefined'
-        ? process.env?.VITE_GAUSS_RAG_URL
-        : undefined) ?? null,
+    getViteEnv('VITE_GAUSS_RAG_URL') ?? null,
     3002,
   );
 
 const DEFAULT_INDEX_DIR =
-  (typeof import_meta !== 'undefined' ? import_meta?.env?.VITE_GAUSS_RAG_INDEX_DIR : typeof process !== 'undefined' ? process.env?.VITE_GAUSS_RAG_INDEX_DIR : undefined) || 'research/documentation-rag';
+  getViteEnv('VITE_GAUSS_RAG_INDEX_DIR') || 'research/documentation-rag';
 
 interface GaussRagPanelProps {
   className?: string;

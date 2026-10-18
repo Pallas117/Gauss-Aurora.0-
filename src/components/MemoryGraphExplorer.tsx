@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Network, RefreshCw, Search, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { resolveHostAwareBaseUrl } from "@/lib/api/base-url";
+import { getViteEnv } from "@/lib/heliophysics-utils";
 
 type MemoryNode = {
   id: string;
@@ -32,11 +33,7 @@ type GraphResponse = {
 };
 
 const MEMORY_BASE = resolveHostAwareBaseUrl(
-  (typeof import_meta !== "undefined"
-    ? import_meta?.env?.VITE_GAUSS_RAG_URL
-    : typeof process !== "undefined"
-      ? process.env?.VITE_GAUSS_RAG_URL
-      : undefined) ?? null,
+  getViteEnv("VITE_GAUSS_RAG_URL") ?? null,
   3002,
 );
 

@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { createTuringJoinCode } from "@/lib/api/turing";
+import type { TuringJoinCodeResponse } from "@/lib/contracts/turing";
+import { getViteEnv } from "@/lib/heliophysics-utils";
 import { Copy, KeyRound, Server } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCallback, useState } from "react";
 
-const BACKEND_URL_PLACEHOLDER = (typeof import_meta !== 'undefined' ? import_meta?.env?.VITE_HELIO_PROXY_URL : typeof process !== 'undefined' ? process.env?.VITE_HELIO_PROXY_URL : undefined) ?? "https://your-backend-ip:3001";
+const BACKEND_URL_PLACEHOLDER = getViteEnv("VITE_HELIO_PROXY_URL") ?? "https://your-backend-ip:3001";
 
 export interface JoinNetworkOnboardingProps {
   /** "compact" for post-signup onboarding; "full" for Turing page */
@@ -20,7 +22,7 @@ export function JoinNetworkOnboarding({
   showGenerateCode = true,
   showTuringLink = true,
 }: JoinNetworkOnboardingProps) {
-  const [joinCode, setJoinCode] = useState<{ code: string; expires_at: string; expires_in_sec: number } | null>(null);
+  const [joinCode, setJoinCode] = useState<TuringJoinCodeResponse | null>(null);
   const [joinCodeError, setJoinCodeError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 

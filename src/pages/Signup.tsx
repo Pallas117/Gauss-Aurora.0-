@@ -7,13 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { JoinNetworkOnboarding } from "@/components/onboarding/JoinNetworkOnboarding";
 import { signInWithOAuth, signUpWithPassword } from "@/lib/api/auth";
+import { getViteEnv } from "@/lib/heliophysics-utils";
 
 type RequestedRole = "viewer" | "operator";
 type FormState = "idle" | "submitting" | "success" | "error";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const stripeCheckoutUrl = ((typeof import_meta !== 'undefined' ? import_meta?.env?.VITE_STRIPE_CHECKOUT_URL : typeof process !== 'undefined' ? process.env?.VITE_STRIPE_CHECKOUT_URL : undefined) ?? "").toString().trim();
+  const stripeCheckoutUrl = (getViteEnv("VITE_STRIPE_CHECKOUT_URL") ?? "").trim();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");

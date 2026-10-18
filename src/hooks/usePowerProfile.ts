@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { getViteEnv } from "@/lib/heliophysics-utils";
 
 export type PowerProfile = "performance" | "balanced" | "low-power";
 export type PowerProfileMode = PowerProfile | "auto";
@@ -70,7 +71,7 @@ export function usePowerProfile(mode?: PowerProfileMode) {
   }, []);
 
   const configuredMode = useMemo(() => {
-    const envMode = normalizeMode((typeof import_meta !== 'undefined' ? import_meta?.env?.VITE_POWER_PROFILE : typeof process !== 'undefined' ? process.env?.VITE_POWER_PROFILE : undefined));
+    const envMode = normalizeMode(getViteEnv("VITE_POWER_PROFILE"));
     const requested = normalizeMode(mode);
     return requested !== "auto" ? requested : envMode;
   }, [mode]);

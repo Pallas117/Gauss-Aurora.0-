@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { CanonicalSpaceWeatherPoint } from "@/lib/types/space-weather";
 import { getAccessToken } from "@/lib/api/auth";
 import { getApiBaseUrl } from "@/lib/api/base-url";
+import { getViteEnv } from "@/lib/heliophysics-utils";
 import {
   fetchSpaceWeather5s,
   fetchSpaceWeatherLatest,
@@ -287,7 +288,7 @@ export function useSolarWind5s(options: UseSolarWind5sOptions = {}): SolarWind5s
       return;
     }
 
-    const wsEnabled = String((typeof import_meta !== 'undefined' ? import_meta?.env?.VITE_HELIO_WS_ENABLED : typeof process !== 'undefined' ? process.env?.VITE_HELIO_WS_ENABLED : undefined) ?? "false") === "true";
+    const wsEnabled = getViteEnv("VITE_HELIO_WS_ENABLED") === "true";
     if (!wsEnabled) {
       return;
     }

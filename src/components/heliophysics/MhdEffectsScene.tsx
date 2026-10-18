@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { CanonicalSpaceWeatherPoint } from "@/lib/types/space-weather";
-import { frameFromTelemetry } from "@/lib/mhd-fixture";
+import { frameFromTelemetry, MHD_FIXTURE_SCHEMA } from "@/lib/mhd-fixture";
 
 type MhdEffectsSceneProps = {
   layers: { earth?: boolean; belts?: boolean; magnetosphere?: boolean; fieldLines?: boolean; mhdWaves?: boolean; mmsReconnection?: boolean };
@@ -27,7 +27,8 @@ export function MhdEffectsScene({ layers, canonicalPoint, pressureCompression, b
 
   return (
     <div className="relative h-full min-h-[360px] w-full overflow-hidden rounded-xl bg-[#050505]" data-testid="mhd-effects-scene">
-      <svg viewBox="0 0 240 180" className="h-full w-full" role="img" aria-label={`SVG MHD visualisation ${status}`}>
+      <svg viewBox="0 0 240 180" className="h-full w-full" role="img" aria-label={`Schematic magnetohydrodynamic view ${status}`}>
+        <title>Schematic magnetohydrodynamic view</title>
         <defs>
           <radialGradient id="gauss-earth-gradient"><stop offset="0" stopColor="#17361e" /><stop offset="1" stopColor="#050505" /></radialGradient>
         </defs>
@@ -42,7 +43,8 @@ export function MhdEffectsScene({ layers, canonicalPoint, pressureCompression, b
         {layers.mmsReconnection !== false ? <path d="M 72 90 Q 105 90 138 90" fill="none" stroke="#CCFF00" strokeOpacity={0.25 + reconnectionStrength * .65} strokeDasharray="2 3" /> : null}
       </svg>
       <div className="pointer-events-none absolute left-3 top-3 font-mono text-[10px] uppercase tracking-widest text-[#CCFF00]">MHD / {status}</div>
-      {lowPower ? <div className="pointer-events-none absolute bottom-3 left-3 font-mono text-[10px] text-muted-foreground">SVG LITE · {frame.schema}</div> : null}
+      {layers.mmsReconnection !== false ? <div className="pointer-events-none absolute right-3 top-3 font-mono text-[10px] uppercase tracking-widest text-[#CCFF00]">RECONNECTION · Bz</div> : null}
+      {lowPower ? <div className="pointer-events-none absolute bottom-3 left-3 font-mono text-[10px] text-muted-foreground">SVG LITE · {MHD_FIXTURE_SCHEMA}</div> : null}
     </div>
   );
 }
